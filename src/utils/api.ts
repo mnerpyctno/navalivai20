@@ -43,46 +43,30 @@ interface ProductsResponse {
 export async function fetchCategories(): Promise<MoySkladCategory[]> {
   try {
     const params = {
-      method: 'get',
-      url: 'entity/productfolder',
-      params: JSON.stringify({
-        limit: 100,
-        offset: 0,
-        order: 'name,asc'
-      })
+      limit: 100,
+      offset: 0,
+      order: 'name,asc'
     };
 
-    const queryString = new URLSearchParams({
-      method: params.method,
-      url: params.url,
-      params: params.params
-    }).toString();
-
+    const queryString = `method=get&url=entity/productfolder&params=${encodeURIComponent(JSON.stringify(params))}`;
     console.log('Fetching categories:', {
-      queryString,
-      params: JSON.parse(params.params)
+      params,
+      queryString
     });
 
-    const response = await fetch(`/api/moysklad?${queryString}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
+    const response = await fetch(`/api/moysklad?${queryString}`);
+    const data = await response.json();
 
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Error fetching categories:', errorData);
-      throw new Error(errorData.error || 'Не удалось загрузить категории');
+      console.error('Error fetching categories:', data);
+      throw new Error(data.error || 'Не удалось загрузить категории');
     }
 
-    const responseData = await response.json();
-    
-    if (!responseData.data || !responseData.data.rows) {
+    if (!data.rows) {
       throw new Error('Неверный формат ответа от сервера');
     }
 
-    return responseData.data.rows.map((category: any) => ({
+    return data.rows.map((category: any) => ({
       id: category.id,
       name: category.name
     }));
@@ -94,19 +78,6 @@ export async function fetchCategories(): Promise<MoySkladCategory[]> {
 
 export async function fetchProducts(categoryId?: string, page: number = 1, limit: number = 20): Promise<ProductsResponse> {
   try {
-    console.log('Fetching products:', {
-      categoryId,
-      limit,
-      page,
-      params: {
-        limit,
-        offset: (page - 1) * limit,
-        expand: 'images,salePrices',
-        ...(categoryId && { filter: `productFolder=${categoryId}` }),
-        order: 'name,asc'
-      }
-    });
-
     const params: Record<string, any> = {
       limit,
       offset: (page - 1) * limit,
@@ -119,6 +90,12 @@ export async function fetchProducts(categoryId?: string, page: number = 1, limit
     }
 
     const queryString = `method=get&url=entity/product&params=${encodeURIComponent(JSON.stringify(params))}`;
+    console.log('Fetching products:', {
+      categoryId,
+      limit,
+      page,
+      params
+    });
     console.log('Query string:', queryString);
 
     const response = await fetch(`/api/moysklad?${queryString}`);
@@ -129,7 +106,11 @@ export async function fetchProducts(categoryId?: string, page: number = 1, limit
       throw new Error(data.error || 'Failed to fetch products');
     }
 
-    const products = data.rows || [];
+    if (!data.rows) {
+      throw new Error('Неверный формат ответа от сервера');
+    }
+
+    const products = data.rows;
     const total = data.meta?.size || 0;
 
     console.log('Products response:', {
