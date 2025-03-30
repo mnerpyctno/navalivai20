@@ -21,21 +21,28 @@ interface ProductsResponse {
 export async function fetchProducts(categoryId: string, page: number = 1, limit: number = 20): Promise<ProductsResponse> {
   try {
     const offset = (page - 1) * limit;
-    const response = await fetch('/api/moysklad', {
+    const params = {
+      method: 'get',
+      url: 'entity/product',
+      params: JSON.stringify({
+        limit,
+        offset,
+        expand: 'images,salePrices,productFolder',
+        filter: `archived=false${categoryId ? `;productFolder.id=${categoryId}` : ''}`
+      })
+    };
+
+    const queryString = new URLSearchParams({
+      method: params.method,
+      url: params.url,
+      params: params.params
+    }).toString();
+
+    const response = await fetch(`/api/moysklad?${queryString}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        method: 'get',
-        url: 'entity/product',
-        params: JSON.stringify({
-          limit,
-          offset,
-          expand: 'images,salePrices,productFolder',
-          filter: `archived=false${categoryId ? `;productFolder.id=${categoryId}` : ''}`
-        })
-      })
+      }
     });
 
     if (!response.ok) {
