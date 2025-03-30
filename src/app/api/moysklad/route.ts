@@ -6,7 +6,7 @@ const msClient = axios.create({
   baseURL: 'https://api.moysklad.ru/api/remap/1.2',
   headers: {
     'Authorization': `Bearer ${process.env.MOYSKLAD_TOKEN}`,
-    'Accept': 'application/json',
+    'Accept': 'application/json;charset=utf-8',
     'Content-Type': 'application/json'
   },
   timeout: 30000
