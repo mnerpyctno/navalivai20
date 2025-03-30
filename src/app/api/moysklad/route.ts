@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import axios from 'axios';
+import axios, { AxiosRequestHeaders } from 'axios';
 
 // Создаем клиент для MoySklad API
 const msClient = axios.create({
@@ -7,9 +7,24 @@ const msClient = axios.create({
   headers: {
     'Authorization': `Bearer ${process.env.MOYSKLAD_TOKEN}`,
     'Content-Type': 'application/json;charset=utf-8',
-    'Accept': 'application/json;charset=utf-8'
+    'Accept': 'application/json;charset=utf-8',
+    'Accept-Encoding': 'gzip',
+    'User-Agent': 'Navalidai/1.0'
   },
   timeout: 30000
+});
+
+// Добавляем интерцептор для всех запросов
+msClient.interceptors.request.use((config) => {
+  // Убеждаемся, что все параметры корректно закодированы
+  if (config.params) {
+    Object.keys(config.params).forEach(key => {
+      if (typeof config.params[key] === 'string') {
+        config.params[key] = encodeURIComponent(config.params[key]);
+      }
+    });
+  }
+  return config;
 });
 
 export async function GET(request: NextRequest) {
@@ -50,6 +65,14 @@ export async function GET(request: NextRequest) {
         // Преобразуем строковые значения в числа, где это необходимо
         if (parsedParams.limit) parsedParams.limit = parseInt(parsedParams.limit as string);
         if (parsedParams.offset) parsedParams.offset = parseInt(parsedParams.offset as string);
+        
+        // Обработка специальных параметров
+        if (parsedParams.filter) {
+          parsedParams.filter = decodeURIComponent(parsedParams.filter);
+        }
+        if (parsedParams.expand) {
+          parsedParams.expand = decodeURIComponent(parsedParams.expand);
+        }
       } catch (e) {
         console.error('Error parsing params:', e);
         return NextResponse.json(
@@ -68,10 +91,16 @@ export async function GET(request: NextRequest) {
       fullUrl: `${msClient.defaults.baseURL}/${requestUrl}`
     });
 
+    const customHeaders: Record<string, string> = {
+      'X-Lognex-Format-Version': '2',
+      'X-Lognex-Pretty-Print-JSON': 'true'
+    };
+
     const response = await msClient({
       method: method.toLowerCase(),
       url: requestUrl,
-      params: parsedParams
+      params: parsedParams,
+      headers: customHeaders
     });
 
     console.log('MoySklad response:', {
