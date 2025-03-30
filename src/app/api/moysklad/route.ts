@@ -6,8 +6,8 @@ const msClient = axios.create({
   baseURL: 'https://api.moysklad.ru/api/remap/1.2',
   headers: {
     'Authorization': `Bearer ${process.env.MOYSKLAD_TOKEN}`,
-    'Content-Type': 'application/json;charset=utf-8',
-    'Accept': 'application/json;charset=utf-8'
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
   },
   timeout: 30000
 });
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     console.log('API Request:', {
       method,
       url,
-      params,
+      params: params ? JSON.parse(params) : null,
       token: process.env.MOYSKLAD_TOKEN ? 'Present' : 'Missing'
     });
 
@@ -64,14 +64,21 @@ export async function GET(request: NextRequest) {
     console.log('Making request to MoySklad:', {
       url: requestUrl,
       method: method.toLowerCase(),
-      params: parsedParams
+      params: parsedParams,
+      fullUrl: `${msClient.defaults.baseURL}/${requestUrl}`
     });
 
     const response = await msClient({
       method: method.toLowerCase(),
       url: requestUrl,
-      params: parsedParams,
-      validateStatus: (status) => status < 500 // Не выбрасывать ошибку для статусов < 500
+      params: parsedParams
+    });
+
+    console.log('MoySklad response:', {
+      status: response.status,
+      statusText: response.statusText,
+      data: response.data,
+      headers: response.headers
     });
 
     if (!response.data) {
@@ -79,18 +86,14 @@ export async function GET(request: NextRequest) {
       throw new Error('Empty response from MoySklad');
     }
 
-    console.log('MoySklad response:', {
-      status: response.status,
-      dataSize: response.data ? Object.keys(response.data).length : 0
-    });
-
     return NextResponse.json({ data: response.data });
   } catch (error: any) {
     console.error('API Error:', {
       message: error.message,
       response: error.response?.data,
       status: error.response?.status,
-      stack: error.stack
+      headers: error.response?.headers,
+      config: error.config
     });
 
     if (error.response?.status === 401) {
@@ -110,6 +113,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       { 
         error: error.response?.data?.error || error.message || 'Internal Server Error',
+        details: error.response?.data,
         status: error.response?.status || 500
       },
       { status: error.response?.status || 500 }

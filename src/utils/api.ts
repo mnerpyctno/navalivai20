@@ -97,7 +97,7 @@ export async function fetchProducts(categoryId: string, page: number = 1, limit:
         limit,
         offset,
         expand: 'images,salePrices,productFolder',
-        filter: categoryId ? `productFolder.id=${categoryId};archived=false` : 'archived=false',
+        filter: categoryId ? `productFolder=${categoryId};archived=false` : 'archived=false',
         order: 'name,asc'
       })
     };
@@ -112,7 +112,8 @@ export async function fetchProducts(categoryId: string, page: number = 1, limit:
       categoryId,
       page,
       limit,
-      queryString
+      queryString,
+      params: JSON.parse(params.params)
     });
 
     const response = await fetch(`/api/moysklad?${queryString}`, {

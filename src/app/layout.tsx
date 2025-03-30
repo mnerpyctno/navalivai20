@@ -32,7 +32,9 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <ClientProviders>
-          {children}
+          <main>
+            {children}
+          </main>
         </ClientProviders>
       </body>
     </html>
