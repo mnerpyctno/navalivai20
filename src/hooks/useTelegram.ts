@@ -3,13 +3,40 @@ import { TelegramWebApps } from '@/types/telegram';
 
 export function useTelegram() {
   const [tg, setTg] = useState<TelegramWebApps | null>(null);
+  const [isValid, setIsValid] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
       const webApp = window.Telegram.WebApp;
-      setTg(webApp);
-      webApp.ready();
-      webApp.expand();
+      
+      // Проверяем данные от Telegram
+      const validateTelegramData = async () => {
+        try {
+          const response = await fetch('/api/telegram/validate', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              initData: webApp.initData
+            }),
+          });
+
+          const data = await response.json();
+          if (data.ok) {
+            setIsValid(true);
+            setTg(webApp);
+            webApp.ready();
+            webApp.expand();
+          } else {
+            console.error('Invalid Telegram data');
+          }
+        } catch (error) {
+          console.error('Error validating Telegram data:', error);
+        }
+      };
+
+      validateTelegramData();
     }
   }, []);
 
@@ -60,6 +87,7 @@ export function useTelegram() {
   return {
     tg,
     user,
+    isValid,
     onClose,
     onToggleMainButton,
     onToggleBackButton,
