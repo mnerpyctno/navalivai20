@@ -6,24 +6,49 @@ const msClient = axios.create({
   baseURL: 'https://api.moysklad.ru/api/remap/1.2',
   headers: {
     'Authorization': `Bearer ${process.env.MOYSKLAD_TOKEN}`,
-    'Accept': 'application/json',
+    'Accept': 'application/json;charset=utf-8',
     'Content-Type': 'application/json'
   },
   timeout: 30000
 });
 
-// Добавляем интерцептор для всех запросов
-msClient.interceptors.request.use((config) => {
-  // Убеждаемся, что все параметры корректно закодированы
-  if (config.params) {
-    Object.keys(config.params).forEach(key => {
-      if (typeof config.params[key] === 'string') {
-        config.params[key] = encodeURIComponent(config.params[key]);
+// Добавляем интерцептор для логирования
+msClient.interceptors.request.use(request => {
+  console.log('Request:', {
+    url: request.url,
+    method: request.method,
+    params: request.params,
+    headers: {
+      ...request.headers,
+      Authorization: 'Bearer ***'
+    }
+  });
+  return request;
+});
+
+msClient.interceptors.response.use(
+  response => {
+    console.log('Response:', {
+      status: response.status,
+      statusText: response.statusText,
+      data: response.data
+    });
+    return response;
+  },
+  error => {
+    console.error('Response Error:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      config: {
+        url: error.config?.url,
+        method: error.config?.method,
+        params: error.config?.params
       }
     });
+    return Promise.reject(error);
   }
-  return config;
-});
+);
 
 export async function GET(request: NextRequest) {
   try {
@@ -63,14 +88,6 @@ export async function GET(request: NextRequest) {
         // Преобразуем строковые значения в числа, где это необходимо
         if (parsedParams.limit) parsedParams.limit = parseInt(parsedParams.limit as string);
         if (parsedParams.offset) parsedParams.offset = parseInt(parsedParams.offset as string);
-        
-        // Обработка специальных параметров
-        if (parsedParams.filter) {
-          parsedParams.filter = decodeURIComponent(parsedParams.filter);
-        }
-        if (parsedParams.expand) {
-          parsedParams.expand = decodeURIComponent(parsedParams.expand);
-        }
       } catch (e) {
         console.error('Error parsing params:', e);
         return NextResponse.json(
@@ -95,12 +112,6 @@ export async function GET(request: NextRequest) {
       params: parsedParams
     });
 
-    console.log('MoySklad response:', {
-      status: response.status,
-      statusText: response.statusText,
-      data: response.data
-    });
-
     if (!response.data) {
       console.error('Empty response from MoySklad');
       throw new Error('Empty response from MoySklad');
@@ -122,10 +133,14 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    if (error.response?.status === 412) {
+    if (error.response?.status === 400) {
       return NextResponse.json(
-        { error: 'Precondition Failed - Check API version and parameters' },
-        { status: 412 }
+        { 
+          error: 'Bad Request - Invalid parameters',
+          details: error.response?.data,
+          status: 400
+        },
+        { status: 400 }
       );
     }
 

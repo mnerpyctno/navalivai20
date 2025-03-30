@@ -47,7 +47,7 @@ export async function fetchCategories(): Promise<MoySkladCategory[]> {
       url: 'entity/productfolder',
       params: JSON.stringify({
         limit: 100,
-        filter: 'pathName=""',
+        offset: 0,
         order: 'name,asc'
       })
     };
@@ -57,6 +57,11 @@ export async function fetchCategories(): Promise<MoySkladCategory[]> {
       url: params.url,
       params: params.params
     }).toString();
+
+    console.log('Fetching categories:', {
+      queryString,
+      params: JSON.parse(params.params)
+    });
 
     const response = await fetch(`/api/moysklad?${queryString}`, {
       method: 'GET',
@@ -90,6 +95,13 @@ export async function fetchCategories(): Promise<MoySkladCategory[]> {
 export async function fetchProducts(categoryId: string, page: number = 1, limit: number = 20): Promise<ProductsResponse> {
   try {
     const offset = (page - 1) * limit;
+    const filterParts = [];
+    
+    if (categoryId) {
+      filterParts.push(`productFolder=${categoryId}`);
+    }
+    filterParts.push('archived=false');
+
     const params = {
       method: 'get',
       url: 'entity/product',
@@ -97,7 +109,7 @@ export async function fetchProducts(categoryId: string, page: number = 1, limit:
         limit,
         offset,
         expand: 'images,salePrices',
-        filter: categoryId ? `productFolder=${categoryId}` : '',
+        filter: filterParts.join(';'),
         order: 'name,asc'
       })
     };
