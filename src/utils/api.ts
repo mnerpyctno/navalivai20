@@ -81,53 +81,77 @@ export async function fetchProducts(categoryId?: string, page: number = 1, limit
     const params: Record<string, any> = {
       limit,
       offset: (page - 1) * limit,
-      expand: 'images,salePrices',
+      expand: 'images,salePrices,productFolder',
       order: 'name,asc'
     };
 
     if (categoryId) {
+      console.log('Fetching products for category:', categoryId);
       params['filter'] = `productFolder=${categoryId}`;
+      console.log('Filter params:', params);
     }
 
     const queryString = `method=get&url=entity/product&params=${encodeURIComponent(JSON.stringify(params))}`;
-    console.log('Fetching products:', {
+    console.log('Full request details:', {
       categoryId,
       limit,
       page,
-      params
+      params,
+      queryString,
+      fullUrl: `/api/moysklad?${queryString}`
     });
-    console.log('Query string:', queryString);
 
     const response = await fetch(`/api/moysklad?${queryString}`);
     const data = await response.json();
 
+    console.log('Raw API response:', data);
+
     if (!response.ok) {
-      console.error('Error response:', data);
+      console.error('Error response:', {
+        status: response.status,
+        statusText: response.statusText,
+        data
+      });
       throw new Error(data.error || 'Failed to fetch products');
     }
 
     if (!data.rows) {
+      console.error('Invalid response structure:', data);
       throw new Error('Неверный формат ответа от сервера');
     }
 
     const products = data.rows;
     const total = data.meta?.size || 0;
 
-    console.log('Products response:', {
+    console.log('Products data:', {
       totalProducts: total,
       loadedProducts: products.length,
       page,
-      hasMore: products.length === limit
+      hasMore: products.length === limit,
+      firstProduct: products[0] ? {
+        id: products[0].id,
+        name: products[0].name,
+        folder: products[0].productFolder,
+        prices: products[0].salePrices,
+        images: products[0].images
+      } : null
     });
 
-    const mappedProducts = products.map((product: MoySkladProduct) => ({
-      id: product.id,
-      name: product.name,
-      price: (product.salePrices && product.salePrices[0]?.value) ? product.salePrices[0].value / 100 : 0,
-      image: product.images?.rows?.[0]?.miniature?.downloadHref || '/placeholder.png',
-      description: product.description || '',
-      category: product.productFolder?.id || ''
-    }));
+    const mappedProducts = products.map((product: MoySkladProduct) => {
+      const mapped = {
+        id: product.id,
+        name: product.name,
+        price: (product.salePrices && product.salePrices[0]?.value) ? product.salePrices[0].value / 100 : 0,
+        image: product.images?.rows?.[0]?.miniature?.downloadHref || '/placeholder.png',
+        description: product.description || '',
+        category: product.productFolder?.id || ''
+      };
+      console.log('Mapped product:', {
+        original: product,
+        mapped
+      });
+      return mapped;
+    });
 
     return {
       products: mappedProducts,
