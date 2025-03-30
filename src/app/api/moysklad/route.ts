@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import axios, { AxiosRequestHeaders } from 'axios';
+import axios from 'axios';
 
 // Создаем клиент для MoySklad API
 const msClient = axios.create({
   baseURL: 'https://api.moysklad.ru/api/remap/1.2',
   headers: {
     'Authorization': `Bearer ${process.env.MOYSKLAD_TOKEN}`,
-    'Content-Type': 'application/json;charset=utf-8',
-    'Accept': 'application/json;charset=utf-8',
-    'Accept-Encoding': 'gzip',
-    'User-Agent': 'Navalidai/1.0'
+    'Accept': 'application/json',
+    'Content-Type': 'application/json'
   },
   timeout: 30000
 });
@@ -91,23 +89,16 @@ export async function GET(request: NextRequest) {
       fullUrl: `${msClient.defaults.baseURL}/${requestUrl}`
     });
 
-    const customHeaders: Record<string, string> = {
-      'X-Lognex-Format-Version': '2',
-      'X-Lognex-Pretty-Print-JSON': 'true'
-    };
-
     const response = await msClient({
       method: method.toLowerCase(),
       url: requestUrl,
-      params: parsedParams,
-      headers: customHeaders
+      params: parsedParams
     });
 
     console.log('MoySklad response:', {
       status: response.status,
       statusText: response.statusText,
-      data: response.data,
-      headers: response.headers
+      data: response.data
     });
 
     if (!response.data) {
@@ -121,7 +112,6 @@ export async function GET(request: NextRequest) {
       message: error.message,
       response: error.response?.data,
       status: error.response?.status,
-      headers: error.response?.headers,
       config: error.config
     });
 

@@ -47,7 +47,7 @@ export async function fetchCategories(): Promise<MoySkladCategory[]> {
       url: 'entity/productfolder',
       params: JSON.stringify({
         limit: 100,
-        filter: 'archived=false',
+        filter: 'pathName=""',
         order: 'name,asc'
       })
     };
@@ -61,7 +61,7 @@ export async function fetchCategories(): Promise<MoySkladCategory[]> {
     const response = await fetch(`/api/moysklad?${queryString}`, {
       method: 'GET',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       }
     });
 
@@ -96,8 +96,8 @@ export async function fetchProducts(categoryId: string, page: number = 1, limit:
       params: JSON.stringify({
         limit,
         offset,
-        expand: 'images,salePrices,productFolder',
-        filter: categoryId ? `productFolder=${categoryId};archived=false` : 'archived=false',
+        expand: 'images,salePrices',
+        filter: categoryId ? `productFolder=${categoryId}` : '',
         order: 'name,asc'
       })
     };
@@ -119,7 +119,7 @@ export async function fetchProducts(categoryId: string, page: number = 1, limit:
     const response = await fetch(`/api/moysklad?${queryString}`, {
       method: 'GET',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       }
     });
 
