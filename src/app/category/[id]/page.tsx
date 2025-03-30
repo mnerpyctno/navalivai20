@@ -1,46 +1,58 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
 import Image from 'next/image';
-import { Product, getProducts } from '../../../lib/api';
-import Header from '../../../components/Header';
-import styles from '../../../styles/Category.module.css';
+import styles from '@/styles/Category.module.css';
+import { fetchProducts } from '@/utils/api';
+import { Product } from '@/types/product';
+import Header from '@/components/Header';
 
-export default function CategoryPage() {
-  const params = useParams();
-  const categoryId = params.id as string;
+export default function CategoryPage({ params }: { params: { id: string } }) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    const loadProducts = async () => {
       try {
-        const productsData = await getProducts(categoryId);
-        setProducts(productsData);
-      } catch (error) {
-        console.error('Ошибка загрузки товаров:', error);
+        setLoading(true);
+        const data = await fetchProducts(params.id);
+        setProducts(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Произошла неизвестная ошибка');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProducts();
-  }, [categoryId]);
+    loadProducts();
+  }, [params.id]);
 
   if (loading) {
     return (
       <main className={styles.main}>
         <Header />
         <div className={styles.loading}>
-          <div className={styles.spinner}></div>
-          <p>Загрузка...</p>
+          <div className={styles.spinner} />
+          <p>Загрузка товаров...</p>
         </div>
       </main>
     );
   }
 
-  if (products.length === 0) {
+  if (error) {
+    return (
+      <main className={styles.main}>
+        <Header />
+        <div className={styles.emptyState}>
+          <h2>Произошла ошибка</h2>
+          <p>{error}</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (!products || products.length === 0) {
     return (
       <main className={styles.main}>
         <Header />
@@ -57,18 +69,22 @@ export default function CategoryPage() {
       <Header />
       <div className={styles.container}>
         <div className={styles.productsGrid}>
-          {products.map(product => (
+          {products.map((product) => (
             <div key={product.id} className={styles.productCard}>
-              <Image 
-                src={product.image} 
-                alt={product.name} 
-                width={200}
-                height={200}
-                className={styles.productImage} 
-              />
+              <div className={styles.productImageContainer}>
+                <Image
+                  src={product.image || '/placeholder.png'}
+                  alt={product.name}
+                  fill
+                  className={styles.productImage}
+                />
+              </div>
               <div className={styles.productInfo}>
                 <h3>{product.name}</h3>
-                <p className={styles.price}>{product.price} BYN</p>
+                <p className={styles.price}>{product.price} ₽</p>
+                <button className={styles.addToCartButton}>
+                  В корзину
+                </button>
               </div>
             </div>
           ))}
