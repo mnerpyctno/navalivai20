@@ -6,7 +6,7 @@ const msClient = axios.create({
   baseURL: 'https://api.moysklad.ru/api/remap/1.2',
   headers: {
     'Authorization': `Bearer ${process.env.MOYSKLAD_TOKEN}`,
-    'Accept': 'application/json;charset=utf-8',
+    'Accept': 'application/json',
     'Content-Type': 'application/json'
   },
   timeout: 30000
@@ -14,6 +14,15 @@ const msClient = axios.create({
 
 // Добавляем интерцептор для логирования
 msClient.interceptors.request.use(request => {
+  // Удаляем undefined параметры
+  if (request.params) {
+    Object.keys(request.params).forEach(key => {
+      if (request.params[key] === undefined) {
+        delete request.params[key];
+      }
+    });
+  }
+
   console.log('Request:', {
     url: request.url,
     method: request.method,
@@ -133,14 +142,14 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    if (error.response?.status === 400) {
+    if (error.response?.status === 412) {
       return NextResponse.json(
         { 
-          error: 'Bad Request - Invalid parameters',
+          error: 'Precondition Failed - API version mismatch',
           details: error.response?.data,
-          status: 400
+          status: 412
         },
-        { status: 400 }
+        { status: 412 }
       );
     }
 

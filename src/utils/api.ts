@@ -98,9 +98,8 @@ export async function fetchProducts(categoryId: string, page: number = 1, limit:
     const filterParts = [];
     
     if (categoryId) {
-      filterParts.push(`productFolder=${categoryId}`);
+      filterParts.push(`pathName~=${categoryId}`);
     }
-    filterParts.push('archived=false');
 
     const params = {
       method: 'get',
@@ -109,7 +108,7 @@ export async function fetchProducts(categoryId: string, page: number = 1, limit:
         limit,
         offset,
         expand: 'images,salePrices',
-        filter: filterParts.join(';'),
+        filter: filterParts.length > 0 ? filterParts.join(';') : undefined,
         order: 'name,asc'
       })
     };
