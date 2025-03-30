@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import Image from 'next/image';
 import { Product, getProducts } from '../../../lib/api';
 import Header from '../../../components/Header';
 import styles from '../../../styles/Category.module.css';
@@ -15,7 +16,7 @@ export default function CategoryPage() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const productsData = await getProducts(1000, 0, categoryId);
+        const productsData = await getProducts(categoryId);
         setProducts(productsData);
       } catch (error) {
         console.error('Ошибка загрузки товаров:', error);
@@ -58,7 +59,13 @@ export default function CategoryPage() {
         <div className={styles.productsGrid}>
           {products.map(product => (
             <div key={product.id} className={styles.productCard}>
-              <img src={product.image} alt={product.name} className={styles.productImage} />
+              <Image 
+                src={product.image} 
+                alt={product.name} 
+                width={200}
+                height={200}
+                className={styles.productImage} 
+              />
               <div className={styles.productInfo}>
                 <h3>{product.name}</h3>
                 <p className={styles.price}>{product.price} BYN</p>

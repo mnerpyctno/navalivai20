@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { Category, Product, getProductGroups, getProducts } from '../lib/api';
 import Header from '../components/Header';
 import styles from '../styles/Home.module.css';
@@ -58,7 +59,13 @@ export default function Home() {
           <div className={styles.productsGrid}>
             {products.map(product => (
               <div key={product.id} className={styles.productCard}>
-                <img src={product.image} alt={product.name} className={styles.productImage} />
+                <Image 
+                  src={product.image} 
+                  alt={product.name} 
+                  width={200}
+                  height={200}
+                  className={styles.productImage} 
+                />
                 <div className={styles.productInfo}>
                   <h3>{product.name}</h3>
                   <p className={styles.price}>{product.price} BYN</p>

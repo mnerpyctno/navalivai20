@@ -3,6 +3,7 @@
 import { useCart } from '../../context/CartContext';
 import Header from '../../components/Header';
 import styles from '../../styles/Cart.module.css';
+import Image from 'next/image';
 
 export default function CartPage() {
   const { cart, removeFromCart, updateQuantity } = useCart();
@@ -30,7 +31,15 @@ export default function CartPage() {
         <div className={styles.cartItems}>
           {cart.map(item => (
             <div key={item.id} className={styles.cartItem}>
-              <img src={item.image} alt={item.name} className={styles.itemImage} />
+              <div className={styles.itemImage}>
+                <Image 
+                  src={item.image} 
+                  alt={item.name} 
+                  width={100}
+                  height={100}
+                  className={styles.itemImage} 
+                />
+              </div>
               <div className={styles.itemInfo}>
                 <h3>{item.name}</h3>
                 <p className={styles.price}>{item.price} BYN</p>

@@ -8,8 +8,8 @@ import {
   MoySkladCategory 
 } from './types';
 
-// Экспортируем тип Product
-export type { Product };
+// Экспортируем типы
+export type { Product, Category };
 
 // Создаем базовую конфигурацию API
 const api = axios.create({
