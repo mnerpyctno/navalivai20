@@ -15,32 +15,42 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
   const [hasMore, setHasMore] = useState(true);
   const observer = useRef<IntersectionObserver | null>(null);
   const loadingRef = useRef<HTMLDivElement | null>(null);
+  const [initialLoad, setInitialLoad] = useState(true);
 
   const loadProducts = useCallback(async (pageNumber: number) => {
     try {
-      setLoading(true);
       const data = await fetchProducts(params.id, pageNumber);
       setProducts(prev => pageNumber === 1 ? data.products : [...prev, ...data.products]);
       setHasMore(data.hasMore);
+      setError(null);
     } catch (err) {
+      console.error('Ошибка при загрузке товаров:', err);
       setError(err instanceof Error ? err.message : 'Произошла неизвестная ошибка');
+      setProducts(prev => pageNumber === 1 ? [] : prev);
     } finally {
       setLoading(false);
+      if (pageNumber === 1) {
+        setInitialLoad(false);
+      }
     }
   }, [params.id]);
 
   useEffect(() => {
+    setInitialLoad(true);
+    setPage(1);
     loadProducts(1);
-  }, [loadProducts]);
+  }, [params.id, loadProducts]);
 
   useEffect(() => {
+    if (!hasMore || loading || initialLoad) return;
+
     const currentObserver = observer.current;
     if (currentObserver) {
       currentObserver.disconnect();
     }
 
     observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore && !loading) {
+      if (entries[0].isIntersecting) {
         setPage(prev => prev + 1);
       }
     });
@@ -54,15 +64,27 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
         currentObserver.disconnect();
       }
     };
-  }, [hasMore, loading]);
+  }, [hasMore, loading, initialLoad]);
 
   useEffect(() => {
-    if (page > 1) {
+    if (page > 1 && !initialLoad) {
       loadProducts(page);
     }
-  }, [page, loadProducts]);
+  }, [page, loadProducts, initialLoad]);
 
-  if (error) {
+  if (initialLoad) {
+    return (
+      <main className={styles.main}>
+        <Header />
+        <div className={styles.loading}>
+          <div className={styles.spinner} />
+          <p>Загрузка товаров...</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (error && products.length === 0) {
     return (
       <main className={styles.main}>
         <Header />
@@ -100,6 +122,10 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
                   fill
                   loading="lazy"
                   className={styles.productImage}
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = '/placeholder.png';
+                  }}
                 />
               </div>
               <div className={styles.productInfo}>
@@ -112,7 +138,7 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
             </div>
           ))}
         </div>
-        {(loading || hasMore) && (
+        {(loading || hasMore) && !error && (
           <div ref={loadingRef} className={styles.loading}>
             <div className={styles.spinner} />
             <p>Загрузка товаров...</p>
