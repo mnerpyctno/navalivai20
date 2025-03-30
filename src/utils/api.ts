@@ -92,90 +92,62 @@ export async function fetchCategories(): Promise<MoySkladCategory[]> {
   }
 }
 
-export async function fetchProducts(categoryId: string, page: number = 1, limit: number = 20): Promise<ProductsResponse> {
+export async function fetchProducts(categoryId?: string, page: number = 1, limit: number = 20): Promise<ProductsResponse> {
   try {
-    const offset = (page - 1) * limit;
-    const filterParts = [];
-    
-    if (categoryId) {
-      filterParts.push(`pathName~=${categoryId}`);
-    }
-
-    const params = {
-      method: 'get',
-      url: 'entity/product',
-      params: JSON.stringify({
-        limit,
-        offset,
-        expand: 'images,salePrices',
-        filter: filterParts.length > 0 ? filterParts.join(';') : undefined,
-        order: 'name,asc'
-      })
-    };
-
-    const queryString = new URLSearchParams({
-      method: params.method,
-      url: params.url,
-      params: params.params
-    }).toString();
-
     console.log('Fetching products:', {
       categoryId,
-      page,
       limit,
-      queryString,
-      params: JSON.parse(params.params)
-    });
-
-    const response = await fetch(`/api/moysklad?${queryString}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
+      page,
+      params: {
+        limit,
+        offset: (page - 1) * limit,
+        expand: 'images,salePrices',
+        ...(categoryId && { filter: `productFolder=${categoryId}` }),
+        order: 'name,asc'
       }
     });
 
+    const params: Record<string, any> = {
+      limit,
+      offset: (page - 1) * limit,
+      expand: 'images,salePrices',
+      order: 'name,asc'
+    };
+
+    if (categoryId) {
+      params['filter'] = `productFolder=${categoryId}`;
+    }
+
+    const queryString = `method=get&url=entity/product&params=${encodeURIComponent(JSON.stringify(params))}`;
+    console.log('Query string:', queryString);
+
+    const response = await fetch(`/api/moysklad?${queryString}`);
+    const data = await response.json();
+
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Error response:', {
-        status: response.status,
-        statusText: response.statusText,
-        error: errorData
-      });
-      throw new Error(errorData.error || 'Не удалось загрузить товары');
+      console.error('Error response:', data);
+      throw new Error(data.error || 'Failed to fetch products');
     }
 
-    const responseData = await response.json();
-    
-    if (!responseData.data) {
-      console.error('Invalid response format:', responseData);
-      throw new Error('Неверный формат ответа от сервера');
-    }
-
-    const { rows = [], meta = { size: 0 } } = responseData.data;
+    const products = data.data.rows || [];
+    const total = data.data.meta?.size || 0;
 
     console.log('Products response:', {
-      totalProducts: meta.size,
-      loadedProducts: rows.length,
+      totalProducts: total,
+      loadedProducts: products.length,
       page,
-      hasMore: meta.size > offset + limit
+      hasMore: products.length === limit
     });
 
-    const products = rows.map((product: MoySkladProduct) => ({
-      id: product.id,
-      name: product.name,
-      price: (product.salePrices && product.salePrices[0]?.value) ? product.salePrices[0].value / 100 : 0,
-      image: product.images?.rows?.[0]?.miniature?.downloadHref || '/placeholder.png',
-      description: product.description || '',
-      category: product.productFolder?.id || ''
-    }));
-
-    return {
+    const productsResponse = {
       products,
-      hasMore: meta.size > offset + limit,
-      total: meta.size
+      total,
+      hasMore: products.length === limit
     };
+
+    return productsResponse;
   } catch (error) {
     console.error('Ошибка при загрузке товаров:', error);
-    throw error instanceof Error ? error : new Error('Не удалось загрузить товары');
+    throw error;
   }
 } 
