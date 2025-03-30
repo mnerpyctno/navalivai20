@@ -26,7 +26,16 @@ export async function GET(request: NextRequest) {
       token: process.env.MOYSKLAD_TOKEN ? 'Present' : 'Missing'
     });
 
+    if (!process.env.MOYSKLAD_TOKEN) {
+      console.error('MoySklad token is missing');
+      return NextResponse.json(
+        { error: 'MoySklad token is missing' },
+        { status: 401 }
+      );
+    }
+
     if (!method || !url) {
+      console.error('Missing required parameters:', { method, url });
       return NextResponse.json(
         { error: 'Missing required parameters' },
         { status: 400 }
@@ -64,22 +73,42 @@ export async function GET(request: NextRequest) {
       params: parsedParams
     });
 
+    if (!response.data) {
+      console.error('Empty response from MoySklad');
+      throw new Error('Empty response from MoySklad');
+    }
+
     console.log('MoySklad response:', {
       status: response.status,
-      data: response.data
+      dataSize: response.data ? Object.keys(response.data).length : 0
     });
 
-    return NextResponse.json(response.data);
+    return NextResponse.json({ data: response.data });
   } catch (error: any) {
     console.error('API Error:', {
       message: error.message,
       response: error.response?.data,
-      status: error.response?.status
+      status: error.response?.status,
+      stack: error.stack
     });
+
+    if (error.response?.status === 401) {
+      return NextResponse.json(
+        { error: 'Unauthorized access to MoySklad API' },
+        { status: 401 }
+      );
+    }
+
+    if (error.response?.status === 412) {
+      return NextResponse.json(
+        { error: 'Precondition Failed - Check API version and parameters' },
+        { status: 412 }
+      );
+    }
 
     return NextResponse.json(
       { 
-        error: error.response?.data || error.message,
+        error: error.response?.data?.error || error.message || 'Internal Server Error',
         status: error.response?.status || 500
       },
       { status: error.response?.status || 500 }

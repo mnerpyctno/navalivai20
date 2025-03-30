@@ -1,5 +1,22 @@
 import { Product } from '@/types/product';
 
+interface MoySkladProduct {
+  id: string;
+  name: string;
+  salePrices?: Array<{ value: number }>;
+  images?: {
+    rows?: Array<{
+      miniature?: {
+        downloadHref?: string;
+      };
+    }>;
+  };
+  description?: string;
+  productFolder?: {
+    id: string;
+  };
+}
+
 interface MoySkladResponse {
   context: {
     employee: any;
@@ -9,7 +26,7 @@ interface MoySkladResponse {
     limit: number;
     offset: number;
   };
-  rows: any[];
+  rows: MoySkladProduct[];
 }
 
 interface ProductsResponse {
@@ -28,7 +45,8 @@ export async function fetchProducts(categoryId: string, page: number = 1, limit:
         limit,
         offset,
         expand: 'images,salePrices,productFolder',
-        filter: `archived=false${categoryId ? `;productFolder.id=${categoryId}` : ''}`
+        filter: `archived=false${categoryId ? `;productFolder.id=${categoryId}` : ''}`,
+        order: 'name,asc'
       })
     };
 
@@ -38,6 +56,13 @@ export async function fetchProducts(categoryId: string, page: number = 1, limit:
       params: params.params
     }).toString();
 
+    console.log('Fetching products:', {
+      categoryId,
+      page,
+      limit,
+      queryString
+    });
+
     const response = await fetch(`/api/moysklad?${queryString}`, {
       method: 'GET',
       headers: {
@@ -46,19 +71,38 @@ export async function fetchProducts(categoryId: string, page: number = 1, limit:
     });
 
     if (!response.ok) {
-      throw new Error('Не удалось загрузить товары');
+      const errorData = await response.json();
+      console.error('Error response:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorData
+      });
+      throw new Error(errorData.error || 'Не удалось загрузить товары');
     }
 
-    const data: { data: MoySkladResponse } = await response.json();
-    const { rows, meta } = data.data;
+    const responseData = await response.json();
+    
+    if (!responseData.data || !responseData.data.rows) {
+      console.error('Invalid response format:', responseData);
+      throw new Error('Неверный формат ответа от сервера');
+    }
 
-    const products = rows.map(product => ({
+    const { rows, meta } = responseData.data;
+
+    console.log('Products response:', {
+      totalProducts: meta.size,
+      loadedProducts: rows.length,
+      page,
+      hasMore: meta.size > offset + limit
+    });
+
+    const products = rows.map((product: MoySkladProduct) => ({
       id: product.id,
       name: product.name,
       price: product.salePrices?.[0]?.value / 100 || 0,
-      image: product.images?.rows?.[0]?.miniature?.downloadHref,
-      description: product.description,
-      category: product.productFolder?.id
+      image: product.images?.rows?.[0]?.miniature?.downloadHref || '/placeholder.png',
+      description: product.description || '',
+      category: product.productFolder?.id || ''
     }));
 
     return {
@@ -68,6 +112,6 @@ export async function fetchProducts(categoryId: string, page: number = 1, limit:
     };
   } catch (error) {
     console.error('Ошибка при загрузке товаров:', error);
-    throw new Error('Не удалось загрузить товары');
+    throw error instanceof Error ? error : new Error('Не удалось загрузить товары');
   }
 } 
