@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Category, Product, getProductGroups, getProducts } from '../lib/api';
 import Header from '../components/Header';
 import styles from '../styles/Home.module.css';
@@ -32,48 +33,61 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className={styles.loading}>
-        <div className={styles.spinner}></div>
-        <p>Загрузка...</p>
-      </div>
+      <main className={styles.main}>
+        <Header />
+        <div className={styles.loading}>
+          <div className={styles.spinner}></div>
+          <p>Загрузка...</p>
+        </div>
+      </main>
     );
   }
+
+  const defaultCategories = [
+    'Еда и напитки',
+    'Жидкости',
+    'Одноразки',
+    'Расходники',
+    'Снюс',
+    'Устройства'
+  ];
 
   return (
     <main className={styles.main}>
       <Header />
-      <div className={styles.container}>
-        <section className={styles.categories}>
-          <h2 className={styles.sectionTitle}>Категории</h2>
-          <div className={styles.categoriesGrid}>
-            {categories.map(category => (
-              <div key={category.id} className={styles.categoryCard}>
-                <h3>{category.name}</h3>
-              </div>
-            ))}
-          </div>
-        </section>
+      
+      <h2 className={styles.sectionTitle}>Категории</h2>
+      <div className={styles.categoriesGrid}>
+        {defaultCategories.map((name) => (
+          <Link 
+            href={`/category/${categories.find(cat => cat.name === name)?.id || ''}`} 
+            key={name} 
+            className={styles.categoryCard}
+          >
+            {name}
+          </Link>
+        ))}
+      </div>
 
-        <section className={styles.products}>
-          <h2 className={styles.sectionTitle}>Популярные товары</h2>
-          <div className={styles.productsGrid}>
-            {products.map(product => (
-              <div key={product.id} className={styles.productCard}>
-                <Image 
-                  src={product.image} 
-                  alt={product.name} 
-                  width={200}
-                  height={200}
-                  className={styles.productImage} 
-                />
-                <div className={styles.productInfo}>
-                  <h3>{product.name}</h3>
-                  <p className={styles.price}>{product.price} BYN</p>
-                </div>
-              </div>
-            ))}
+      <h2 className={styles.sectionTitle}>Популярные товары</h2>
+      <div className={styles.productsGrid}>
+        {products.slice(0, 4).map(product => (
+          <div key={product.id} className={styles.productCard}>
+            <div className={styles.productImageContainer}>
+              <Image 
+                src={product.image} 
+                alt={product.name} 
+                width={200}
+                height={200}
+                className={styles.productImage} 
+              />
+            </div>
+            <div className={styles.productInfo}>
+              <h3>{product.name}</h3>
+              <p className={styles.price}>{product.price} BYN</p>
+            </div>
           </div>
-        </section>
+        ))}
       </div>
     </main>
   );
