@@ -31,6 +31,15 @@ export default function Home() {
     fetchData();
   }, []);
 
+  const categoryData = [
+    { name: 'Жидкости', image: '/Жидкости.png' },
+    { name: 'Одноразки', image: '/Одноразки.png' },
+    { name: 'Расходники', image: '/Расходники.png' },
+    { name: 'Снюс', image: '/Снюс.png' },
+    { name: 'Устройства', image: '/Устройства.png' },
+    { name: 'Энергетики', image: '/Энергетики.png' }
+  ];
+
   if (loading) {
     return (
       <main className={styles.main}>
@@ -43,28 +52,28 @@ export default function Home() {
     );
   }
 
-  const defaultCategories = [
-    'Еда и напитки',
-    'Жидкости',
-    'Одноразки',
-    'Расходники',
-    'Снюс',
-    'Устройства'
-  ];
-
   return (
     <main className={styles.main}>
       <Header />
       
       <h2 className={styles.sectionTitle}>Категории</h2>
       <div className={styles.categoriesGrid}>
-        {defaultCategories.map((name) => (
+        {categoryData.map((category) => (
           <Link 
-            href={`/category/${categories.find(cat => cat.name === name)?.id || ''}`} 
-            key={name} 
+            href={`/category/${categories.find(cat => cat.name === category.name)?.id || ''}`} 
+            key={category.name} 
             className={styles.categoryCard}
           >
-            {name}
+            <div className={styles.categoryImageWrapper}>
+              <Image 
+                src={category.image}
+                alt={category.name}
+                width={100}
+                height={100}
+                className={styles.categoryImage}
+              />
+            </div>
+            <div className={styles.categoryName}>{category.name}</div>
           </Link>
         ))}
       </div>
