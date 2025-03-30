@@ -46,7 +46,8 @@ export async function fetchProducts(categoryId: string, page: number = 1, limit:
         offset,
         expand: 'images,salePrices,productFolder',
         filter: `archived=false${categoryId ? `;productFolder.id=${categoryId}` : ''}`,
-        order: 'name,asc'
+        order: 'name,asc',
+        groupBy: 'productFolder'
       })
     };
 

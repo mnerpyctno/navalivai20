@@ -28,12 +28,12 @@ export default function Home() {
   }, []);
 
   const categoryData = [
-    { name: 'Жидкости', image: '/жидкости для вейпа.png', id: '1' },
-    { name: 'Одноразки', image: '/одноразки.png', id: '2' },
-    { name: 'Расходники', image: '/расходники.png', id: '3' },
-    { name: 'Снюс', image: '/снюс.png', id: '4' },
-    { name: 'Устройства', image: '/устройства.png', id: '5' },
-    { name: 'Еда и напитки', image: '/еда и напитки.png', id: '6' }
+    { name: 'Жидкости', image: '/Жидкости.png', id: '1' },
+    { name: 'Одноразки', image: '/Одноразки.png', id: '2' },
+    { name: 'Расходники', image: '/Расходники.png', id: '3' },
+    { name: 'Снюс', image: '/Снюс.png', id: '4' },
+    { name: 'Устройства', image: '/Устройства.png', id: '5' },
+    { name: 'Еда и напитки', image: '/Еда и напитки.png', id: '6' }
   ];
 
   if (loading) {
@@ -92,7 +92,7 @@ export default function Home() {
             </div>
             <div className={styles.productInfo}>
               <h3>{product.name}</h3>
-              <p className={styles.price}>{product.price} ₽</p>
+              <p className={styles.price}>{product.price} BYN</p>
               <button className={styles.addToCartButton}>
                 В корзину
               </button>

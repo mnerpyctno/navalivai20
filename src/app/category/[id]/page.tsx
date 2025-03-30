@@ -130,7 +130,7 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
               </div>
               <div className={styles.productInfo}>
                 <h3>{product.name}</h3>
-                <p className={styles.price}>{product.price} ₽</p>
+                <p className={styles.price}>{product.price} BYN</p>
                 <button className={styles.addToCartButton}>
                   В корзину
                 </button>
