@@ -2,8 +2,10 @@ import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from "next/font/google";
 import { CartProvider } from "../context/CartContext";
+import Script from 'next/script';
+import { TelegramProvider } from '@/context/TelegramProvider';
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin", "cyrillic"] });
 
 export const metadata: Metadata = {
   title: 'Наваливай',
@@ -17,12 +19,18 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ru">
+      <head>
+        <Script
+          src="https://telegram.org/js/telegram-web-app.js"
+          strategy="beforeInteractive"
+        />
+      </head>
       <body className={inter.className}>
-        <div className="app-container">
+        <TelegramProvider>
           <CartProvider>
             {children}
           </CartProvider>
-        </div>
+        </TelegramProvider>
       </body>
     </html>
   );
