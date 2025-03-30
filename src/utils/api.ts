@@ -17,6 +17,11 @@ interface MoySkladProduct {
   };
 }
 
+interface MoySkladCategory {
+  id: string;
+  name: string;
+}
+
 interface MoySkladResponse {
   context: {
     employee: any;
@@ -35,6 +40,53 @@ interface ProductsResponse {
   total: number;
 }
 
+export async function fetchCategories(): Promise<MoySkladCategory[]> {
+  try {
+    const params = {
+      method: 'get',
+      url: 'entity/productfolder',
+      params: JSON.stringify({
+        limit: 100,
+        filter: 'archived=false',
+        order: 'name,asc'
+      })
+    };
+
+    const queryString = new URLSearchParams({
+      method: params.method,
+      url: params.url,
+      params: params.params
+    }).toString();
+
+    const response = await fetch(`/api/moysklad?${queryString}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Error fetching categories:', errorData);
+      throw new Error(errorData.error || 'Не удалось загрузить категории');
+    }
+
+    const responseData = await response.json();
+    
+    if (!responseData.data || !responseData.data.rows) {
+      throw new Error('Неверный формат ответа от сервера');
+    }
+
+    return responseData.data.rows.map((category: any) => ({
+      id: category.id,
+      name: category.name
+    }));
+  } catch (error) {
+    console.error('Ошибка при загрузке категорий:', error);
+    throw error instanceof Error ? error : new Error('Не удалось загрузить категории');
+  }
+}
+
 export async function fetchProducts(categoryId: string, page: number = 1, limit: number = 20): Promise<ProductsResponse> {
   try {
     const offset = (page - 1) * limit;
@@ -46,8 +98,7 @@ export async function fetchProducts(categoryId: string, page: number = 1, limit:
         offset,
         expand: 'images,salePrices,productFolder',
         filter: `archived=false${categoryId ? `;productFolder.id=${categoryId}` : ''}`,
-        order: 'name,asc',
-        groupBy: 'productFolder'
+        order: 'name,asc'
       })
     };
 

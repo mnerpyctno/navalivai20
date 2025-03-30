@@ -3,20 +3,30 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { fetchProducts } from '@/utils/api';
+import { fetchProducts, fetchCategories } from '@/utils/api';
 import { Product } from '@/types/product';
 import Header from '@/components/Header';
 import styles from '@/styles/Home.module.css';
 
+interface Category {
+  id: string;
+  name: string;
+}
+
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await fetchProducts('', 1, 4);
-        setProducts(data.products);
+        const [productsData, categoriesData] = await Promise.all([
+          fetchProducts('', 1, 4),
+          fetchCategories()
+        ]);
+        setProducts(productsData.products);
+        setCategories(categoriesData);
       } catch (error) {
         console.error('Ошибка загрузки данных:', error);
       } finally {
@@ -27,14 +37,14 @@ export default function Home() {
     fetchData();
   }, []);
 
-  const categoryData = [
-    { name: 'Жидкости', image: '/Жидкости.png', id: '1' },
-    { name: 'Одноразки', image: '/Одноразки.png', id: '2' },
-    { name: 'Расходники', image: '/Расходники.png', id: '3' },
-    { name: 'Снюс', image: '/Снюс.png', id: '4' },
-    { name: 'Устройства', image: '/Устройства.png', id: '5' },
-    { name: 'Еда и напитки', image: '/Еда и напитки.png', id: '6' }
-  ];
+  const categoryImages: Record<string, string> = {
+    'Жидкости': '/Жидкости.png',
+    'Одноразки': '/Одноразки.png',
+    'Расходники': '/Расходники.png',
+    'Снюс': '/Снюс.png',
+    'Устройства': '/Устройства.png',
+    'Еда и напитки': '/Еда и напитки.png'
+  };
 
   if (loading) {
     return (
@@ -54,19 +64,23 @@ export default function Home() {
       
       <h2 className={styles.sectionTitle}>Категории</h2>
       <div className={styles.categoriesGrid}>
-        {categoryData.map((category) => (
+        {categories.map((category) => (
           <Link 
             href={`/category/${category.id}`} 
-            key={category.name} 
+            key={category.id} 
             className={styles.categoryCard}
           >
             <div className={styles.categoryImageWrapper}>
               <Image 
-                src={category.image}
+                src={categoryImages[category.name] || '/placeholder.png'}
                 alt={category.name}
                 width={100}
                 height={100}
                 className={styles.categoryImage}
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = '/placeholder.png';
+                }}
               />
             </div>
             <div className={styles.categoryName}>{category.name}</div>
