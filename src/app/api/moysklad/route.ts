@@ -76,10 +76,19 @@ export async function GET(request: Request) {
       }
     });
 
-    const response = await msClient.request({
+    // Определяем версию API в зависимости от типа запроса
+    const apiVersion = url.includes('product') ? '1.2' : '1.2';
+    const baseUrl = `https://api.moysklad.ru/api/remap/${apiVersion}`;
+
+    const response = await axios.request({
       method: method.toLowerCase(),
-      url,
-      params
+      url: `${baseUrl}/${url}`,
+      params,
+      headers: {
+        'Authorization': `Bearer ${process.env.MOYSKLAD_TOKEN}`,
+        'Accept': 'application/json;charset=utf-8',
+        'Content-Type': 'application/json'
+      }
     });
 
     return NextResponse.json(response.data);
