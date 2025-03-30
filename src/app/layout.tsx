@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_WEBAPP_URL || 'http://localhost:3000'),
   viewport: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no',
   other: {
-    'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://telegram.org; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; connect-src 'self' https://api.moysklad.ru;"
+    'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://telegram.org https://*.telegram.org; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; connect-src 'self' https://api.moysklad.ru https://telegram.org https://*.telegram.org;"
   }
 };
 
@@ -27,6 +27,7 @@ export default function RootLayout({
         <Script
           src="https://telegram.org/js/telegram-web-app.js"
           strategy="beforeInteractive"
+          crossOrigin="anonymous"
         />
       </head>
       <body className={inter.className}>

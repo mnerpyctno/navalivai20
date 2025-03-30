@@ -97,7 +97,7 @@ export async function fetchProducts(categoryId: string, page: number = 1, limit:
         limit,
         offset,
         expand: 'images,salePrices,productFolder',
-        filter: categoryId ? `productFolder.id=${categoryId}` : 'archived=false',
+        filter: categoryId ? `productFolder.id=${categoryId};archived=false` : 'archived=false',
         order: 'name,asc'
       })
     };
@@ -134,12 +134,12 @@ export async function fetchProducts(categoryId: string, page: number = 1, limit:
 
     const responseData = await response.json();
     
-    if (!responseData.data || !responseData.data.rows) {
+    if (!responseData.data) {
       console.error('Invalid response format:', responseData);
       throw new Error('Неверный формат ответа от сервера');
     }
 
-    const { rows, meta } = responseData.data;
+    const { rows = [], meta = { size: 0 } } = responseData.data;
 
     console.log('Products response:', {
       totalProducts: meta.size,
