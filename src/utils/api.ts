@@ -97,7 +97,7 @@ export async function fetchProducts(categoryId: string, page: number = 1, limit:
         limit,
         offset,
         expand: 'images,salePrices,productFolder',
-        filter: `archived=false${categoryId ? `;productFolder.id=${categoryId}` : ''}`,
+        filter: categoryId ? `productFolder.id=${categoryId}` : 'archived=false',
         order: 'name,asc'
       })
     };

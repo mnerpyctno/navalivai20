@@ -70,7 +70,8 @@ export async function GET(request: NextRequest) {
     const response = await msClient({
       method: method.toLowerCase(),
       url: requestUrl,
-      params: parsedParams
+      params: parsedParams,
+      validateStatus: (status) => status < 500 // Не выбрасывать ошибку для статусов < 500
     });
 
     if (!response.data) {
