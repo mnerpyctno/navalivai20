@@ -12,25 +12,13 @@ const msClient = axios.create({
   timeout: 30000
 });
 
-// Добавляем интерцептор для логирования
+// Добавляем интерцепторы для логирования
 msClient.interceptors.request.use(request => {
-  // Удаляем undefined параметры
-  if (request.params) {
-    Object.keys(request.params).forEach(key => {
-      if (request.params[key] === undefined) {
-        delete request.params[key];
-      }
-    });
-  }
-
   console.log('Request:', {
     url: request.url,
     method: request.method,
     params: request.params,
-    headers: {
-      ...request.headers,
-      Authorization: 'Bearer ***'
-    }
+    headers: request.headers
   });
   return request;
 });
@@ -45,120 +33,75 @@ msClient.interceptors.response.use(
     return response;
   },
   error => {
-    console.error('Response Error:', {
-      message: error.message,
-      response: error.response?.data,
+    console.error('Error:', {
       status: error.response?.status,
-      config: {
-        url: error.config?.url,
-        method: error.config?.method,
-        params: error.config?.params
-      }
+      statusText: error.response?.statusText,
+      data: error.response?.data
     });
     return Promise.reject(error);
   }
 );
 
-export async function GET(request: NextRequest) {
+export async function GET(request: Request) {
   try {
-    const searchParams = request.nextUrl.searchParams;
+    const { searchParams } = new URL(request.url);
     const method = searchParams.get('method');
     const url = searchParams.get('url');
-    const params = searchParams.get('params');
+    const paramsStr = searchParams.get('params');
 
-    console.log('API Request:', {
-      method,
-      url,
-      params: params ? JSON.parse(params) : null,
-      token: process.env.MOYSKLAD_TOKEN ? 'Present' : 'Missing'
-    });
-
-    if (!process.env.MOYSKLAD_TOKEN) {
-      console.error('MoySklad token is missing');
-      return NextResponse.json(
-        { error: 'MoySklad token is missing' },
-        { status: 401 }
-      );
-    }
-
-    if (!method || !url) {
-      console.error('Missing required parameters:', { method, url });
+    if (!method || !url || !paramsStr) {
       return NextResponse.json(
         { error: 'Missing required parameters' },
         { status: 400 }
       );
     }
 
-    // Преобразуем строковые параметры в объект
-    let parsedParams: Record<string, any> = {};
-    if (params) {
-      try {
-        parsedParams = JSON.parse(params);
-        // Преобразуем строковые значения в числа, где это необходимо
-        if (parsedParams.limit) parsedParams.limit = parseInt(parsedParams.limit as string);
-        if (parsedParams.offset) parsedParams.offset = parseInt(parsedParams.offset as string);
-      } catch (e) {
-        console.error('Error parsing params:', e);
-        return NextResponse.json(
-          { error: 'Invalid parameters format' },
-          { status: 400 }
-        );
+    if (!process.env.MOYSKLAD_TOKEN) {
+      return NextResponse.json(
+        { error: 'MoySklad token is not configured' },
+        { status: 500 }
+      );
+    }
+
+    const params = JSON.parse(paramsStr);
+
+    // Преобразуем строковые значения в числа для limit и offset
+    if (params.limit) params.limit = parseInt(params.limit);
+    if (params.offset) params.offset = parseInt(params.offset);
+
+    // Удаляем undefined параметры
+    Object.keys(params).forEach(key => {
+      if (params[key] === undefined) {
+        delete params[key];
       }
-    }
-
-    const requestUrl = url.startsWith('/') ? url.slice(1) : url;
-    
-    console.log('Making request to MoySklad:', {
-      url: requestUrl,
-      method: method.toLowerCase(),
-      params: parsedParams,
-      fullUrl: `${msClient.defaults.baseURL}/${requestUrl}`
     });
 
-    const response = await msClient({
+    const response = await msClient.request({
       method: method.toLowerCase(),
-      url: requestUrl,
-      params: parsedParams
+      url,
+      params
     });
 
-    if (!response.data) {
-      console.error('Empty response from MoySklad');
-      throw new Error('Empty response from MoySklad');
-    }
-
-    return NextResponse.json({ data: response.data });
+    return NextResponse.json(response.data);
   } catch (error: any) {
-    console.error('API Error:', {
-      message: error.message,
-      response: error.response?.data,
-      status: error.response?.status,
-      config: error.config
-    });
+    console.error('API Error:', error);
 
     if (error.response?.status === 401) {
       return NextResponse.json(
-        { error: 'Unauthorized access to MoySklad API' },
+        { error: 'Unauthorized - Check MoySklad token' },
         { status: 401 }
       );
     }
 
     if (error.response?.status === 412) {
       return NextResponse.json(
-        { 
-          error: 'Precondition Failed - API version mismatch',
-          details: error.response?.data,
-          status: 412
-        },
+        { error: 'API version mismatch - Please update API version' },
         { status: 412 }
       );
     }
 
     return NextResponse.json(
-      { 
-        error: error.response?.data?.error || error.message || 'Internal Server Error',
-        details: error.response?.data,
-        status: error.response?.status || 500
-      },
+      { error: error.response?.data?.error || 'Internal server error' },
       { status: error.response?.status || 500 }
     );
   }

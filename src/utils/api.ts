@@ -129,8 +129,8 @@ export async function fetchProducts(categoryId?: string, page: number = 1, limit
       throw new Error(data.error || 'Failed to fetch products');
     }
 
-    const products = data.data.rows || [];
-    const total = data.data.meta?.size || 0;
+    const products = data.rows || [];
+    const total = data.meta?.size || 0;
 
     console.log('Products response:', {
       totalProducts: total,
@@ -139,13 +139,20 @@ export async function fetchProducts(categoryId?: string, page: number = 1, limit
       hasMore: products.length === limit
     });
 
-    const productsResponse = {
-      products,
+    const mappedProducts = products.map((product: MoySkladProduct) => ({
+      id: product.id,
+      name: product.name,
+      price: (product.salePrices && product.salePrices[0]?.value) ? product.salePrices[0].value / 100 : 0,
+      image: product.images?.rows?.[0]?.miniature?.downloadHref || '/placeholder.png',
+      description: product.description || '',
+      category: product.productFolder?.id || ''
+    }));
+
+    return {
+      products: mappedProducts,
       total,
       hasMore: products.length === limit
     };
-
-    return productsResponse;
   } catch (error) {
     console.error('Ошибка при загрузке товаров:', error);
     throw error;
