@@ -16,7 +16,7 @@ interface TelegramContextType {
   sendData: (data: any) => void;
 }
 
-const TelegramContext = createContext<TelegramContextType | undefined>(undefined);
+const TelegramContext = createContext<TelegramContextType | null>(null);
 
 export function TelegramProvider({ children }: { children: ReactNode }) {
   const telegram = useTelegram();
@@ -30,7 +30,21 @@ export function TelegramProvider({ children }: { children: ReactNode }) {
 
 export function useTelegramContext() {
   const context = useContext(TelegramContext);
-  if (context === undefined) {
+  if (!context) {
+    if (typeof window === 'undefined') {
+      // Возвращаем заглушку для серверного рендеринга
+      return {
+        tg: null,
+        user: undefined,
+        onClose: () => {},
+        onToggleMainButton: () => {},
+        onToggleBackButton: () => {},
+        setMainButtonText: () => {},
+        onMainButtonClick: () => {},
+        onBackButtonClick: () => {},
+        sendData: () => {}
+      } as TelegramContextType;
+    }
     throw new Error('useTelegramContext must be used within a TelegramProvider');
   }
   return context;

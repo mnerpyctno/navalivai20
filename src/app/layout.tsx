@@ -1,14 +1,8 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from "next/font/google";
-import { CartProvider } from "../context/CartContext";
 import Script from 'next/script';
-import dynamic from 'next/dynamic';
-
-const TelegramProvider = dynamic(
-  () => import('@/context/TelegramProvider').then(mod => mod.TelegramProvider),
-  { ssr: false }
-);
+import { ClientProviders } from '@/components/ClientProviders';
 
 const inter = Inter({ subsets: ["latin", "cyrillic"] });
 
@@ -31,11 +25,9 @@ export default function RootLayout({
         />
       </head>
       <body className={inter.className}>
-        <TelegramProvider>
-          <CartProvider>
-            {children}
-          </CartProvider>
-        </TelegramProvider>
+        <ClientProviders>
+          {children}
+        </ClientProviders>
       </body>
     </html>
   );
