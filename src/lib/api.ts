@@ -8,6 +8,9 @@ import {
   MoySkladCategory 
 } from './types';
 
+// Экспортируем тип Product
+export type { Product };
+
 // Создаем базовую конфигурацию API
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || '',
