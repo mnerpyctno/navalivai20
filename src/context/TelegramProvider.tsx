@@ -5,7 +5,7 @@ import { useTelegram } from '@/hooks/useTelegram';
 import { TelegramWebApps } from '@/types/telegram';
 
 interface TelegramContextType {
-  tg: TelegramWebApps;
+  tg: TelegramWebApps | null;
   user: TelegramWebApps['initDataUnsafe']['user'] | undefined;
   onClose: () => void;
   onToggleMainButton: (show: boolean) => void;
@@ -34,4 +34,6 @@ export function useTelegramContext() {
     throw new Error('useTelegramContext must be used within a TelegramProvider');
   }
   return context;
-} 
+}
+
+export default TelegramProvider; 

@@ -1,19 +1,25 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { TelegramWebApps } from '@/types/telegram';
 
 export function useTelegram() {
-  const tg = window.Telegram.WebApp;
+  const [tg, setTg] = useState<TelegramWebApps | null>(null);
 
   useEffect(() => {
-    tg.ready();
-    tg.expand();
-  }, [tg]);
+    if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
+      const webApp = window.Telegram.WebApp;
+      setTg(webApp);
+      webApp.ready();
+      webApp.expand();
+    }
+  }, []);
 
   const onClose = () => {
-    tg.close();
+    tg?.close();
   };
 
   const onToggleMainButton = (show: boolean) => {
+    if (!tg?.MainButton) return;
+    
     if (show) {
       tg.MainButton.show();
     } else {
@@ -22,6 +28,8 @@ export function useTelegram() {
   };
 
   const onToggleBackButton = (show: boolean) => {
+    if (!tg?.BackButton) return;
+    
     if (show) {
       tg.BackButton.show();
     } else {
@@ -30,22 +38,24 @@ export function useTelegram() {
   };
 
   const setMainButtonText = (text: string) => {
-    tg.MainButton.text = text;
+    if (tg?.MainButton) {
+      tg.MainButton.text = text;
+    }
   };
 
   const onMainButtonClick = (callback: () => void) => {
-    tg.MainButton.onClick(callback);
+    tg?.MainButton?.onClick(callback);
   };
 
   const onBackButtonClick = (callback: () => void) => {
-    tg.BackButton.onClick(callback);
+    tg?.BackButton?.onClick(callback);
   };
 
   const sendData = (data: any) => {
-    tg.sendData(JSON.stringify(data));
+    tg?.sendData(JSON.stringify(data));
   };
 
-  const user = tg.initDataUnsafe?.user;
+  const user = tg?.initDataUnsafe?.user;
 
   return {
     tg,
