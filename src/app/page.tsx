@@ -37,7 +37,7 @@ export default function Home() {
     { name: 'Расходники', image: '/Расходники.png' },
     { name: 'Снюс', image: '/Снюс.png' },
     { name: 'Устройства', image: '/Устройства.png' },
-    { name: 'Энергетики', image: '/Энергетики.png' }
+    { name: 'Еда и напитки', image: '/Еда и напитки.png' }
   ];
 
   if (loading) {
