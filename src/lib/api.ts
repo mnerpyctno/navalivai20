@@ -1,4 +1,4 @@
-import axios, { InternalAxiosRequestConfig, AxiosHeaders } from 'axios';
+import axios, { InternalAxiosRequestConfig } from 'axios';
 import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { 
   Product, 
@@ -7,15 +7,6 @@ import {
   MoySkladProduct, 
   MoySkladCategory 
 } from './types';
-
-// Константа с токеном для отладки
-const DEBUG_TOKEN = 'd12cc5134f6be8a828f343dca35e93cdb4de05b6';
-
-// Проверяем наличие токена
-const MS_TOKEN = process.env.NEXT_PUBLIC_MOYSKLAD_TOKEN || DEBUG_TOKEN;
-if (!MS_TOKEN) {
-  console.error('Токен API не найден в переменных окружения!');
-}
 
 // Создаем базовую конфигурацию API
 const api = axios.create({
@@ -175,7 +166,7 @@ export const searchProducts = async (query: string): Promise<Product[]> => {
       filter: `archived=false;name~=${query}`
     };
 
-    const response = await api.get('/api/ms-proxy', {
+    const response = await api.get('/api/moysklad', {
       params: {
         method: 'get',
         url: 'entity/product',
