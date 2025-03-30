@@ -22,7 +22,7 @@ const nextConfig = {
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self' https://online.moysklad.ru; img-src 'self' https://online.moysklad.ru data:; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline';"
+            value: "default-src 'self'; connect-src 'self' https://api.moysklad.ru; img-src 'self' https://online.moysklad.ru data:; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://telegram.org https://*.telegram.org; style-src 'self' 'unsafe-inline';"
           }
         ]
       }
