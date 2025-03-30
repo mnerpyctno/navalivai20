@@ -19,6 +19,13 @@ export async function GET(request: NextRequest) {
     const url = searchParams.get('url');
     const params = searchParams.get('params');
 
+    console.log('API Request:', {
+      method,
+      url,
+      params,
+      token: process.env.MOYSKLAD_TOKEN ? 'Present' : 'Missing'
+    });
+
     if (!method || !url) {
       return NextResponse.json(
         { error: 'Missing required parameters' },
@@ -35,6 +42,7 @@ export async function GET(request: NextRequest) {
         if (parsedParams.limit) parsedParams.limit = parseInt(parsedParams.limit as string);
         if (parsedParams.offset) parsedParams.offset = parseInt(parsedParams.offset as string);
       } catch (e) {
+        console.error('Error parsing params:', e);
         return NextResponse.json(
           { error: 'Invalid parameters format' },
           { status: 400 }
@@ -44,26 +52,37 @@ export async function GET(request: NextRequest) {
 
     const requestUrl = url.startsWith('/') ? url.slice(1) : url;
     
+    console.log('Making request to MoySklad:', {
+      url: requestUrl,
+      method: method.toLowerCase(),
+      params: parsedParams
+    });
+
     const response = await msClient({
       method: method.toLowerCase(),
       url: requestUrl,
       params: parsedParams
     });
 
+    console.log('MoySklad response:', {
+      status: response.status,
+      data: response.data
+    });
+
     return NextResponse.json(response.data);
   } catch (error: any) {
-    console.error('MoySklad API error:', error);
-
-    if (error.response) {
-      return NextResponse.json(
-        { error: error.response.data },
-        { status: error.response.status }
-      );
-    }
+    console.error('API Error:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status
+    });
 
     return NextResponse.json(
-      { error: 'Internal Server Error' },
-      { status: 500 }
+      { 
+        error: error.response?.data || error.message,
+        status: error.response?.status || 500
+      },
+      { status: error.response?.status || 500 }
     );
   }
 } 
