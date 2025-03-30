@@ -1,29 +1,28 @@
 .header {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 16px;
-  background-color: #f5f5f5;
-  border-radius: 12px;
+  gap: 12px;
+  padding: 12px 16px;
+  background-color: var(--app-background);
 }
 
 .homeLink {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   border-radius: 8px;
-  background-color: #ffffff;
+  background-color: #f5f5f5;
 }
 
 .searchBox {
   flex: 1;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  background-color: #ffffff;
+  gap: 8px;
+  padding: 8px 12px;
+  background-color: #f5f5f5;
   border-radius: 8px;
 }
 
@@ -31,7 +30,7 @@
   flex: 1;
   border: none;
   outline: none;
-  font-size: 16px;
+  font-size: 14px;
   background: transparent;
 }
 
@@ -48,10 +47,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   border-radius: 8px;
-  background-color: #ffffff;
+  background-color: #f5f5f5;
 }
 
 @media (max-width: 480px) {

@@ -1,13 +1,13 @@
-import type { Metadata } from "next";
+import './globals.css';
+import type { Metadata } from 'next';
 import { Inter } from "next/font/google";
 import { CartProvider } from "../context/CartContext";
-import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Navalivai TWA",
-  description: "Telegram Web App for Navalivai",
+  title: 'Наваливай',
+  description: 'Интернет-магазин Наваливай',
 };
 
 export default function RootLayout({
@@ -16,11 +16,13 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="ru">
       <body className={inter.className}>
-        <CartProvider>
-          {children}
-        </CartProvider>
+        <div className="app-container">
+          <CartProvider>
+            {children}
+          </CartProvider>
+        </div>
       </body>
     </html>
   );
