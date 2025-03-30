@@ -15,8 +15,8 @@ export type { Product, Category };
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || '',
   headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json'
+    'Content-Type': 'application/json;charset=utf-8',
+    'Accept': 'application/json;charset=utf-8'
   },
   timeout: 60000,
   validateStatus: function (status: number) {
