@@ -99,7 +99,7 @@ export async function fetchProducts(categoryId: string, page: number = 1, limit:
     const products = rows.map((product: MoySkladProduct) => ({
       id: product.id,
       name: product.name,
-      price: product.salePrices?.[0]?.value / 100 || 0,
+      price: (product.salePrices && product.salePrices[0]?.value) ? product.salePrices[0].value / 100 : 0,
       image: product.images?.rows?.[0]?.miniature?.downloadHref || '/placeholder.png',
       description: product.description || '',
       category: product.productFolder?.id || ''
