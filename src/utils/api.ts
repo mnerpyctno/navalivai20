@@ -1,8 +1,14 @@
 import { Product } from '@/types/product';
 
-export async function fetchProducts(categoryId: string): Promise<Product[]> {
+interface ProductsResponse {
+  products: Product[];
+  hasMore: boolean;
+  total: number;
+}
+
+export async function fetchProducts(categoryId: string, page: number = 1, limit: number = 20): Promise<ProductsResponse> {
   try {
-    const response = await fetch(`/api/products?category=${categoryId}`);
+    const response = await fetch(`/api/products?category=${categoryId}&page=${page}&limit=${limit}`);
     if (!response.ok) {
       throw new Error('Не удалось загрузить товары');
     }
