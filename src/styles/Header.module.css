@@ -1,0 +1,119 @@
+.header {
+  @apply bg-white px-4 py-3 shadow-sm sticky top-0 z-50 backdrop-blur-md transition-all duration-300;
+  background-color: rgba(255, 255, 255, 0.98);
+}
+
+.headerContent {
+  @apply flex items-center gap-3 max-w-[480px] mx-auto w-full;
+}
+
+.homeIcon {
+  @apply text-gray-800 flex items-center justify-center w-10 h-10 opacity-90 transition-opacity duration-200;
+}
+
+.backButton {
+  @apply bg-transparent border-none p-2 text-gray-800 cursor-pointer flex items-center justify-center w-10 h-10 rounded-lg transition-all duration-200;
+}
+
+.backButton:hover {
+  @apply bg-gray-100;
+}
+
+.backButton:active {
+  @apply bg-gray-200;
+}
+
+.searchBar {
+  @apply flex-1 relative;
+}
+
+.searchIcon {
+  @apply absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 transition-colors duration-200;
+}
+
+.searchInput {
+  @apply w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:border-blue-500 transition-colors duration-200;
+}
+
+.searchInput:focus + .searchIcon {
+  @apply text-blue-500;
+}
+
+.userActions {
+  @apply flex items-center gap-2;
+}
+
+.iconButton {
+  @apply bg-transparent border-none p-2 text-gray-800 cursor-pointer flex items-center justify-center w-10 h-10 rounded-lg transition-all duration-200;
+}
+
+.iconButton:hover {
+  @apply bg-gray-100;
+}
+
+.iconButton:active {
+  @apply bg-gray-200;
+}
+
+.iconButton svg {
+  @apply w-5 h-5;
+}
+
+.cartButton {
+  @apply relative;
+}
+
+.cartCount {
+  @apply absolute -top-1 -right-1 bg-blue-500 text-white text-xs font-medium rounded-full w-5 h-5 flex items-center justify-center transition-transform duration-200;
+}
+
+.cartButton:hover .cartCount {
+  @apply scale-110;
+}
+
+.cartButton:active .cartCount {
+  @apply scale-95;
+}
+
+.cartButton svg {
+  @apply w-5 h-5;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    @apply px-3 py-2;
+  }
+
+  .headerContent {
+    @apply gap-2;
+  }
+
+  .homeIcon,
+  .backButton,
+  .iconButton {
+    @apply w-9 h-9;
+  }
+
+  .searchInput {
+    @apply text-sm;
+  }
+
+  .searchIcon {
+    @apply left-2;
+  }
+
+  .iconButton svg {
+    @apply w-4 h-4;
+  }
+} 
