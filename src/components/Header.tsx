@@ -5,6 +5,8 @@ import { FiSearch, FiUser, FiShoppingCart, FiHome, FiArrowLeft } from 'react-ico
 import { useCart } from '@/context/CartContext';
 import type { CartItem } from '@/context/CartContext';
 import styles from '@/styles/Header.module.css';
+import Link from 'next/link';
+import Image from 'next/image';
 
 const Header = () => {
   const router = useRouter();
@@ -31,29 +33,41 @@ const Header = () => {
           </button>
         )}
         
-        <div className={styles.searchBar}>
-          <FiSearch className={styles.searchIcon} />
-          <input
-            type="text"
-            className={styles.searchInput}
-            placeholder="Поиск..."
-          />
+        <div className={styles.searchContainer}>
+          <div className={styles.searchBox}>
+            <Image 
+              src="/search.svg" 
+              alt="Поиск" 
+              width={24} 
+              height={24} 
+              className={styles.searchIcon}
+            />
+            <input 
+              type="text" 
+              placeholder="Найти товар..." 
+              className={styles.searchInput}
+            />
+          </div>
         </div>
         
         <div className={styles.userActions}>
-          <button className={styles.iconButton}>
-            <FiUser />
-          </button>
+          <Link href="/profile" className={styles.iconButton}>
+            <Image 
+              src="/profile.svg" 
+              alt="Профиль" 
+              width={24} 
+              height={24}
+            />
+          </Link>
           
-          <button 
-            className={`${styles.iconButton} ${styles.cartButton}`}
-            onClick={() => router.push('/cart')}
-          >
-            <FiShoppingCart />
-            {cartItemsCount > 0 && (
-              <span className={styles.cartCount}>{cartItemsCount}</span>
-            )}
-          </button>
+          <Link href="/cart" className={styles.iconButton}>
+            <Image 
+              src="/cart.svg" 
+              alt="Корзина" 
+              width={24} 
+              height={24}
+            />
+          </Link>
         </div>
       </div>
     </header>
