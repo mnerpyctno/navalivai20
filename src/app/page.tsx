@@ -19,8 +19,11 @@ interface Product {
   price: number;
   oldPrice?: number;
   image: string;
-  categoryId: string;
+  categoryId: string | null;
   available: boolean;
+  description?: string;
+  code?: string;
+  stock: number;
 }
 
 const ITEMS_PER_PAGE = 9;
