@@ -147,10 +147,9 @@ export async function fetchProducts(categoryId?: string, page: number = 1, limit
             limit: 1,
             offset: 0,
             filter: `product=${product.id}`,
-            expand: 'product',
-            groupBy: 'product'
+            expand: 'product'
           };
-          const stockQueryString = `method=get&url=report/stock/all&params=${encodeURIComponent(JSON.stringify(stockParams))}`;
+          const stockQueryString = `method=get&url=report/stock/bystore&params=${encodeURIComponent(JSON.stringify(stockParams))}`;
           console.log('Checking stock for product:', {
             productId: product.id,
             productName: product.name,
