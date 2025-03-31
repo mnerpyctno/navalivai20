@@ -7,6 +7,7 @@ import { fetchProducts, fetchCategories } from '@/utils/api';
 import { Product } from '@/types/product';
 import Header from '@/components/Header';
 import styles from '@/styles/Home.module.css';
+import { useCart } from '@/context/CartContext';
 
 interface Category {
   id: string;
@@ -17,6 +18,7 @@ export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const { addToCart } = useCart();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -107,7 +109,10 @@ export default function Home() {
             <div className={styles.productInfo}>
               <h3>{product.name}</h3>
               <p className={styles.price}>{product.price} BYN</p>
-              <button className={styles.addToCartButton}>
+              <button 
+                className={styles.addToCartButton}
+                onClick={() => addToCart(product)}
+              >
                 В корзину
               </button>
             </div>

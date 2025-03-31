@@ -6,6 +6,7 @@ import styles from '@/styles/Category.module.css';
 import { fetchProducts } from '@/utils/api';
 import { Product } from '@/types/product';
 import Header from '@/components/Header';
+import { useCart } from '@/context/CartContext';
 
 export default function CategoryPage({ params }: { params: { id: string } }) {
   const [products, setProducts] = useState<Product[]>([]);
@@ -16,6 +17,7 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
   const observer = useRef<IntersectionObserver | null>(null);
   const loadingRef = useRef<HTMLDivElement | null>(null);
   const [initialLoad, setInitialLoad] = useState(true);
+  const { addToCart } = useCart();
 
   const loadProducts = useCallback(async (pageNumber: number) => {
     try {
@@ -131,7 +133,10 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
               <div className={styles.productInfo}>
                 <h3>{product.name}</h3>
                 <p className={styles.price}>{product.price} BYN</p>
-                <button className={styles.addToCartButton}>
+                <button 
+                  className={styles.addToCartButton}
+                  onClick={() => addToCart(product)}
+                >
                   В корзину
                 </button>
               </div>
