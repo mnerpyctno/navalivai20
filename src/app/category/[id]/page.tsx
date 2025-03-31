@@ -133,9 +133,13 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
               <div className={styles.productInfo}>
                 <h3>{product.name}</h3>
                 <p className={styles.price}>{product.price} BYN</p>
-                <button 
+                <button
                   className={styles.addToCartButton}
-                  onClick={() => addToCart(product)}
+                  onClick={() => addToCart({
+                    ...product,
+                    id: parseInt(product.id),
+                    quantity: 1
+                  })}
                 >
                   В корзину
                 </button>
