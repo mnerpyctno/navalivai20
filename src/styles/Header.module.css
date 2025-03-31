@@ -83,6 +83,11 @@
 
 .cartIconWrapper {
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
 }
 
 .cartBadge {
@@ -105,6 +110,10 @@
 @media (max-width: 480px) {
   .header {
     padding: 8px 12px;
+  }
+
+  .headerContent {
+    padding: 0 12px;
   }
 
   .actionButton,

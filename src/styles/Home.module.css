@@ -18,7 +18,7 @@
 }
 
 .title {
-  font-size: 20px;
+  font-size: 24px;
   font-weight: 600;
   color: var(--text-primary);
   margin: 0;
@@ -106,8 +106,8 @@
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
   }
-}
 
+  .title {
 .sectionTitle {
   font-size: 18px;
   font-weight: 600;

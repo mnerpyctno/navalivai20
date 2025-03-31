@@ -95,11 +95,6 @@ export default function Home() {
             key={category.id}
             href={`/category/${category.id}`}
             className={`${styles.categoryCard} ${selectedCategory === category.id ? styles.selected : ''}`}
-            onClick={(e) => {
-              e.preventDefault();
-              setSelectedCategory(selectedCategory === category.id ? null : category.id);
-              setPage(1);
-            }}
           >
             <div className={styles.categoryImageWrapper}>
               <Image
