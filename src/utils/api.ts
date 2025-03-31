@@ -1,5 +1,7 @@
 import { Product } from '@/types/product';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+
 interface MoySkladProduct {
   id: string;
   name: string;
@@ -137,24 +139,87 @@ export async function fetchProducts(categoryId?: string, page: number = 1, limit
       } : null
     });
 
-    const mappedProducts = products.map((product: MoySkladProduct) => {
-      const mapped = {
-        id: product.id,
-        name: product.name,
-        price: (product.salePrices && product.salePrices[0]?.value) ? product.salePrices[0].value / 100 : 0,
-        image: product.images?.rows?.[0]?.miniature?.downloadHref || '/placeholder.png',
-        description: product.description || '',
-        categoryId: product.productFolder?.id || null
-      };
-      console.log('Mapped product:', {
-        original: product,
-        mapped
-      });
-      return mapped;
-    });
+    // Проверяем остатки в МойСклад для каждого товара
+    const productsWithStock = await Promise.all(
+      products.map(async (product: MoySkladProduct) => {
+        try {
+          const stockParams = {
+            limit: 1,
+            offset: 0,
+            filter: `product=${product.id}`,
+            expand: 'product',
+            groupBy: 'product'
+          };
+          const stockQueryString = `method=get&url=report/stock/all&params=${encodeURIComponent(JSON.stringify(stockParams))}`;
+          console.log('Checking stock for product:', {
+            productId: product.id,
+            productName: product.name,
+            stockQueryString
+          });
+          
+          const stockResponse = await fetch(`/api/moysklad?${stockQueryString}`);
+          const stockData = await stockResponse.json();
+          
+          console.log('Stock response for product:', {
+            productId: product.id,
+            productName: product.name,
+            stockData
+          });
+          
+          if (stockResponse.ok && stockData.rows && stockData.rows.length > 0) {
+            const quantity = stockData.rows[0].quantity || 0;
+            console.log('Stock quantity:', {
+              productId: product.id,
+              productName: product.name,
+              quantity
+            });
+            
+            return {
+              id: product.id,
+              name: product.name,
+              price: product.salePrices?.[0]?.value ? product.salePrices[0].value / 100 : 0,
+              image: product.images?.rows?.[0]?.miniature?.downloadHref || '/placeholder.png',
+              description: product.description || '',
+              categoryId: product.productFolder?.id || null,
+              available: quantity > 0,
+              stock: quantity
+            };
+          }
+          
+          console.log('Stock check failed for product:', {
+            productId: product.id,
+            productName: product.name,
+            error: stockData
+          });
+          
+          return {
+            id: product.id,
+            name: product.name,
+            price: product.salePrices?.[0]?.value ? product.salePrices[0].value / 100 : 0,
+            image: product.images?.rows?.[0]?.miniature?.downloadHref || '/placeholder.png',
+            description: product.description || '',
+            categoryId: product.productFolder?.id || null,
+            available: false,
+            stock: 0
+          };
+        } catch (error) {
+          console.error(`Ошибка проверки остатков для товара ${product.id}:`, error);
+          return {
+            id: product.id,
+            name: product.name,
+            price: product.salePrices?.[0]?.value ? product.salePrices[0].value / 100 : 0,
+            image: product.images?.rows?.[0]?.miniature?.downloadHref || '/placeholder.png',
+            description: product.description || '',
+            categoryId: product.productFolder?.id || null,
+            available: false,
+            stock: 0
+          };
+        }
+      })
+    );
 
     return {
-      products: mappedProducts,
+      products: productsWithStock,
       total,
       hasMore: products.length === limit
     };

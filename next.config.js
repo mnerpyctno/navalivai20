@@ -9,7 +9,16 @@ const withPWA = require('next-pwa')({
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ['online.moysklad.ru'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'online.moysklad.ru',
+      },
+      {
+        protocol: 'https',
+        hostname: 'miniature-prod.moysklad.ru',
+      }
+    ],
   },
   env: {
     MOYSKLAD_TOKEN: process.env.MOYSKLAD_TOKEN,
@@ -27,7 +36,26 @@ const nextConfig = {
         ]
       }
     ]
-  }
+  },
+  webpack: (config) => {
+    config.module.rules.push({
+      test: /\.css$/,
+      use: [
+        'style-loader',
+        {
+          loader: 'css-loader',
+          options: {
+            modules: {
+              auto: true,
+              localIdentName: '[name]__[local]--[hash:base64:5]',
+            },
+          },
+        },
+        'postcss-loader',
+      ],
+    });
+    return config;
+  },
 }
 
 module.exports = withPWA(nextConfig) 

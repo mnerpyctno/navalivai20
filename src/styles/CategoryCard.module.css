@@ -1,0 +1,47 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: var(--app-background);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.card:hover {
+  border-color: var(--button-primary);
+  transform: translateY(-2px);
+}
+
+.card.selected {
+  background: var(--button-primary);
+  border-color: var(--button-primary);
+}
+
+.imageWrapper {
+  width: 80px;
+  height: 80px;
+  position: relative;
+  background: var(--app-background);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.image {
+  object-fit: contain;
+}
+
+.name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.selected .name {
+  color: white;
+} 

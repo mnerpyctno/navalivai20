@@ -1,34 +1,64 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { fetchProducts, fetchCategories } from '@/utils/api';
-import { Product } from '@/types/product';
-import Header from '@/components/Header';
 import styles from '@/styles/Home.module.css';
-import { useCart } from '@/context/CartContext';
+import Header from '@/components/Header';
+import ProductCard from '@/components/ProductCard';
 
 interface Category {
   id: string;
   name: string;
 }
 
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  oldPrice?: number;
+  image: string;
+  categoryId: string;
+  available: boolean;
+}
+
+const ITEMS_PER_PAGE = 9;
+
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  const { addToCart } = useCart();
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const observer = useRef<IntersectionObserver | null>(null);
+  const lastProductRef = useCallback((node: HTMLDivElement) => {
+    if (loading) return;
+    if (observer.current) observer.current.disconnect();
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        setPage(prevPage => prevPage + 1);
+      }
+    });
+    if (node) observer.current.observe(node);
+  }, [loading, hasMore]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [productsData, categoriesData] = await Promise.all([
-          fetchProducts('', 1, 4),
+          fetchProducts(selectedCategory || undefined, page, ITEMS_PER_PAGE),
           fetchCategories()
         ]);
-        setProducts(productsData.products);
         setCategories(categoriesData);
+        if (page === 1) {
+          setProducts(productsData.products);
+        } else {
+          setProducts(prev => [...prev, ...productsData.products]);
+        }
+        setHasMore(productsData.hasMore);
       } catch (error) {
         console.error('Ошибка загрузки данных:', error);
       } finally {
@@ -37,7 +67,7 @@ export default function Home() {
     };
 
     fetchData();
-  }, []);
+  }, [page, selectedCategory]);
 
   const categoryImages: Record<string, string> = {
     'Жидкости': '/Жидкости.png',
@@ -48,77 +78,62 @@ export default function Home() {
     'Еда и напитки': '/Еда и напитки.png'
   };
 
-  if (loading) {
-    return (
-      <main className={styles.main}>
-        <Header />
-        <div className={styles.loading}>
-          <div className={styles.spinner}></div>
-          <p>Загрузка...</p>
-        </div>
-      </main>
-    );
-  }
-
   return (
     <main className={styles.main}>
       <Header />
       
-      <h2 className={styles.sectionTitle}>Категории</h2>
+      <div className={styles.header}>
+        <h1 className={styles.title}>Категории</h1>
+      </div>
+
       <div className={styles.categoriesGrid}>
         {categories.map((category) => (
-          <Link 
-            href={`/category/${category.id}`} 
-            key={category.id} 
-            className={styles.categoryCard}
+          <Link
+            key={category.id}
+            href={`/category/${category.id}`}
+            className={`${styles.categoryCard} ${selectedCategory === category.id ? styles.selected : ''}`}
+            onClick={(e) => {
+              e.preventDefault();
+              setSelectedCategory(selectedCategory === category.id ? null : category.id);
+              setPage(1);
+            }}
           >
             <div className={styles.categoryImageWrapper}>
-              <Image 
+              <Image
                 src={categoryImages[category.name] || '/placeholder.png'}
                 alt={category.name}
-                width={100}
-                height={100}
+                fill
                 className={styles.categoryImage}
+                sizes="(max-width: 480px) 50vw, 33vw"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.src = '/placeholder.png';
                 }}
               />
             </div>
-            <div className={styles.categoryName}>{category.name}</div>
+            <span className={styles.categoryName}>{category.name}</span>
           </Link>
         ))}
       </div>
 
-      <h2 className={styles.sectionTitle}>Популярные товары</h2>
+      <h2 className={styles.sectionTitle}>Все товары</h2>
       <div className={styles.productsGrid}>
-        {products.map(product => (
-          <div key={product.id} className={styles.productCard}>
-            <div className={styles.productImageContainer}>
-              <Image 
-                src={product.image || '/placeholder.png'} 
-                alt={product.name} 
-                fill
-                className={styles.productImage}
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.src = '/placeholder.png';
-                }}
-              />
-            </div>
-            <div className={styles.productInfo}>
-              <h3>{product.name}</h3>
-              <p className={styles.price}>{product.price} BYN</p>
-              <button 
-                className={styles.addToCartButton}
-                onClick={() => addToCart(product)}
-              >
-                В корзину
-              </button>
-            </div>
+        {products.map((product, index) => (
+          <div
+            key={product.id}
+            ref={index === products.length - 1 ? lastProductRef : undefined}
+          >
+            <ProductCard product={product} />
           </div>
         ))}
       </div>
+
+      {loading && (
+        <div className={styles.loading}>
+          <div className={styles.spinner} />
+          <p>Загрузка...</p>
+        </div>
+      )}
     </main>
   );
 }

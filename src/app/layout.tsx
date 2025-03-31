@@ -1,16 +1,19 @@
 import './globals.css';
-import type { Metadata } from 'next';
-import { Inter } from "next/font/google";
+import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
 import { ClientProviders } from '@/components/ClientProviders';
 
-const inter = Inter({ subsets: ["latin", "cyrillic"] });
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
 
 export const metadata: Metadata = {
   title: 'Наваливай',
   description: 'Магазин электронных сигарет',
   metadataBase: new URL(process.env.NEXT_PUBLIC_WEBAPP_URL || 'http://localhost:3000'),
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no',
   other: {
     'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://telegram.org https://*.telegram.org; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; connect-src 'self' https://api.moysklad.ru https://telegram.org https://*.telegram.org;"
   }
@@ -30,7 +33,7 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
       </head>
-      <body className={inter.className}>
+      <body className="font-sans antialiased">
         <ClientProviders>
           <main>
             {children}
