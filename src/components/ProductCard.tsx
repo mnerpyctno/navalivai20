@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import styles from '@/styles/ProductCard.module.css';
 import { useCart } from '@/context/CartContext';
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { Product } from '@/types/product';
 
 interface ProductCardProps {
@@ -10,17 +10,7 @@ interface ProductCardProps {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCart();
-  const [showInfoButton, setShowInfoButton] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const titleRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (titleRef.current) {
-      const titleHeight = titleRef.current.scrollHeight;
-      const lineHeight = parseInt(window.getComputedStyle(titleRef.current).lineHeight);
-      setShowInfoButton(titleHeight > lineHeight * 2);
-    }
-  }, [product.name]);
 
   const handleAddToCart = () => {
     addToCart({
@@ -48,20 +38,9 @@ export default function ProductCard({ product }: ProductCardProps) {
         </div>
         <div className={styles.info}>
           <div className={styles.titleWrapper}>
-            <div ref={titleRef} className={styles.name}>
+            <div className={styles.name}>
               {product.name}
             </div>
-            {showInfoButton && (
-              <button
-                className={styles.infoButton}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsModalOpen(true);
-                }}
-              >
-                i
-              </button>
-            )}
           </div>
           <div className={styles.priceWrapper}>
             <div className={styles.price}>{product.price} BYN</div>
