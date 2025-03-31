@@ -1,11 +1,13 @@
-/** @type {import('next').NextConfig} */
-const withPWA = require('next-pwa')({
+import withPWA from 'next-pwa'
+
+const pwaConfig = withPWA({
   dest: 'public',
   register: true,
   skipWaiting: true,
   disable: process.env.NODE_ENV === 'development'
 })
 
+/** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   images: {
@@ -36,26 +38,7 @@ const nextConfig = {
         ]
       }
     ]
-  },
-  webpack: (config) => {
-    config.module.rules.push({
-      test: /\.css$/,
-      use: [
-        'style-loader',
-        {
-          loader: 'css-loader',
-          options: {
-            modules: {
-              auto: true,
-              localIdentName: '[name]__[local]--[hash:base64:5]',
-            },
-          },
-        },
-        'postcss-loader',
-      ],
-    });
-    return config;
-  },
+  }
 }
 
-module.exports = withPWA(nextConfig) 
+export default pwaConfig(nextConfig) 
