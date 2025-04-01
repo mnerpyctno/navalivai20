@@ -3,9 +3,32 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useTelegram } from '@/hooks/useTelegram';
+import { useEffect, useState } from 'react';
+
+interface TelegramUser {
+  first_name: string;
+  last_name?: string;
+  username?: string;
+  photo_url?: string;
+  id: number;
+  auth_date: number;
+}
 
 export default function Navigation() {
   const { user } = useTelegram();
+  const [telegramUser, setTelegramUser] = useState<TelegramUser | null>(null);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('telegramUser');
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser) as TelegramUser;
+        setTelegramUser(parsedUser);
+      } catch (error) {
+        console.error('Error parsing telegram user:', error);
+      }
+    }
+  }, []);
 
   return (
     <nav className="bg-white shadow-md">
@@ -16,13 +39,13 @@ export default function Navigation() {
           </Link>
           
           <div className="flex items-center space-x-4">
-            {user ? (
+            {telegramUser ? (
               <Link href="/profile" className="flex items-center space-x-2">
                 <div className="relative w-8 h-8">
-                  {user.photo_url ? (
+                  {telegramUser.photo_url ? (
                     <Image
-                      src={user.photo_url}
-                      alt={user.first_name}
+                      src={telegramUser.photo_url}
+                      alt={telegramUser.first_name}
                       fill
                       className="rounded-full object-cover"
                     />
@@ -35,7 +58,7 @@ export default function Navigation() {
                     />
                   )}
                 </div>
-                <span className="text-gray-700">{user.first_name}</span>
+                <span className="text-gray-700">{telegramUser.first_name}</span>
               </Link>
             ) : (
               <Link
