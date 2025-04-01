@@ -14,9 +14,11 @@ interface TelegramUser {
 export function useTelegram() {
   const { data: session, status } = useSession();
   const [isLoading, setIsLoading] = useState(true);
+  const [isTelegramWebApp, setIsTelegramWebApp] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
+      setIsTelegramWebApp(true);
       const tg = window.Telegram.WebApp;
       const user = tg.initDataUnsafe?.user as TelegramUser;
 
@@ -90,6 +92,7 @@ export function useTelegram() {
     isLoading,
     isAuthenticated: status === 'authenticated',
     user: session?.user,
+    isTelegramWebApp,
     getOrders,
     createOrder,
   };
