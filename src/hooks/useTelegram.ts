@@ -5,7 +5,7 @@ export function useTelegram() {
   const [webApp, setWebApp] = useState<TelegramWebApps | null>(null);
   const [user, setUser] = useState<TelegramUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [isTelegramWebApp, setIsTelegramWebApp] = useState(false);
 
   useEffect(() => {
@@ -27,7 +27,7 @@ export function useTelegram() {
         }
       }
     } catch (error) {
-      setError(error instanceof Error ? error : new Error('Failed to initialize Telegram WebApp'));
+      setError(error instanceof Error ? error.message : 'Failed to initialize Telegram WebApp');
     } finally {
       setIsLoading(false);
     }
