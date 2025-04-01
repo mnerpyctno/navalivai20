@@ -54,12 +54,14 @@ export default function ProfilePage() {
                 <p className="text-gray-600">ID пользователя</p>
                 <p className="font-medium">{user.id}</p>
               </div>
-              <div>
-                <p className="text-gray-600">Дата регистрации</p>
-                <p className="font-medium">
-                  {new Date(user.auth_date * 1000).toLocaleDateString('ru-RU')}
-                </p>
-              </div>
+              {user.auth_date && (
+                <div>
+                  <p className="text-gray-600">Дата регистрации</p>
+                  <p className="font-medium">
+                    {new Date(user.auth_date * 1000).toLocaleDateString('ru-RU')}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>
