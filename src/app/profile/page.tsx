@@ -2,7 +2,7 @@
 
 import { useTelegram } from '@/hooks/useTelegram';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 
 interface TelegramUser {
@@ -10,21 +10,34 @@ interface TelegramUser {
   last_name?: string;
   username?: string;
   photo_url?: string;
+  id: number;
+  auth_date: number;
 }
 
 export default function ProfilePage() {
   const { user, isTelegramWebApp } = useTelegram();
   const router = useRouter();
+  const [telegramUser, setTelegramUser] = useState<TelegramUser | null>(null);
 
   useEffect(() => {
     if (!isTelegramWebApp || !user) {
       router.push('/');
+      return;
+    }
+
+    // Получаем данные пользователя из localStorage
+    const storedUser = localStorage.getItem('telegramUser');
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser) as TelegramUser;
+        setTelegramUser(parsedUser);
+      } catch (error) {
+        console.error('Error parsing telegram user:', error);
+      }
     }
   }, [isTelegramWebApp, user, router]);
 
-  if (!user) return null;
-
-  const telegramUser = user as TelegramUser;
+  if (!telegramUser) return null;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -61,12 +74,12 @@ export default function ProfilePage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-gray-600">ID пользователя</p>
-                <p className="font-medium">{user.id}</p>
+                <p className="font-medium">{telegramUser.id}</p>
               </div>
               <div>
                 <p className="text-gray-600">Дата регистрации</p>
                 <p className="font-medium">
-                  {user.auth_date ? new Date(user.auth_date * 1000).toLocaleDateString('ru-RU') : 'Не указана'}
+                  {new Date(telegramUser.auth_date * 1000).toLocaleDateString('ru-RU')}
                 </p>
               </div>
             </div>
