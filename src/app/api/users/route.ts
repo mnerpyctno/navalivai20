@@ -30,7 +30,7 @@ export async function POST(request: Request) {
           lastName: userData.last_name || null,
           username: userData.username || null,
           photoUrl: userData.photo_url || null,
-          authDate: new Date(userData.auth_date * 1000),
+          authDate: userData.auth_date ? new Date(userData.auth_date * 1000) : new Date(),
         },
       });
 
@@ -45,7 +45,7 @@ export async function POST(request: Request) {
         lastName: userData.last_name || null,
         username: userData.username || null,
         photoUrl: userData.photo_url || null,
-        authDate: new Date(userData.auth_date * 1000),
+        authDate: userData.auth_date ? new Date(userData.auth_date * 1000) : new Date(),
         cart: {
           create: {} // Создаем пустую корзину
         }
