@@ -36,13 +36,14 @@ export default function Home() {
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [total, setTotal] = useState(0);
   const observer = useRef<IntersectionObserver | null>(null);
   const loadingRef = useCallback((node: HTMLDivElement) => {
     if (loading) return;
     if (observer.current) observer.current.disconnect();
     observer.current = new IntersectionObserver(entries => {
       if (entries[0].isIntersecting && hasMore && !loading) {
-        console.log('Loading more products, current page:', page);
         setPage(prevPage => prevPage + 1);
       }
     }, {
@@ -56,26 +57,30 @@ export default function Home() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [productsData, categoriesData] = await Promise.all([
-          fetchProducts(selectedCategory || undefined, page, ITEMS_PER_PAGE),
-          fetchCategories()
-        ]);
-        setCategories(categoriesData);
+        setError(null);
+        const response = await fetchProducts(selectedCategory || undefined, page, ITEMS_PER_PAGE);
+        
         if (page === 1) {
-          setProducts(productsData.products);
+          setProducts(response.products);
         } else {
-          setProducts(prev => [...prev, ...productsData.products]);
+          setProducts(prev => [...prev, ...response.products]);
         }
-        setHasMore(productsData.products.length === ITEMS_PER_PAGE);
+        setTotal(response.total);
+        setHasMore(response.products.length === ITEMS_PER_PAGE);
       } catch (error) {
-        console.error('Ошибка загрузки данных:', error);
+        setError(error instanceof Error ? error.message : 'Произошла ошибка при загрузке данных');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
-  }, [page, selectedCategory]);
+    if (selectedCategory) {
+      fetchData();
+    } else {
+      setLoading(false);
+      setError(null);
+    }
+  }, [selectedCategory, page]);
 
   const categoryImages: Record<string, string> = {
     'Жидкости': '/Жидкости.png',

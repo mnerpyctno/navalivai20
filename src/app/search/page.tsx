@@ -35,7 +35,6 @@ export default function SearchPage() {
     if (observer.current) observer.current.disconnect();
     observer.current = new IntersectionObserver(entries => {
       if (entries[0].isIntersecting && hasMore && !loading) {
-        console.log('Loading more products, current page:', page);
         setPage(prevPage => prevPage + 1);
       }
     }, {
@@ -51,7 +50,6 @@ export default function SearchPage() {
         setLoading(true);
         setError(null);
         const response = await fetchProducts(undefined, page, ITEMS_PER_PAGE, query);
-        console.log('Fetched products:', response.products.length, 'Total:', response.total);
         
         // Сохраняем позицию скролла перед обновлением состояния
         const scrollPosition = window.scrollY;
@@ -69,7 +67,6 @@ export default function SearchPage() {
           window.scrollTo(0, scrollPosition);
         });
       } catch (error) {
-        console.error('Ошибка поиска:', error);
         setError(error instanceof Error ? error.message : 'Произошла ошибка при поиске');
       } finally {
         setLoading(false);
@@ -110,13 +107,13 @@ export default function SearchPage() {
           <div className={styles.noResults}>
             {query ? (
               <>
-                <p>По вашему запросу "{query}" ничего не найдено</p>
+                <p>По вашему запросу &quot;{query}&quot; ничего не найдено</p>
                 <p>Попробуйте изменить поисковый запрос или использовать другие ключевые слова</p>
               </>
             ) : (
               <>
                 <p>Введите поисковый запрос в строку поиска</p>
-                <p>Например: "название товара" или "категория"</p>
+                <p>Например: &quot;название товара&quot; или &quot;категория&quot;</p>
               </>
             )}
           </div>

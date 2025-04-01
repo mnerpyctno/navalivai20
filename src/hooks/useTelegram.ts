@@ -48,7 +48,7 @@ export const useTelegram = () => {
       tg.ready();
       setIsReady(true);
     }
-  }, []);
+  }, [user]);
 
   const onClose = () => {
     webApp?.close();

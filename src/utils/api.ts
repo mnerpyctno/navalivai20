@@ -4,19 +4,30 @@ import { getProductImageUrl } from '@/lib/api';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
-export async function fetchCategories(): Promise<MoySkladCategory[]> {
+export const fetchCategories = async (): Promise<MoySkladCategory[]> => {
   try {
-    const response = await categoriesApi.getCategories();
-    return response.rows.map((category: MoySkladCategory) => ({
-      id: category.id,
-      name: category.name,
-      meta: category.meta
-    }));
+    const response = await fetch(`${API_URL}/categories`);
+    if (!response.ok) {
+      throw new Error('Ошибка при загрузке категорий');
+    }
+    return await response.json();
   } catch (error) {
-    console.error('Ошибка при загрузке категорий:', error);
-    throw error instanceof Error ? error : new Error('Не удалось загрузить категории');
+    throw new Error('Ошибка при загрузке категорий');
   }
-}
+};
+
+export const fetchProductStock = async (productId: string): Promise<number> => {
+  try {
+    const response = await fetch(`${API_URL}/products/${productId}/stock`);
+    if (!response.ok) {
+      throw new Error('Ошибка при получении остатка');
+    }
+    const data = await response.json();
+    return data.stock;
+  } catch (error) {
+    throw new Error('Ошибка при получении остатка');
+  }
+};
 
 export async function fetchProducts(
   categoryId?: string,
@@ -42,19 +53,7 @@ export async function fetchProducts(
       params.filter = `${params.filter};productFolder=${categoryId}`;
     }
 
-    console.log('Search params:', params);
-
     const response = await productsApi.getProducts(params);
-    console.log('Search response:', {
-      total: response.meta?.size,
-      products: response.rows?.map((p: MoySkladProduct) => ({
-        id: p.id,
-        name: p.name,
-        hasImages: !!p.images,
-        imagesMeta: p.images?.meta,
-        imagesRows: p.images?.rows?.length
-      }))
-    });
 
     const products = response.rows;
     const total = response.meta?.size || 0;
@@ -98,7 +97,6 @@ export async function fetchProducts(
             stock: 0
           };
         } catch (error) {
-          console.error(`Ошибка при получении остатков для товара ${product.id}:`, error);
           const imageUrl = getProductImageUrl(product);
           
           return {
@@ -121,7 +119,6 @@ export async function fetchProducts(
       hasMore: (page * limit) < total
     };
   } catch (error) {
-    console.error('Ошибка при загрузке товаров:', error);
     throw error instanceof Error ? error : new Error('Не удалось загрузить товары');
   }
 } 

@@ -9,6 +9,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHome, faArrowLeft, faSearch, faUser, faShoppingCart, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { useState, useEffect, useCallback } from 'react';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useSearchParams } from 'next/navigation';
 
 export default function Header() {
   const { items } = useCart();
@@ -17,16 +18,15 @@ export default function Header() {
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
+  const searchParams = useSearchParams();
 
   // Обновляем URL при изменении поискового запроса
   useEffect(() => {
-    if (pathname === '/search') {
-      const currentQuery = new URLSearchParams(window.location.search).get('q') || '';
-      if (currentQuery !== searchQuery) {
-        setSearchQuery(currentQuery);
-      }
+    const currentQuery = searchParams.get('q') || '';
+    if (currentQuery !== searchQuery) {
+      setSearchQuery(currentQuery);
     }
-  }, [pathname]);
+  }, [pathname, searchQuery, searchParams]);
 
   // Обновляем URL при изменении поискового запроса с задержкой
   useEffect(() => {
