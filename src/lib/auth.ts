@@ -75,8 +75,6 @@ export const authOptions: NextAuthOptions = {
             username: user.username,
             photoUrl: user.photoUrl,
             authDate: user.authDate,
-            moySkladId: user.moySkladId,
-            ordersCount: user.ordersCount,
             createdAt: user.createdAt,
             updatedAt: user.updatedAt,
           };
