@@ -1,25 +1,19 @@
 import { useEffect, useState } from 'react';
 import { signIn, signOut, useSession } from 'next-auth/react';
-
-interface TelegramUser {
-  id: number;
-  first_name: string;
-  last_name?: string;
-  username?: string;
-  photo_url?: string;
-  auth_date: number;
-  hash: string;
-}
+import { TelegramWebApps, TelegramUser } from '@/types/telegram';
 
 export function useTelegram() {
   const { data: session, status } = useSession();
   const [isLoading, setIsLoading] = useState(true);
   const [isTelegramWebApp, setIsTelegramWebApp] = useState(false);
+  const [webApp, setWebApp] = useState<TelegramWebApps | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
       setIsTelegramWebApp(true);
       const tg = window.Telegram.WebApp;
+      setWebApp(tg);
       const user = tg.initDataUnsafe?.user as TelegramUser;
 
       if (user) {
@@ -51,6 +45,7 @@ export function useTelegram() {
       }
     } catch (error) {
       console.error('Error syncing user with MoySklad:', error);
+      setError('Failed to sync user with MoySklad');
     }
   };
 
@@ -88,11 +83,55 @@ export function useTelegram() {
     }
   };
 
+  const onClose = () => {
+    webApp?.close();
+  };
+
+  const onToggleMainButton = (show: boolean) => {
+    if (show) {
+      webApp?.MainButton.show();
+    } else {
+      webApp?.MainButton.hide();
+    }
+  };
+
+  const onToggleBackButton = (show: boolean) => {
+    if (show) {
+      webApp?.BackButton.show();
+    } else {
+      webApp?.BackButton.hide();
+    }
+  };
+
+  const setMainButtonText = (text: string) => {
+    webApp?.MainButton.setText(text);
+  };
+
+  const onMainButtonClick = (callback: () => void) => {
+    webApp?.MainButton.onClick(callback);
+  };
+
+  const onBackButtonClick = (callback: () => void) => {
+    webApp?.BackButton.onClick(callback);
+  };
+
+  const sendData = (data: any) => {
+    webApp?.sendData(JSON.stringify(data));
+  };
+
   return {
-    isLoading,
-    isAuthenticated: status === 'authenticated',
-    user: session?.user,
+    webApp,
+    user: session?.user as TelegramUser | null,
+    isReady: !isLoading,
+    error,
     isTelegramWebApp,
+    onClose,
+    onToggleMainButton,
+    onToggleBackButton,
+    setMainButtonText,
+    onMainButtonClick,
+    onBackButtonClick,
+    sendData,
     getOrders,
     createOrder,
   };
