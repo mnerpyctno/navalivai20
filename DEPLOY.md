@@ -19,13 +19,21 @@ vercel login
 vercel
 ```
 
-2. Добавьте следующие переменные окружения в настройках проекта на Vercel:
+2. Перейдите в настройки проекта в Vercel
+3. Откройте раздел "Environment Variables"
+4. Добавьте следующие переменные:
 
-- `NEXTAUTH_URL`: URL вашего приложения (например, https://navaliva-next-twa.vercel.app)
-- `NEXTAUTH_SECRET`: Секретный ключ для NextAuth (сгенерируйте с помощью `openssl rand -base64 32`)
-- `DATABASE_URL`: URL вашей базы данных PostgreSQL
-- `MOYSKLAD_API_TOKEN`: Токен API МойСклад
-- `MOYSKLAD_API_URL`: URL API МойСклад (https://api.moysklad.ru/api/remap/1.2)
+```env
+MOYSKLAD_TOKEN=ваш_токен_мойсклад
+MOYSKLAD_API_URL=https://api.moysklad.ru/api/remap/1.2
+NEXT_PUBLIC_API_URL=https://ваш-домен.vercel.app
+DATABASE_URL=ваш_url_базы_данных
+DIRECT_URL=ваш_direct_url
+NEXTAUTH_URL=https://ваш-домен.vercel.app
+NEXTAUTH_SECRET=ваш_секрет
+NEXT_PUBLIC_SUPABASE_URL=ваш_url_supabase
+NEXT_PUBLIC_SUPABASE_ANON_KEY=ваш_ключ_supabase
+```
 
 ## Развертывание
 
@@ -67,4 +75,28 @@ vercel --prod
 
 3. Если проблемы с МойСклад:
    - Проверьте `MOYSKLAD_API_TOKEN`
-   - Убедитесь, что токен имеет необходимые права 
+   - Убедитесь, что токен имеет необходимые права
+
+## Проверка работоспособности
+
+После деплоя проверьте:
+
+1. Доступность главной страницы
+2. Загрузку товаров и категорий
+3. Работу поиска
+4. Корректность отображения изображений
+5. Работу корзины
+
+## Мониторинг ошибок
+
+1. Проверяйте логи в Vercel
+2. Следите за ошибками в консоли браузера
+3. Проверяйте статус API МойСклад
+
+## Обновление данных
+
+При необходимости обновления данных:
+
+1. Проверьте токен МойСклад
+2. Убедитесь, что все переменные окружения актуальны
+3. Перезапустите деплой при необходимости 
