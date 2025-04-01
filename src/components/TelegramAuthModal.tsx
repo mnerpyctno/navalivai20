@@ -42,29 +42,19 @@ export const TelegramAuthModal = () => {
   if (!isOpen) return null;
 
   return (
-    <div 
-      className={`telegram-modal-overlay ${!isOpen ? 'hidden' : ''}`}
-    >
-      <div 
-        className={`telegram-modal-content ${!isOpen ? 'hidden' : ''}`}
-      >
+    <div className="telegram-modal-overlay">
+      <div className="telegram-modal-content">
         <div className="telegram-modal-header">
-          <h2>Вход через Telegram</h2>
-          <button 
-            className="close-button"
-            onClick={() => {
-              setIsOpen(false);
-              document.body.classList.remove('modal-open');
-            }}
-          >
-            ✕
-          </button>
+          <h2>Добро пожаловать в Navalivaishop</h2>
         </div>
         <div className="telegram-modal-body">
-          <p className="text-center mb-4">
-            Пожалуйста, войдите через Telegram для продолжения
+          <p>
+            Для доступа к полной версии магазина, пожалуйста, войдите через Telegram.
+            Это обеспечит безопасную и удобную авторизацию.
           </p>
-          <TelegramLoginWidget onAuth={handleTelegramAuth} />
+          <div className="telegram-login-widget">
+            <TelegramLoginWidget onAuth={handleTelegramAuth} />
+          </div>
         </div>
       </div>
     </div>

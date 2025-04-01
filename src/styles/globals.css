@@ -4,7 +4,8 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background: linear-gradient(135deg, rgba(0, 136, 255, 0.1) 0%, rgba(0, 136, 255, 0.2) 100%);
+  backdrop-filter: blur(5px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -12,45 +13,37 @@
 }
 
 .telegram-modal-content {
-  background-color: white;
-  border-radius: 12px;
-  padding: 24px;
+  background: white;
+  border-radius: 24px;
+  padding: 2rem;
   width: 90%;
   max-width: 400px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  position: relative;
+  animation: modalAppear 0.3s ease-out;
+}
+
+@keyframes modalAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .telegram-modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
+  text-align: center;
+  margin-bottom: 2rem;
 }
 
 .telegram-modal-header h2 {
-  margin: 0;
   font-size: 1.5rem;
-  color: #333;
-}
-
-.close-button {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: #666;
-  padding: 0;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: background-color 0.2s;
-}
-
-.close-button:hover {
-  background-color: #f0f0f0;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 0.5rem;
 }
 
 .telegram-modal-body {
@@ -58,18 +51,20 @@
 }
 
 .telegram-modal-body p {
-  color: #666;
-  margin-bottom: 20px;
+  color: #4b5563;
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+  line-height: 1.5;
 }
 
 /* Стили для виджета Telegram */
-#telegram-login-widget {
+.telegram-login-widget {
   display: flex;
   justify-content: center;
-  margin-top: 20px;
+  margin-top: 1rem;
 }
 
-/* Предотвращаем прокрутку страницы при открытом модальном окне */
+/* Предотвращение прокрутки страницы при открытом модальном окне */
 body.modal-open {
   overflow: hidden;
 } 
