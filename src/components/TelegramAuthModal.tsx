@@ -32,6 +32,8 @@ export const TelegramAuthModal = () => {
     console.log('Telegram auth success:', user);
     setIsOpen(false);
     document.body.classList.remove('modal-open');
+    // Обновляем страницу для отображения полной версии
+    window.location.reload();
   };
 
   // Не показываем модальное окно на сервере
