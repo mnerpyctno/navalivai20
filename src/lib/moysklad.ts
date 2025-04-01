@@ -51,6 +51,7 @@ export class MoySkladAPI {
         },
         mode: 'cors',
         credentials: 'omit',
+        cache: 'no-cache',
       });
 
       if (!response.ok) {
