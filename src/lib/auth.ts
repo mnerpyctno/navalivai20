@@ -7,12 +7,11 @@ const prisma = new PrismaClient();
 
 interface User {
   id: string;
-  telegramId: string;
-  firstName: string;
-  lastName?: string | null;
-  username?: string | null;
-  photoUrl?: string | null;
-  moySkladId?: string | null;
+  name: string | null;
+  email: string | null;
+  image: string | null;
+  telegramId: string | null;
+  moySkladId: string | null;
   ordersCount: number;
   createdAt: Date;
   updatedAt: Date;
@@ -51,26 +50,22 @@ export const authOptions: NextAuthOptions = {
           const user = await prisma.user.upsert({
             where: { telegramId: credentials.telegramId },
             update: {
-              firstName: credentials.firstName,
-              lastName: credentials.lastName,
-              username: credentials.username,
-              photoUrl: credentials.photoUrl,
+              name: credentials.firstName,
+              image: credentials.photoUrl,
             },
             create: {
               telegramId: credentials.telegramId,
-              firstName: credentials.firstName,
-              lastName: credentials.lastName,
-              username: credentials.username,
-              photoUrl: credentials.photoUrl,
+              name: credentials.firstName,
+              image: credentials.photoUrl,
               ordersCount: 0,
             },
           });
 
           return {
             id: user.id,
-            name: `${user.firstName} ${user.lastName || ''}`,
-            email: user.username ? `${user.username}@telegram.com` : undefined,
-            image: user.photoUrl || undefined,
+            name: user.name || '',
+            email: user.email,
+            image: user.image,
           };
         } catch (error) {
           console.error('Error in authorize:', error);
