@@ -39,19 +39,18 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
   const observer = useRef<IntersectionObserver | null>(null);
-  const loadingRef = useCallback((node: HTMLDivElement) => {
-    if (loading) return;
+  const loadingRef = useCallback((node: HTMLDivElement | null) => {
     if (observer.current) observer.current.disconnect();
     observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore && !loading) {
-        setPage(prevPage => prevPage + 1);
+      if (entries[0].isIntersecting && !loading && hasMore) {
+        setPage(prev => prev + 1);
       }
     }, {
       threshold: 0.1,
       rootMargin: '100px'
     });
     if (node) observer.current.observe(node);
-  }, [loading, hasMore, page]);
+  }, [loading, hasMore]);
 
   useEffect(() => {
     const fetchData = async () => {

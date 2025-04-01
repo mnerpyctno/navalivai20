@@ -30,19 +30,18 @@ export default function SearchPage() {
     setLoading(true);
   }, [query]);
 
-  const loadingRef = useCallback((node: HTMLDivElement) => {
-    if (loading) return;
+  const loadingRef = useCallback((node: HTMLDivElement | null) => {
     if (observer.current) observer.current.disconnect();
     observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore && !loading) {
-        setPage(prevPage => prevPage + 1);
+      if (entries[0].isIntersecting && !loading && hasMore) {
+        setPage(prev => prev + 1);
       }
     }, {
       threshold: 0.1,
       rootMargin: '100px'
     });
     if (node) observer.current.observe(node);
-  }, [loading, hasMore, page]);
+  }, [loading, hasMore]);
 
   useEffect(() => {
     const searchProducts = async () => {

@@ -80,12 +80,12 @@ export default function ProductCard({ product }: ProductCardProps) {
   };
 
   useEffect(() => {
-    console.log('ProductCard: Загрузка изображения:', {
-      imageUrl: product.image,
-      productName: product.name,
-      productId: product.id
-    });
-  }, [product.image, product.name, product.id]);
+    if (product.image) {
+      const img = new Image();
+      img.src = product.image;
+      img.onerror = handleImageError;
+    }
+  }, [product.image]);
 
   return (
     <>

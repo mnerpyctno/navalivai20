@@ -32,7 +32,6 @@ export const TelegramAuthModal = () => {
     // Добавляем функцию в глобальный объект window
     (window as any).onTelegramAuth = (user: any) => {
       // Здесь можно обработать данные пользователя
-      console.log('Logged in as', user.first_name, user.last_name, user.id);
       setIsOpen(false);
       document.body.classList.remove('modal-open');
     };

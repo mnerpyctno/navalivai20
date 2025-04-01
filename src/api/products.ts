@@ -86,21 +86,19 @@ export const productsApi = {
     filter?: string;
     expand?: string;
   } = {}): Promise<MoySkladResponse<MoySkladProduct>> {
-    const defaultParams = {
-      limit: 20,
-      offset: 0,
-      expand: 'images,salePrices,productFolder,images.rows',
-      order: 'name,asc',
-      ...params
+    const defaultParams: Record<string, any> = {
+      limit: params.limit || 20,
+      offset: params.offset || 0,
+      order: params.order || 'name,asc',
+      filter: params.filter || 'archived=false',
+      expand: params.expand || 'images'
     };
 
     if (params.categoryId) {
-      defaultParams.filter = defaultParams.filter 
-        ? `${defaultParams.filter};productFolder=${params.categoryId}`
+      defaultParams.filter = defaultParams.filter
+        ? `${defaultParams.filter};${params.categoryId}`
         : `productFolder=${params.categoryId}`;
     }
-
-    console.log('Products API request params:', defaultParams);
 
     const response = await moySkladClient.get('', {
       params: {
@@ -108,19 +106,6 @@ export const productsApi = {
         url: 'entity/product',
         params: JSON.stringify(defaultParams)
       }
-    });
-
-    console.log('Products API response:', {
-      total: response.data.meta?.size,
-      products: response.data.rows?.map((p: MoySkladProduct) => ({
-        id: p.id,
-        name: p.name,
-        hasImages: !!p.images,
-        imagesMeta: p.images?.meta,
-        imagesRows: p.images?.rows?.length,
-        firstImage: p.images?.rows?.[0],
-        firstImageMiniature: p.images?.rows?.[0]?.miniature
-      }))
     });
 
     return response.data;

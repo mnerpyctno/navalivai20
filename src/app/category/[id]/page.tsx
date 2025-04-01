@@ -137,7 +137,7 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
                   className={styles.addToCartButton}
                   onClick={() => addToCart({
                     ...product,
-                    id: parseInt(product.id),
+                    id: product.id,
                     quantity: 1
                   })}
                 >
