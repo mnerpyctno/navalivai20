@@ -11,7 +11,7 @@ const nextConfig = {
     removeConsole: process.env.NODE_ENV === 'production',
   },
   experimental: {
-    optimizeCss: true,
+    optimizeCss: false,
     optimizePackageImports: ['@fortawesome/free-solid-svg-icons', 'react-icons'],
   },
   webpack: (config, { dev, isServer }) => {
