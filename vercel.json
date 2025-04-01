@@ -8,7 +8,8 @@
   "env": {
     "NEXTAUTH_URL": "https://navaliva-next-twa.vercel.app",
     "NEXTAUTH_SECRET": "tlmrlYl/m7P773SvTZL3lw5VtgnPBHF+/oLO5tBIKrM=",
-    "DATABASE_URL": "@database-url",
+    "DATABASE_URL": "postgres://postgres.wepkbfowtalakrjekrtj:Kw5LEUX4siYRklGa@aws-0-eu-central-1.pooler.supabase.com:5432/postgres?pgbouncer=true&connection_limit=1",
+    "DIRECT_URL": "postgres://postgres.wepkbfowtalakrjekrtj:Kw5LEUX4siYRklGa@aws-0-eu-central-1.pooler.supabase.com:5432/postgres?pgbouncer=true",
     "MOYSKLAD_API_TOKEN": "@moysklad-api-token",
     "MOYSKLAD_API_URL": "https://api.moysklad.ru/api/remap/1.2"
   }
