@@ -104,7 +104,9 @@ export function useTelegram() {
   };
 
   const setMainButtonText = (text: string) => {
-    webApp?.MainButton.setText(text);
+    if (webApp?.MainButton) {
+      webApp.MainButton.text = text;
+    }
   };
 
   const onMainButtonClick = (callback: () => void) => {
@@ -121,7 +123,11 @@ export function useTelegram() {
 
   return {
     webApp,
-    user: session?.user as TelegramUser | null,
+    user: session?.user ? {
+      id: parseInt(session.user.id),
+      first_name: session.user.name || '',
+      photo_url: session.user.image || undefined,
+    } as TelegramUser : null,
     isReady: !isLoading,
     error,
     isTelegramWebApp,
