@@ -18,17 +18,13 @@ export async function POST(request: Request) {
     const user = await prisma.user.upsert({
       where: { telegramId },
       update: {
-        firstName,
-        lastName,
-        username,
-        photoUrl,
+        name: firstName,
+        image: photoUrl,
       },
       create: {
         telegramId,
-        firstName,
-        lastName,
-        username,
-        photoUrl,
+        name: firstName,
+        image: photoUrl,
         cart: {
           create: {} // Создаем пустую корзину
         }
