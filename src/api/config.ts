@@ -8,29 +8,30 @@ export const BASE_URL = '/api/moysklad';
 export const createMoySkladClient = (): AxiosInstance => {
   const client = axios.create({
     baseURL: BASE_URL,
-    timeout: 30000
+    timeout: 30000,
+    headers: {
+      'Content-Type': 'application/json'
+    }
   });
 
-  // Добавляем интерцепторы для логирования
-  client.interceptors.request.use(request => {
-    return request;
-  });
-
+  // Добавляем интерцепторы для обработки ошибок
   client.interceptors.response.use(
-    response => {
-      return response;
-    },
+    response => response,
     error => {
-      console.error('MoySklad Error:', {
-        message: error.message,
-        status: error.response?.status,
-        data: error.response?.data,
-        config: {
-          url: error.config?.url,
-          method: error.config?.method,
-          params: error.config?.params
-        }
-      });
+      if (error.response) {
+        // Сервер ответил с ошибкой
+        console.error('API Error:', {
+          status: error.response.status,
+          data: error.response.data,
+          headers: error.response.headers
+        });
+      } else if (error.request) {
+        // Запрос был сделан, но ответ не получен
+        console.error('Network Error:', error.request);
+      } else {
+        // Ошибка при настройке запроса
+        console.error('Request Error:', error.message);
+      }
       return Promise.reject(error);
     }
   );

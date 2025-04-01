@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
 import { stockStore } from '@/lib/stockStore';
@@ -70,22 +70,22 @@ export default function ProductCard({ product }: ProductCardProps) {
     }
   };
 
-  const handleImageError = () => {
+  const handleImageError = useCallback(() => {
     console.error('Ошибка загрузки изображения:', {
       imageUrl: product.image,
       productName: product.name,
       productId: product.id
     });
     setImageError(true);
-  };
+  }, [product.image, product.name, product.id]);
 
   useEffect(() => {
     if (product.image) {
-      const img = new Image();
+      const img = new window.Image();
       img.src = product.image;
       img.onerror = handleImageError;
     }
-  }, [product.image]);
+  }, [product.image, handleImageError]);
 
   return (
     <>
