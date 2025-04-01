@@ -21,13 +21,23 @@ export default function ProfilePage() {
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
         <div className="flex items-center space-x-4 mb-6">
-          <Image
-            src={user.photo_url}
-            alt={user.first_name}
-            width={80}
-            height={80}
-            className="rounded-full"
-          />
+          <div className="relative w-20 h-20">
+            {user.photo_url ? (
+              <Image
+                src={user.photo_url}
+                alt={user.first_name}
+                fill
+                className="rounded-full object-cover"
+              />
+            ) : (
+              <Image
+                src="/profile-icon.svg"
+                alt="Профиль"
+                fill
+                className="rounded-full"
+              />
+            )}
+          </div>
           <div>
             <h1 className="text-2xl font-bold">
               {user.first_name} {user.last_name}

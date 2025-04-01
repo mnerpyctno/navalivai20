@@ -18,13 +18,23 @@ export default function Navigation() {
           <div className="flex items-center space-x-4">
             {user ? (
               <Link href="/profile" className="flex items-center space-x-2">
-                <Image
-                  src={user.photo_url || '/default-avatar.png'}
-                  alt={user.first_name}
-                  width={32}
-                  height={32}
-                  className="rounded-full"
-                />
+                <div className="relative w-8 h-8">
+                  {user.photo_url ? (
+                    <Image
+                      src={user.photo_url}
+                      alt={user.first_name}
+                      fill
+                      className="rounded-full object-cover"
+                    />
+                  ) : (
+                    <Image
+                      src="/profile-icon.svg"
+                      alt="Профиль"
+                      fill
+                      className="rounded-full"
+                    />
+                  )}
+                </div>
                 <span className="text-gray-700">{user.first_name}</span>
               </Link>
             ) : (
