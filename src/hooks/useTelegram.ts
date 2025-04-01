@@ -10,6 +10,7 @@ interface TelegramUser {
   start_param?: string;
   photo_url?: string;
   auth_date?: number;
+  hash: string;
 }
 
 export const useTelegram = () => {
@@ -17,6 +18,7 @@ export const useTelegram = () => {
   const [user, setUser] = useState<TelegramUser | null>(null);
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isTelegramWebApp, setIsTelegramWebApp] = useState(false);
 
   useEffect(() => {
     try {
@@ -26,33 +28,34 @@ export const useTelegram = () => {
         return;
       }
 
-      // Проверяем, есть ли данные пользователя в URL (после авторизации)
-      const searchParams = new URLSearchParams(window.location.search);
-      const userId = searchParams.get('id');
-      
-      if (userId) {
-        // Если есть данные пользователя, сохраняем их
-        const userData: TelegramUser = {
-          id: parseInt(userId),
-          first_name: searchParams.get('first_name') || '',
-          last_name: searchParams.get('last_name') || undefined,
-          username: searchParams.get('username') || undefined,
-          photo_url: searchParams.get('photo_url') || undefined,
-          auth_date: parseInt(searchParams.get('auth_date') || '0'),
-        };
-        setUser(userData);
-        
-        // Очищаем URL от параметров авторизации
-        window.history.replaceState({}, '', window.location.pathname);
-      }
-
-      // Проверяем наличие Telegram Web App
+      // Проверяем, запущено ли приложение в Telegram
       const tg = window.Telegram?.WebApp;
       if (tg) {
+        setIsTelegramWebApp(true);
         setWebApp(tg);
-        if (!user) {
-          setUser(tg.initDataUnsafe?.user || null);
+        
+        // Пытаемся получить данные пользователя из localStorage
+        const savedUser = localStorage.getItem('telegram_user');
+        if (savedUser) {
+          setUser(JSON.parse(savedUser));
+          return;
         }
+
+        // Если данных нет в localStorage, получаем их из Telegram
+        const initData = tg.initData;
+        if (initData) {
+          try {
+            const initDataObj = JSON.parse(initData);
+            if (initDataObj.user) {
+              setUser(initDataObj.user);
+              // Сохраняем данные пользователя в localStorage
+              localStorage.setItem('telegram_user', JSON.stringify(initDataObj.user));
+            }
+          } catch (error) {
+            console.error('Error parsing initData:', error);
+          }
+        }
+        
         tg.ready();
         setIsReady(true);
       } else {
@@ -61,7 +64,7 @@ export const useTelegram = () => {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Произошла ошибка при инициализации');
     }
-  }, [user]);
+  }, []);
 
   const onClose = useCallback(() => {
     webApp?.close();
@@ -114,7 +117,7 @@ export const useTelegram = () => {
     user,
     isReady,
     error,
-    isTelegramWebApp: !!webApp,
+    isTelegramWebApp,
     onClose,
     onToggleMainButton,
     onToggleBackButton,

@@ -30,10 +30,12 @@ export const TelegramAuthModal = () => {
   // Функция обработки авторизации через Telegram
   const handleTelegramAuth = (user: any) => {
     console.log('Telegram auth success:', user);
+    // Сохраняем данные пользователя в localStorage
+    localStorage.setItem('telegram_user', JSON.stringify(user));
     setIsOpen(false);
     document.body.classList.remove('modal-open');
-    // Обновляем страницу для отображения полной версии
-    window.location.reload();
+    // Обновляем состояние без перезагрузки страницы
+    window.dispatchEvent(new Event('storage'));
   };
 
   // Не показываем модальное окно на сервере
