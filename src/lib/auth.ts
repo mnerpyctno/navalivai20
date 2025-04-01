@@ -39,6 +39,7 @@ export const authOptions: NextAuthOptions = {
         lastName: { label: 'Last Name', type: 'text' },
         username: { label: 'Username', type: 'text' },
         photoUrl: { label: 'Photo URL', type: 'text' },
+        authDate: { label: 'Auth Date', type: 'text' },
       },
       async authorize(credentials) {
         if (!credentials?.telegramId) {
@@ -50,22 +51,34 @@ export const authOptions: NextAuthOptions = {
           const user = await prisma.user.upsert({
             where: { telegramId: credentials.telegramId },
             update: {
-              name: credentials.firstName,
-              image: credentials.photoUrl,
+              firstName: credentials.firstName,
+              photoUrl: credentials.photoUrl,
             },
             create: {
               telegramId: credentials.telegramId,
-              name: credentials.firstName,
-              image: credentials.photoUrl,
-              ordersCount: 0,
+              firstName: credentials.firstName,
+              lastName: credentials.lastName,
+              username: credentials.username,
+              photoUrl: credentials.photoUrl,
+              authDate: credentials.authDate,
+              cart: {
+                create: {}
+              }
             },
           });
 
           return {
             id: user.id,
-            name: user.name || '',
-            email: user.email,
-            image: user.image,
+            telegramId: user.telegramId,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            username: user.username,
+            photoUrl: user.photoUrl,
+            authDate: user.authDate,
+            moySkladId: user.moySkladId,
+            ordersCount: user.ordersCount,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
           };
         } catch (error) {
           console.error('Error in authorize:', error);
