@@ -1,9 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import axios from 'axios';
+
+// Конфигурация API МойСклад
+const API_VERSION = '1.2';
+const BASE_URL = `https://api.moysklad.ru/api/remap/${API_VERSION}`;
 
 // Создаем клиент для MoySklad API
 const msClient = axios.create({
-  baseURL: 'https://api.moysklad.ru/api/remap/1.2',
+  baseURL: BASE_URL,
   headers: {
     'Authorization': `Bearer ${process.env.MOYSKLAD_TOKEN}`,
     'Accept': 'application/json;charset=utf-8',
@@ -12,35 +16,11 @@ const msClient = axios.create({
   timeout: 30000
 });
 
-// Добавляем интерцепторы для логирования
-msClient.interceptors.request.use(request => {
-  console.log('Request:', {
-    url: request.url,
-    method: request.method,
-    params: request.params,
-    headers: request.headers
-  });
-  return request;
-});
-
-msClient.interceptors.response.use(
-  response => {
-    console.log('Response:', {
-      status: response.status,
-      statusText: response.statusText,
-      data: response.data
-    });
-    return response;
-  },
-  error => {
-    console.error('Error:', {
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      data: error.response?.data
-    });
-    return Promise.reject(error);
-  }
-);
+interface MoySkladParams {
+  limit?: number;
+  offset?: number;
+  [key: string]: any;
+}
 
 export async function GET(request: Request) {
   try {
@@ -49,7 +29,14 @@ export async function GET(request: Request) {
     const url = searchParams.get('url');
     const paramsStr = searchParams.get('params');
 
-    if (!method || !url || !paramsStr) {
+    console.log('Получен запрос к МойСклад:', {
+      method,
+      url,
+      params: paramsStr
+    });
+
+    if (!method || !url) {
+      console.error('Отсутствуют обязательные параметры:', { method, url });
       return NextResponse.json(
         { error: 'Missing required parameters' },
         { status: 400 }
@@ -57,17 +44,40 @@ export async function GET(request: Request) {
     }
 
     if (!process.env.MOYSKLAD_TOKEN) {
+      console.error('Отсутствует токен МойСклад');
       return NextResponse.json(
         { error: 'MoySklad token is not configured' },
         { status: 500 }
       );
     }
 
-    const params = JSON.parse(paramsStr);
+    let params: MoySkladParams = {};
+    if (paramsStr) {
+      try {
+        params = JSON.parse(paramsStr);
+        console.log('Распарсенные параметры:', params);
+      } catch (e) {
+        console.error('Ошибка при парсинге параметров:', e);
+        return NextResponse.json(
+          { error: 'Invalid parameters format' },
+          { status: 400 }
+        );
+      }
+    }
 
     // Преобразуем строковые значения в числа для limit и offset
-    if (params.limit) params.limit = parseInt(params.limit);
-    if (params.offset) params.offset = parseInt(params.offset);
+    if (params.limit) params.limit = parseInt(String(params.limit));
+    if (params.offset) params.offset = parseInt(String(params.offset));
+
+    // Обрабатываем параметр expand
+    if (params.expand) {
+      // Убеждаемся, что images.rows включен в expand
+      const expandParts = params.expand.split(',');
+      if (!expandParts.includes('images.rows') && expandParts.includes('images')) {
+        expandParts.push('images.rows');
+        params.expand = expandParts.join(',');
+      }
+    }
 
     // Удаляем undefined параметры
     Object.keys(params).forEach(key => {
@@ -76,24 +86,64 @@ export async function GET(request: Request) {
       }
     });
 
-    // Определяем версию API в зависимости от типа запроса
-    const apiVersion = url.includes('product') ? '1.2' : '1.2';
-    const baseUrl = `https://api.moysklad.ru/api/remap/${apiVersion}`;
-
-    const response = await axios.request({
+    // Формируем URL для запроса
+    const requestUrl = `${BASE_URL}/${url}`;
+    console.log('Отправка запроса к МойСклад:', {
+      url: requestUrl,
       method: method.toLowerCase(),
-      url: `${baseUrl}/${url}`,
       params,
-      headers: {
-        'Authorization': `Bearer ${process.env.MOYSKLAD_TOKEN}`,
-        'Accept': 'application/json;charset=utf-8',
-        'Content-Type': 'application/json'
+      expand: params.expand,
+      filter: params.filter
+    });
+
+    const response = await msClient.request({
+      method: method.toLowerCase(),
+      url,
+      params,
+      validateStatus: (status) => status < 500 // Принимаем все статусы меньше 500
+    });
+
+    console.log('Ответ от МойСклад:', {
+      status: response.status,
+      statusText: response.statusText,
+      data: {
+        meta: response.data?.meta,
+        rows: response.data?.rows?.map((item: any) => ({
+          id: item.id,
+          name: item.name,
+          hasImages: !!item.images,
+          imagesMeta: item.images?.meta,
+          imagesRows: item.images?.rows?.length,
+          firstImage: item.images?.rows?.[0],
+          firstImageMiniature: item.images?.rows?.[0]?.miniature
+        }))
       }
     });
 
+    if (response.status >= 400) {
+      console.error('Ошибка запроса к МойСклад:', {
+        status: response.status,
+        data: response.data,
+        params: response.config.params
+      });
+      return NextResponse.json(
+        { error: response.data?.error || 'Bad request' },
+        { status: response.status }
+      );
+    }
+
     return NextResponse.json(response.data);
   } catch (error: any) {
-    console.error('API Error:', error);
+    console.error('Ошибка API МойСклад:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      config: {
+        url: error.config?.url,
+        method: error.config?.method,
+        params: error.config?.params
+      }
+    });
 
     if (error.response?.status === 401) {
       return NextResponse.json(

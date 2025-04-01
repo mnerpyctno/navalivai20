@@ -17,6 +17,7 @@
   --shadow-up: 0 -1px 3px rgba(0, 0, 0, 0.1);
   --container-padding: 16px;
   --header-height: 64px;
+  --footer-height: 160px;
 }
 
 @tailwind base;
@@ -50,6 +51,10 @@
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+  }
+
+  body.modal-open {
+    overflow: hidden;
   }
 }
 
@@ -201,5 +206,175 @@
   @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+  }
+
+  .loading-screen {
+    position: fixed;
+    inset: 0;
+    background-color: var(--background-color);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .loading-container {
+    width: 100%;
+    max-width: var(--max-width);
+    margin: 0 var(--container-padding);
+    background-color: var(--app-background);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: var(--shadow);
+  }
+
+  .loading-content {
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+  }
+
+  .loading-emoji {
+    font-size: 6rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .loading-text {
+    color: var(--text-primary);
+    font-size: 1.25rem;
+    font-weight: 500;
+    text-align: center;
+    padding: 0 1rem;
+    max-width: 100%;
+    word-break: break-word;
+  }
+
+  .loading-progress {
+    width: 100%;
+    height: 4px;
+    background-color: var(--border-color);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 1rem;
+  }
+
+  .loading-progress-bar {
+    height: 100%;
+    background: linear-gradient(to right, var(--button-primary), var(--button-primary-hover));
+  }
+
+  /* Стили для модального окна Telegram */
+  .telegram-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+    backdrop-filter: blur(4px);
+  }
+
+  .telegram-modal-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .telegram-modal-content {
+    background-color: white;
+    border-radius: 16px;
+    padding: 2.5rem;
+    max-width: 28rem;
+    width: calc(100% - 2rem);
+    margin: 0 1rem;
+    transform: translateY(0);
+    opacity: 1;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    position: relative;
+  }
+
+  .telegram-modal-content.hidden {
+    transform: translateY(1rem);
+    opacity: 0;
+  }
+
+  .telegram-modal-icon {
+    width: 5rem;
+    height: 5rem;
+    margin: 0 auto 1.5rem;
+    background-color: #0088cc;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 6px -1px rgba(0, 136, 204, 0.2), 0 2px 4px -1px rgba(0, 136, 204, 0.1);
+  }
+
+  .telegram-modal-icon svg {
+    width: 2.5rem;
+    height: 2.5rem;
+    color: white;
+  }
+
+  .telegram-modal-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.75rem;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  .telegram-modal-description {
+    color: var(--text-secondary);
+    text-align: center;
+    margin-bottom: 2rem;
+    font-size: 1.125rem;
+    line-height: 1.5;
+  }
+
+  .telegram-modal-button {
+    width: 100%;
+    background-color: #0088cc;
+    color: white;
+    padding: 1rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1.125rem;
+    text-align: center;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: block;
+    box-shadow: 0 4px 6px -1px rgba(0, 136, 204, 0.2), 0 2px 4px -1px rgba(0, 136, 204, 0.1);
+  }
+
+  .telegram-modal-button:hover {
+    background-color: #0077b3;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 8px -1px rgba(0, 136, 204, 0.3), 0 3px 6px -1px rgba(0, 136, 204, 0.2);
+  }
+
+  .telegram-modal-button:active {
+    transform: translateY(0);
+  }
+
+  .telegram-modal-additional-text {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    text-align: center;
+    margin-top: 1.5rem;
+    line-height: 1.5;
   }
 } 

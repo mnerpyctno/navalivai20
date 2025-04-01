@@ -26,15 +26,6 @@ const msClient = axios.create({
 // Добавляем интерцептор для логирования запросов к MoySklad
 msClient.interceptors.request.use(
   (config) => {
-    console.log('Запрос к MoySklad:', {
-      url: config.url,
-      method: config.method,
-      params: config.params,
-      headers: {
-        ...config.headers,
-        Authorization: 'Bearer ***'
-      }
-    });
     return config;
   },
   (error) => {
@@ -45,11 +36,6 @@ msClient.interceptors.request.use(
 
 msClient.interceptors.response.use(
   (response) => {
-    console.log('Ответ от MoySklad:', {
-      status: response.status,
-      url: response.config.url,
-      data: response.data
-    });
     return response;
   },
   (error) => {
@@ -81,12 +67,6 @@ app.use(express.json());
 
 // Логирование всех запросов
 app.use((req: express.Request, _res: express.Response, next: express.NextFunction) => {
-  console.log('Входящий запрос:', {
-    method: req.method,
-    url: req.url,
-    query: req.query,
-    headers: req.headers
-  });
   next();
 });
 
@@ -94,13 +74,6 @@ app.use((req: express.Request, _res: express.Response, next: express.NextFunctio
 app.get('/api/ms-proxy', async (req: express.Request, res: express.Response) => {
   try {
     const { method, url, params } = req.query;
-    
-    console.log('Получен запрос:', {
-      method,
-      url,
-      params,
-      query: req.query
-    });
 
     if (!method || !url) {
       console.error('Отсутствуют обязательные параметры:', { method, url });
@@ -115,24 +88,14 @@ app.get('/api/ms-proxy', async (req: express.Request, res: express.Response) => 
         // Преобразуем строковые значения в числа, где это необходимо
         if (parsedParams.limit) parsedParams.limit = parseInt(parsedParams.limit as string);
         if (parsedParams.offset) parsedParams.offset = parseInt(parsedParams.offset as string);
-        console.log('Распарсенные параметры:', parsedParams);
       } catch (e) {
         console.error('Ошибка при парсинге параметров:', e);
         return res.status(400).json({ error: 'Invalid parameters format' });
       }
     }
 
-    const authHeader = `Bearer ${MS_TOKEN}`;
-    console.log('Auth header:', authHeader.substring(0, 20) + '...');
-
     const requestMethod = (method as string).toLowerCase();
     const requestUrl = (url as string).startsWith('/') ? (url as string).slice(1) : url as string;
-    
-    console.log('Отправка запроса к MoySklad:', {
-      url: `${msClient.defaults.baseURL}/${requestUrl}`,
-      method: requestMethod,
-      params: parsedParams
-    });
 
     const response = await msClient({
       method: requestMethod,
@@ -148,12 +111,13 @@ app.get('/api/ms-proxy', async (req: express.Request, res: express.Response) => 
           Authorization: 'Bearer ***'
         }
       });
+      return res.status(401).json({ error: 'Unauthorized - Invalid token' });
     }
 
-    console.log('Ответ от MoySklad:', {
-      status: response.status,
-      data: response.data
-    });
+    if (response.status === 400) {
+      console.error('Ошибка запроса:', response.data);
+      return res.status(400).json(response.data);
+    }
 
     res.json(response.data);
   } catch (error: any) {
@@ -204,5 +168,4 @@ app.get('/health', (_req: express.Request, res: express.Response) => {
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
-  console.log(`MoySklad token: ${MS_TOKEN.substring(0, 10)}...`);
 }); 

@@ -54,12 +54,13 @@
 
 .searchBox {
   flex: 1;
+  position: relative;
   display: flex;
   align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
   background: var(--button-secondary);
   border-radius: 8px;
-  padding: 8px 12px;
-  gap: 8px;
 }
 
 .searchIcon {
@@ -70,15 +71,39 @@
 .searchInput {
   flex: 1;
   border: none;
-  background: none;
-  color: var(--text-primary);
-  font-size: 14px;
-  padding: 0;
   outline: none;
+  font-size: 14px;
+  background: var(--button-secondary);
+  color: var(--text-primary);
+  padding: 0;
 }
 
 .searchInput::placeholder {
   color: var(--text-secondary);
+}
+
+.searchInput:focus {
+  background: var(--button-secondary);
+}
+
+.clearButton {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+}
+
+.clearButton:hover {
+  color: var(--text-primary);
 }
 
 .cartIconWrapper {

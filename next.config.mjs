@@ -11,21 +11,8 @@ const pwaConfig = withPWA({
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'online.moysklad.ru',
-      },
-      {
-        protocol: 'https',
-        hostname: 'miniature-prod.moysklad.ru',
-      }
-    ],
+    domains: ['api.moysklad.ru', 'miniature-prod.moysklad.ru'],
   },
-  env: {
-    MOYSKLAD_TOKEN: process.env.MOYSKLAD_TOKEN,
-  },
-  // Конфигурация для TWA
   async headers() {
     return [
       {
@@ -33,7 +20,7 @@ const nextConfig = {
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; connect-src 'self' https://api.moysklad.ru; img-src 'self' https://online.moysklad.ru data:; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://telegram.org https://*.telegram.org; style-src 'self' 'unsafe-inline';"
+            value: "default-src 'self'; connect-src 'self' https://api.moysklad.ru; img-src 'self' https://api.moysklad.ru https://miniature-prod.moysklad.ru data:; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://telegram.org https://*.telegram.org; style-src 'self' 'unsafe-inline';"
           }
         ]
       }

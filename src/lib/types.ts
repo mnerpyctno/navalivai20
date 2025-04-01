@@ -3,12 +3,11 @@ export interface Product {
   id: string;
   name: string;
   price: number;
-  oldPrice?: number;
-  image?: string;
-  description?: string;
+  image: string;
+  description: string;
   categoryId: string | null;
-  code?: string;
-  available?: number;
+  available: boolean;
+  stock: number;
 }
 
 export interface Category {
@@ -28,36 +27,47 @@ export interface MoySkladResponse<T> {
   };
 }
 
-export interface MoySkladProduct {
-  id: string;
-  name: string;
-  description?: string;
-  code?: string;
-  images?: {
-    rows: Array<{
-      miniature?: {
-        href: string;
-      };
-    }>;
-  };
-  salePrices?: Array<{
-    value: number;
-    currency?: {
-      name: string;
-      code: string;
+export interface MoySkladStock {
+  quantity: number;
+  product: {
+    id?: string;
+    meta: {
+      href: string;
     };
-  }>;
-  minPrice?: {
-    value: number;
   };
-  productFolder?: {
+  store: {
     meta: {
       href: string;
     };
   };
 }
 
+// Импортируем типы из api/products.ts
+export type { MoySkladProduct, MoySkladProductImage } from '@/api/products';
+
 export interface MoySkladCategory {
   id: string;
   name: string;
+  code?: string;
+  description?: string;
+  externalCode?: string;
+  meta: {
+    href: string;
+    type: string;
+    mediaType: string;
+  };
+}
+
+export interface MoySkladWebhook {
+  id: string;
+  url: string;
+  action: 'CREATE' | 'UPDATE' | 'DELETE';
+  entityType: string;
+  method: 'POST' | 'GET';
+  enabled: boolean;
+  meta: {
+    href: string;
+    type: string;
+    mediaType: string;
+  };
 } 

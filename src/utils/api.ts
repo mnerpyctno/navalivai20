@@ -1,76 +1,16 @@
-import { Product } from '@/types/product';
+import { Product, MoySkladProduct, MoySkladCategory, MoySkladResponse, ProductsResponse } from '@/types/product';
+import { categoriesApi, productsApi, stockApi } from '@/api';
+import { getProductImageUrl } from '@/lib/api';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
-interface MoySkladProduct {
-  id: string;
-  name: string;
-  salePrices?: Array<{ value: number }>;
-  images?: {
-    rows?: Array<{
-      miniature?: {
-        downloadHref?: string;
-      };
-    }>;
-  };
-  description?: string;
-  productFolder?: {
-    id: string;
-  };
-}
-
-interface MoySkladCategory {
-  id: string;
-  name: string;
-}
-
-interface MoySkladResponse {
-  context: {
-    employee: any;
-  };
-  meta: {
-    size: number;
-    limit: number;
-    offset: number;
-  };
-  rows: MoySkladProduct[];
-}
-
-interface ProductsResponse {
-  products: Product[];
-  hasMore: boolean;
-  total: number;
-}
-
 export async function fetchCategories(): Promise<MoySkladCategory[]> {
   try {
-    const params = {
-      limit: 100,
-      offset: 0,
-      order: 'name,asc'
-    };
-
-    const queryString = `method=get&url=entity/productfolder&params=${encodeURIComponent(JSON.stringify(params))}`;
-    console.log('Fetching categories:', {
-      params,
-      queryString
-    });
-
-    const response = await fetch(`/api/moysklad?${queryString}`);
-    const data = await response.json();
-
-    if (!response.ok) {
-      console.error('Error fetching categories:', data);
-      throw new Error(data.error || 'Не удалось загрузить категории');
-    }
-
-    if (!data.rows) {
-      throw new Error('Неверный формат ответа от сервера');
-    }
-
-    return data.rows.map((category: any) => ({
+    const response = await categoriesApi.getCategories();
+    return response.rows.map((category: MoySkladCategory) => ({
       id: category.id,
-      name: category.name
+      name: category.name,
+      meta: category.meta
     }));
   } catch (error) {
     console.error('Ошибка при загрузке категорий:', error);
@@ -78,138 +18,96 @@ export async function fetchCategories(): Promise<MoySkladCategory[]> {
   }
 }
 
-export async function fetchProducts(categoryId?: string, page: number = 1, limit: number = 20): Promise<ProductsResponse> {
+export async function fetchProducts(
+  categoryId?: string,
+  page: number = 1,
+  limit: number = 9,
+  searchQuery?: string
+): Promise<ProductsResponse> {
   try {
-    const params: Record<string, any> = {
+    const params = {
       limit,
       offset: (page - 1) * limit,
-      expand: 'images,salePrices,productFolder',
-      order: 'name,asc'
+      categoryId,
+      expand: 'images,salePrices,productFolder,images.rows',
+      order: 'name,asc',
+      filter: 'archived=false'
     };
 
+    if (searchQuery) {
+      params.filter = `${params.filter};name~=${searchQuery}`;
+    }
+
     if (categoryId) {
-      console.log('Fetching products for category:', categoryId);
-      params['filter'] = `productFolder=${categoryId}`;
-      console.log('Filter params:', params);
+      params.filter = `${params.filter};productFolder=${categoryId}`;
     }
 
-    const queryString = `method=get&url=entity/product&params=${encodeURIComponent(JSON.stringify(params))}`;
-    console.log('Full request details:', {
-      categoryId,
-      limit,
-      page,
-      params,
-      queryString,
-      fullUrl: `/api/moysklad?${queryString}`
+    console.log('Search params:', params);
+
+    const response = await productsApi.getProducts(params);
+    console.log('Search response:', {
+      total: response.meta?.size,
+      products: response.rows?.map((p: MoySkladProduct) => ({
+        id: p.id,
+        name: p.name,
+        hasImages: !!p.images,
+        imagesMeta: p.images?.meta,
+        imagesRows: p.images?.rows?.length
+      }))
     });
 
-    const response = await fetch(`/api/moysklad?${queryString}`);
-    const data = await response.json();
-
-    console.log('Raw API response:', data);
-
-    if (!response.ok) {
-      console.error('Error response:', {
-        status: response.status,
-        statusText: response.statusText,
-        data
-      });
-      throw new Error(data.error || 'Failed to fetch products');
-    }
-
-    if (!data.rows) {
-      console.error('Invalid response structure:', data);
-      throw new Error('Неверный формат ответа от сервера');
-    }
-
-    const products = data.rows;
-    const total = data.meta?.size || 0;
-
-    console.log('Products data:', {
-      totalProducts: total,
-      loadedProducts: products.length,
-      page,
-      hasMore: products.length === limit,
-      firstProduct: products[0] ? {
-        id: products[0].id,
-        name: products[0].name,
-        folder: products[0].productFolder,
-        prices: products[0].salePrices,
-        images: products[0].images
-      } : null
-    });
+    const products = response.rows;
+    const total = response.meta?.size || 0;
 
     // Проверяем остатки в МойСклад для каждого товара
     const productsWithStock = await Promise.all(
       products.map(async (product: MoySkladProduct) => {
         try {
-          const stockParams = {
-            limit: 1,
-            offset: 0,
-            filter: `product=${product.id}`,
-            expand: 'product'
-          };
-          const stockQueryString = `method=get&url=report/stock/bystore&params=${encodeURIComponent(JSON.stringify(stockParams))}`;
-          console.log('Checking stock for product:', {
-            productId: product.id,
-            productName: product.name,
-            stockQueryString
-          });
+          const stockResponse = await stockApi.getProductStock(product.id);
           
-          const stockResponse = await fetch(`/api/moysklad?${stockQueryString}`);
-          const stockData = await stockResponse.json();
-          
-          console.log('Stock response for product:', {
-            productId: product.id,
-            productName: product.name,
-            stockData
-          });
-          
-          if (stockResponse.ok && stockData.rows && stockData.rows.length > 0) {
-            const quantity = stockData.rows[0].quantity || 0;
-            console.log('Stock quantity:', {
-              productId: product.id,
-              productName: product.name,
-              quantity
-            });
+          if (stockResponse.rows && stockResponse.rows.length > 0) {
+            const totalQuantity = stockResponse.rows.reduce((sum: number, row: any) => {
+              const quantity = typeof row.quantity === 'number' ? row.quantity : 0;
+              return sum + quantity;
+            }, 0);
+            
+            const imageUrl = getProductImageUrl(product);
             
             return {
               id: product.id,
               name: product.name,
               price: product.salePrices?.[0]?.value ? product.salePrices[0].value / 100 : 0,
-              image: product.images?.rows?.[0]?.miniature?.downloadHref || '/placeholder.png',
+              image: imageUrl,
               description: product.description || '',
-              categoryId: product.productFolder?.id || null,
-              available: quantity > 0,
-              stock: quantity
+              categoryId: product.productFolder?.meta?.href?.split('/').pop() || '',
+              available: totalQuantity > 0,
+              stock: totalQuantity
             };
           }
           
-          console.log('Stock check failed for product:', {
-            productId: product.id,
-            productName: product.name,
-            error: stockData
-          });
+          const imageUrl = getProductImageUrl(product);
           
           return {
             id: product.id,
             name: product.name,
             price: product.salePrices?.[0]?.value ? product.salePrices[0].value / 100 : 0,
-            image: product.images?.rows?.[0]?.miniature?.downloadHref || '/placeholder.png',
+            image: imageUrl,
             description: product.description || '',
-            categoryId: product.productFolder?.id || null,
+            categoryId: product.productFolder?.meta?.href?.split('/').pop() || '',
             available: false,
             stock: 0
           };
         } catch (error) {
-          console.error(`Ошибка проверки остатков для товара ${product.id}:`, error);
+          console.error(`Ошибка при получении остатков для товара ${product.id}:`, error);
+          const imageUrl = getProductImageUrl(product);
+          
           return {
             id: product.id,
             name: product.name,
             price: product.salePrices?.[0]?.value ? product.salePrices[0].value / 100 : 0,
-            image: product.images?.rows?.[0]?.miniature?.downloadHref || '/placeholder.png',
+            image: imageUrl,
             description: product.description || '',
-            categoryId: product.productFolder?.id || null,
+            categoryId: product.productFolder?.meta?.href?.split('/').pop() || '',
             available: false,
             stock: 0
           };
@@ -220,10 +118,10 @@ export async function fetchProducts(categoryId?: string, page: number = 1, limit
     return {
       products: productsWithStock,
       total,
-      hasMore: products.length === limit
+      hasMore: (page * limit) < total
     };
   } catch (error) {
     console.error('Ошибка при загрузке товаров:', error);
-    throw error;
+    throw error instanceof Error ? error : new Error('Не удалось загрузить товары');
   }
 } 

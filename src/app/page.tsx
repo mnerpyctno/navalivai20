@@ -3,10 +3,10 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { fetchProducts, fetchCategories } from '@/utils/api';
 import styles from '@/styles/Home.module.css';
 import Header from '@/components/Header';
 import ProductCard from '@/components/ProductCard';
+import { fetchProducts, fetchCategories } from '@/utils/api';
 
 interface Category {
   id: string;
@@ -26,7 +26,7 @@ interface Product {
   stock: number;
 }
 
-const ITEMS_PER_PAGE = 9;
+const ITEMS_PER_PAGE = 10;
 
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -37,20 +37,25 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const observer = useRef<IntersectionObserver | null>(null);
-  const lastProductRef = useCallback((node: HTMLDivElement) => {
+  const loadingRef = useCallback((node: HTMLDivElement) => {
     if (loading) return;
     if (observer.current) observer.current.disconnect();
     observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore) {
+      if (entries[0].isIntersecting && hasMore && !loading) {
+        console.log('Loading more products, current page:', page);
         setPage(prevPage => prevPage + 1);
       }
+    }, {
+      threshold: 0.1,
+      rootMargin: '100px'
     });
     if (node) observer.current.observe(node);
-  }, [loading, hasMore]);
+  }, [loading, hasMore, page]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
         const [productsData, categoriesData] = await Promise.all([
           fetchProducts(selectedCategory || undefined, page, ITEMS_PER_PAGE),
           fetchCategories()
@@ -61,7 +66,7 @@ export default function Home() {
         } else {
           setProducts(prev => [...prev, ...productsData.products]);
         }
-        setHasMore(productsData.hasMore);
+        setHasMore(productsData.products.length === ITEMS_PER_PAGE);
       } catch (error) {
         console.error('Ошибка загрузки данных:', error);
       } finally {
@@ -116,20 +121,15 @@ export default function Home() {
 
       <h2 className={styles.sectionTitle}>Все товары</h2>
       <div className={styles.productsGrid}>
-        {products.map((product, index) => (
-          <div
-            key={product.id}
-            ref={index === products.length - 1 ? lastProductRef : undefined}
-          >
-            <ProductCard product={product} />
-          </div>
+        {products.map((product) => (
+          <ProductCard key={product.id} product={product} />
         ))}
       </div>
 
-      {loading && (
-        <div className={styles.loading}>
+      {(loading || hasMore) && (
+        <div ref={loadingRef} className={styles.loading}>
           <div className={styles.spinner} />
-          <p>Загрузка...</p>
+          <p>Загрузка товаров...</p>
         </div>
       )}
     </main>

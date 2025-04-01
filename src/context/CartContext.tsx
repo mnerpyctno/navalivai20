@@ -3,20 +3,21 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 export interface CartItem {
-  id: number;
+  id: string;
   name: string;
   price: number;
   oldPrice?: number;
   image: string;
   quantity: number;
   available: boolean;
+  stock: number;
 }
 
 interface CartContextType {
   items: CartItem[];
   addToCart: (product: CartItem) => void;
-  removeFromCart: (productId: number) => void;
-  updateQuantity: (productId: number, quantity: number) => void;
+  removeFromCart: (productId: string) => void;
+  updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
 }
 
@@ -42,9 +43,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setItems((currentItems) => {
       const existingItem = currentItems.find((item) => item.id === product.id);
       if (existingItem) {
+        const newQuantity = existingItem.quantity + 1;
+        if (newQuantity > product.stock) {
+          return currentItems;
+        }
         return currentItems.map((item) =>
           item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
+            ? { ...item, quantity: newQuantity }
             : item
         );
       }
@@ -52,19 +57,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const removeFromCart = (productId: number) => {
+  const removeFromCart = (productId: string) => {
     setItems((currentItems) =>
       currentItems.filter((item) => item.id !== productId)
     );
   };
 
-  const updateQuantity = (productId: number, quantity: number) => {
+  const updateQuantity = (productId: string, quantity: number) => {
     if (quantity < 1) return;
-    setItems((currentItems) =>
-      currentItems.map((item) =>
+    setItems((currentItems) => {
+      const item = currentItems.find((item) => item.id === productId);
+      if (!item || quantity > item.stock) return currentItems;
+      return currentItems.map((item) =>
         item.id === productId ? { ...item, quantity } : item
-      )
-    );
+      );
+    });
   };
 
   const clearCart = () => {

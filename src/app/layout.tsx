@@ -2,6 +2,8 @@ import './globals.css';
 import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
 import { ClientProviders } from '@/components/ClientProviders';
+import { InitProvider } from '@/components/InitProvider';
+import { TelegramAuthModal } from '@/components/TelegramAuthModal';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -35,9 +37,12 @@ export default function RootLayout({
       </head>
       <body className="font-sans antialiased">
         <ClientProviders>
-          <main>
-            {children}
-          </main>
+          <InitProvider>
+            <main>
+              {children}
+            </main>
+            <TelegramAuthModal />
+          </InitProvider>
         </ClientProviders>
       </body>
     </html>

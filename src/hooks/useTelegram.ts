@@ -1,93 +1,102 @@
 import { useEffect, useState } from 'react';
 import { TelegramWebApps } from '@/types/telegram';
 
-export function useTelegram() {
-  const [tg, setTg] = useState<TelegramWebApps | null>(null);
-  const [isValid, setIsValid] = useState(false);
+interface TelegramUser {
+  id: number;
+  first_name: string;
+  last_name?: string;
+  username?: string;
+  language_code?: string;
+  start_param?: string;
+  photo_url?: string;
+  auth_date?: number;
+}
+
+export const useTelegram = () => {
+  const [webApp, setWebApp] = useState<TelegramWebApps | null>(null);
+  const [user, setUser] = useState<TelegramUser | null>(null);
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
-      const webApp = window.Telegram.WebApp;
-      
-      // Проверяем данные от Telegram
-      const validateTelegramData = async () => {
-        try {
-          const response = await fetch('/api/telegram/validate', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              initData: webApp.initData
-            }),
-          });
-
-          const data = await response.json();
-          if (data.ok) {
-            setIsValid(true);
-            setTg(webApp);
-            webApp.ready();
-            webApp.expand();
-          } else {
-            console.error('Invalid Telegram data');
-          }
-        } catch (error) {
-          console.error('Error validating Telegram data:', error);
-        }
+    // Проверяем, есть ли данные пользователя в URL (после авторизации)
+    const searchParams = new URLSearchParams(window.location.search);
+    const userId = searchParams.get('id');
+    
+    if (userId) {
+      // Если есть данные пользователя, сохраняем их
+      const userData: TelegramUser = {
+        id: parseInt(userId),
+        first_name: searchParams.get('first_name') || '',
+        last_name: searchParams.get('last_name') || undefined,
+        username: searchParams.get('username') || undefined,
+        photo_url: searchParams.get('photo_url') || undefined,
+        auth_date: parseInt(searchParams.get('auth_date') || '0'),
       };
+      setUser(userData);
+      
+      // Очищаем URL от параметров авторизации
+      window.history.replaceState({}, '', window.location.pathname);
+    }
 
-      validateTelegramData();
+    // Проверяем наличие Telegram Web App
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      setWebApp(tg);
+      if (!user) {
+        setUser(tg.initDataUnsafe?.user || null);
+      }
+      tg.ready();
+      setIsReady(true);
     }
   }, []);
 
   const onClose = () => {
-    tg?.close();
+    webApp?.close();
   };
 
   const onToggleMainButton = (show: boolean) => {
-    if (!tg?.MainButton) return;
+    if (!webApp?.MainButton) return;
     
     if (show) {
-      tg.MainButton.show();
+      webApp.MainButton.show();
     } else {
-      tg.MainButton.hide();
+      webApp.MainButton.hide();
     }
   };
 
   const onToggleBackButton = (show: boolean) => {
-    if (!tg?.BackButton) return;
+    if (!webApp?.BackButton) return;
     
     if (show) {
-      tg.BackButton.show();
+      webApp.BackButton.show();
     } else {
-      tg.BackButton.hide();
+      webApp.BackButton.hide();
     }
   };
 
   const setMainButtonText = (text: string) => {
-    if (tg?.MainButton) {
-      tg.MainButton.text = text;
+    if (webApp?.MainButton) {
+      webApp.MainButton.text = text;
     }
   };
 
   const onMainButtonClick = (callback: () => void) => {
-    tg?.MainButton?.onClick(callback);
+    webApp?.MainButton?.onClick(callback);
   };
 
   const onBackButtonClick = (callback: () => void) => {
-    tg?.BackButton?.onClick(callback);
+    webApp?.BackButton?.onClick(callback);
   };
 
   const sendData = (data: any) => {
-    tg?.sendData(JSON.stringify(data));
+    webApp?.sendData(JSON.stringify(data));
   };
 
-  const user = tg?.initDataUnsafe?.user;
-
   return {
-    tg,
+    webApp,
     user,
-    isValid,
+    isReady,
+    isTelegramWebApp: !!webApp,
     onClose,
     onToggleMainButton,
     onToggleBackButton,
@@ -96,4 +105,4 @@ export function useTelegram() {
     onBackButtonClick,
     sendData
   };
-} 
+}; 

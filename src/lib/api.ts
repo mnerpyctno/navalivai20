@@ -5,8 +5,10 @@ import {
   Category, 
   MoySkladResponse, 
   MoySkladProduct, 
-  MoySkladCategory 
+  MoySkladCategory,
+  MoySkladProductImage 
 } from './types';
+import { categoriesApi, productsApi, stockApi } from '@/api';
 
 // Экспортируем типы
 export type { Product, Category };
@@ -27,11 +29,6 @@ const api = axios.create({
 // Добавляем интерцептор для логирования запросов
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    console.log('Отправка запроса:', {
-      url: config.url,
-      method: config.method,
-      params: config.params
-    });
     return config;
   },
   (error: Error) => {
@@ -42,11 +39,6 @@ api.interceptors.request.use(
 
 api.interceptors.response.use(
   (response) => {
-    console.log('Успешный ответ:', {
-      status: response.status,
-      url: response.config.url,
-      data: response.data
-    });
     return response;
   },
   (error: Error) => {
@@ -62,41 +54,65 @@ api.interceptors.response.use(
 
 // Функция для получения URL изображения
 export const getProductImageUrl = (product: MoySkladProduct): string => {
-  if (!product.images?.rows?.length) {
+  try {
+    console.log('Получение URL изображения для товара:', {
+      id: product.id,
+      name: product.name,
+      hasImages: !!product.images,
+      imagesMeta: product.images?.meta,
+      imagesRows: product.images?.rows?.length,
+      firstImage: product.images?.rows?.[0],
+      firstImageMiniature: product.images?.rows?.[0]?.miniature
+    });
+
+    // Проверяем наличие изображений и их расширение
+    if (!product.images?.rows?.length || !product.images?.rows?.[0]?.miniature?.href) {
+      console.log('Нет доступных изображений для товара:', {
+        productName: product.name,
+        productId: product.id,
+        hasImages: !!product.images,
+        imagesMeta: product.images?.meta,
+        imagesRows: product.images?.rows?.length
+      });
+      return '/default-product.jpg';
+    }
+
+    // Получаем URL миниатюры
+    const originalUrl = product.images.rows[0].miniature.href;
+    const proxyUrl = `/api/image-proxy?url=${encodeURIComponent(originalUrl)}`;
+    
+    console.log('Получен URL изображения из объекта товара:', {
+      originalUrl,
+      proxyUrl,
+      productName: product.name,
+      productId: product.id
+    });
+    
+    return proxyUrl;
+  } catch (error) {
+    console.error('Ошибка при получении URL изображения:', {
+      error,
+      productName: product.name,
+      productId: product.id
+    });
     return '/default-product.jpg';
   }
-  
-  const image = product.images.rows[0];
-  return image.miniature?.href || '/default-product.jpg';
 };
 
 // Функция для получения групп товаров (категорий)
 export const getProductGroups = async (): Promise<Category[]> => {
   try {
-    const params = {
-      limit: 100,
+    const response = await categoriesApi.getCategories({
       filter: 'archived=false',
       order: 'name,asc'
-    };
-
-    console.log('Отправка запроса категорий:', params);
-
-    const response = await api.get('/api/moysklad', {
-      params: {
-        method: 'get',
-        url: 'entity/productfolder',
-        params: JSON.stringify(params)
-      }
     });
 
-    console.log('Ответ категорий:', response.data);
-
-    if (!response.data || !Array.isArray(response.data.rows)) {
-      console.warn('Нет данных о категориях в ответе:', response.data);
+    if (!response.rows) {
+      console.warn('Нет данных о категориях в ответе:', response);
       return [];
     }
 
-    return response.data.rows.map((item: MoySkladCategory) => ({
+    return response.rows.map((item) => ({
       id: item.id,
       name: item.name
     }));
@@ -109,42 +125,60 @@ export const getProductGroups = async (): Promise<Category[]> => {
 // Функция получения товаров
 export const getProducts = async (categoryId?: string): Promise<Product[]> => {
   try {
-    const params: any = {
-      limit: 100,
+    // 1. Получаем все товары
+    const productsResponse = await productsApi.getProducts({
+      limit: 1000,
       offset: 0,
-      expand: 'images,salePrices,productFolder',
+      categoryId,
+      expand: 'images,salePrices,productFolder,images.rows',
       filter: 'archived=false'
-    };
-
-    if (categoryId) {
-      params.filter = `archived=false;productFolder.id=${categoryId}`;
-    }
-
-    console.log('Отправка запроса товаров:', params);
-
-    const response = await api.get('/api/moysklad', {
-      params: {
-        method: 'get',
-        url: 'entity/product',
-        params: JSON.stringify(params)
-      }
     });
 
-    console.log('Ответ товаров:', response.data);
-
-    if (!response.data || !Array.isArray(response.data.rows)) {
-      console.warn('Нет данных о товарах в ответе:', response.data);
+    if (!productsResponse.rows) {
+      console.warn('Нет данных о товарах в ответе:', productsResponse);
       return [];
     }
 
-    return response.data.rows.map((item: MoySkladProduct) => ({
-      id: item.id,
-      name: item.name,
-      price: extractProductPrice(item),
-      image: getProductImageUrl(item),
-      description: item.description || '',
-      categoryId: item.productFolder?.meta?.href?.split('/').pop() || ''
-    }));
+    // 2. Получаем все остатки
+    const stockResponse = await stockApi.getAllStock();
+
+    // 3. Создаем карту остатков для быстрого доступа
+    const stockMap = new Map<string, number>();
+    if (stockResponse.rows) {
+      stockResponse.rows.forEach((stock) => {
+        const productId = stock.product.meta.href.split('/').pop();
+        if (productId) {
+          const currentStock = stockMap.get(productId) || 0;
+          stockMap.set(productId, currentStock + stock.quantity);
+        }
+      });
+    }
+
+    // 4. Формируем финальный массив товаров с остатками
+    const products = productsResponse.rows.map((product) => {
+      const stock = stockMap.get(product.id) || 0;
+      const imageUrl = getProductImageUrl(product);
+      
+      console.log('Формирование данных товара:', {
+        productId: product.id,
+        productName: product.name,
+        rawImageData: product.images,
+        processedImageUrl: imageUrl
+      });
+
+      return {
+        id: product.id,
+        name: product.name,
+        price: product.salePrices?.[0]?.value ? product.salePrices[0].value / 100 : 0,
+        image: imageUrl,
+        description: product.description || '',
+        categoryId: product.productFolder?.meta?.href?.split('/').pop() || '',
+        available: stock > 0,
+        stock
+      };
+    });
+
+    return products;
   } catch (error) {
     console.error('Ошибка при получении товаров:', error);
     return [];
@@ -162,35 +196,62 @@ const extractProductPrice = (product: MoySkladProduct): number => {
 // Функция поиска
 export const searchProducts = async (query: string): Promise<Product[]> => {
   try {
-    const params = {
+    // 1. Получаем все товары
+    const productsResponse = await productsApi.getProducts({
       limit: 100,
       offset: 0,
-      expand: 'images,salePrices,productFolder',
+      expand: 'images,salePrices,productFolder,images.rows',
       filter: `archived=false;name~=${query}`
-    };
-
-    const response = await api.get('/api/moysklad', {
-      params: {
-        method: 'get',
-        url: 'entity/product',
-        params: JSON.stringify(params)
-      },
-      timeout: 60000
     });
 
-    if (!response.data || !Array.isArray(response.data.rows)) {
-      console.warn('Нет данных о товарах в ответе поиска:', response.data);
+    if (!productsResponse.rows) {
+      console.warn('Нет данных о товарах в ответе поиска:', productsResponse);
       return [];
     }
 
-    return response.data.rows.map((item: MoySkladProduct) => ({
-      id: item.id,
-      name: item.name,
-      price: extractProductPrice(item),
-      image: getProductImageUrl(item),
-      description: item.description || '',
-      categoryId: item.productFolder?.meta?.href?.split('/').pop() || ''
-    }));
+    // 2. Получаем все остатки
+    const stockResponse = await stockApi.getAllStock();
+
+    // 3. Создаем карту остатков для быстрого доступа
+    const stockMap = new Map<string, number>();
+    if (stockResponse.rows) {
+      stockResponse.rows.forEach((stock) => {
+        const productId = stock.product.meta.href.split('/').pop();
+        if (productId) {
+          const currentStock = stockMap.get(productId) || 0;
+          stockMap.set(productId, currentStock + stock.quantity);
+        }
+      });
+    }
+
+    // 4. Формируем список товаров с остатками
+    return productsResponse.rows.map((product) => {
+      const stock = stockMap.get(product.id) || 0;
+      const imageUrl = getProductImageUrl(product);
+      
+      console.log('Обработка товара в поиске:', {
+        productId: product.id,
+        productName: product.name,
+        rawImageData: product.images,
+        processedImageUrl: imageUrl,
+        hasImages: !!product.images,
+        imagesMeta: product.images?.meta,
+        imagesRows: product.images?.rows?.length,
+        firstImage: product.images?.rows?.[0],
+        firstImageMiniature: product.images?.rows?.[0]?.miniature
+      });
+
+      return {
+        id: product.id,
+        name: product.name,
+        price: product.salePrices?.[0]?.value ? product.salePrices[0].value / 100 : 0,
+        image: imageUrl,
+        description: product.description || '',
+        categoryId: product.productFolder?.meta?.href?.split('/').pop() || '',
+        available: stock > 0,
+        stock
+      };
+    });
   } catch (error) {
     console.error('Ошибка при поиске товаров:', error);
     return [];
