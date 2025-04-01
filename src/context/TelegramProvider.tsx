@@ -2,11 +2,14 @@
 
 import { createContext, useContext, ReactNode } from 'react';
 import { useTelegram } from '@/hooks/useTelegram';
-import { TelegramWebApps } from '@/types/telegram';
+import { TelegramWebApps, TelegramUser } from '@/types/telegram';
 
 interface TelegramContextType {
-  tg: TelegramWebApps | null;
-  user: TelegramWebApps['initDataUnsafe']['user'] | undefined;
+  webApp: TelegramWebApps | null;
+  user: TelegramUser | null;
+  isReady: boolean;
+  error: string | null;
+  isTelegramWebApp: boolean;
   onClose: () => void;
   onToggleMainButton: (show: boolean) => void;
   onToggleBackButton: (show: boolean) => void;

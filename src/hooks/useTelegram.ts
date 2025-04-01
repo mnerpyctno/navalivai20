@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { TelegramWebApps } from '@/types/telegram';
 
 interface TelegramUser {
@@ -63,47 +63,51 @@ export const useTelegram = () => {
     }
   }, [user]);
 
-  const onClose = () => {
+  const onClose = useCallback(() => {
     webApp?.close();
-  };
+  }, [webApp]);
 
-  const onToggleMainButton = (show: boolean) => {
-    if (!webApp?.MainButton) return;
-    
-    if (show) {
-      webApp.MainButton.show();
-    } else {
-      webApp.MainButton.hide();
+  const onToggleMainButton = useCallback((show: boolean) => {
+    if (webApp) {
+      if (show) {
+        webApp.MainButton.show();
+      } else {
+        webApp.MainButton.hide();
+      }
     }
-  };
+  }, [webApp]);
 
-  const onToggleBackButton = (show: boolean) => {
-    if (!webApp?.BackButton) return;
-    
-    if (show) {
-      webApp.BackButton.show();
-    } else {
-      webApp.BackButton.hide();
+  const onToggleBackButton = useCallback((show: boolean) => {
+    if (webApp) {
+      if (show) {
+        webApp.BackButton.show();
+      } else {
+        webApp.BackButton.hide();
+      }
     }
-  };
+  }, [webApp]);
 
-  const setMainButtonText = (text: string) => {
-    if (webApp?.MainButton) {
+  const setMainButtonText = useCallback((text: string) => {
+    if (webApp) {
       webApp.MainButton.text = text;
     }
-  };
+  }, [webApp]);
 
-  const onMainButtonClick = (callback: () => void) => {
-    webApp?.MainButton?.onClick(callback);
-  };
+  const onMainButtonClick = useCallback((callback: () => void) => {
+    if (webApp) {
+      webApp.MainButton.onClick(callback);
+    }
+  }, [webApp]);
 
-  const onBackButtonClick = (callback: () => void) => {
-    webApp?.BackButton?.onClick(callback);
-  };
+  const onBackButtonClick = useCallback((callback: () => void) => {
+    if (webApp) {
+      webApp.BackButton.onClick(callback);
+    }
+  }, [webApp]);
 
-  const sendData = (data: any) => {
-    webApp?.sendData(JSON.stringify(data));
-  };
+  const sendData = useCallback((data: any) => {
+    webApp?.sendData(data);
+  }, [webApp]);
 
   return {
     webApp,

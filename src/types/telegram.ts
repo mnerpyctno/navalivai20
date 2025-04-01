@@ -1,3 +1,14 @@
+export interface TelegramUser {
+  id: number;
+  first_name: string;
+  last_name?: string;
+  username?: string;
+  language_code?: string;
+  start_param?: string;
+  photo_url?: string;
+  auth_date?: number;
+}
+
 export interface TelegramWebApps {
   ready(): void;
   expand(): void;
