@@ -1,36 +1,86 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Navaliva Next TWA
 
-## Getting Started
+Telegram Web App для магазина Navaliva, интегрированный с МойСклад.
 
-First, run the development server:
+## Технологии
 
+- Next.js 14
+- TypeScript
+- Prisma
+- NextAuth.js
+- Tailwind CSS
+- Telegram Web App
+- МойСклад API
+
+## Функциональность
+
+- Авторизация через Telegram
+- Просмотр каталога товаров
+- Корзина покупок
+- Оформление заказов
+- Синхронизация с МойСклад
+- История заказов
+
+## Разработка
+
+1. Установите зависимости:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Создайте файл `.env`:
+```env
+DATABASE_URL="postgresql://user:password@localhost:5432/navalivaishop"
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your-secret-key"
+MOYSKLAD_API_TOKEN="your-moysklad-token"
+MOYSKLAD_API_URL="https://api.moysklad.ru/api/remap/1.2"
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Примените миграции базы данных:
+```bash
+npx prisma migrate dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Запустите сервер разработки:
+```bash
+npm run dev
+```
 
-## Learn More
+## Развертывание
 
-To learn more about Next.js, take a look at the following resources:
+Инструкции по развертыванию на Vercel доступны в [DEPLOY.md](DEPLOY.md).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Структура проекта
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+src/
+  ├── app/              # Next.js App Router
+  │   ├── api/         # API endpoints
+  │   ├── auth/        # Страницы авторизации
+  │   └── page.tsx     # Главная страница
+  ├── components/      # React компоненты
+  ├── hooks/          # React хуки
+  ├── lib/            # Утилиты и конфигурация
+  ├── styles/         # CSS стили
+  └── types/          # TypeScript типы
+```
 
-## Deploy on Vercel
+## API Endpoints
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Авторизация
+- `POST /api/auth/signin` - Вход через Telegram
+- `POST /api/auth/signout` - Выход
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Пользователи
+- `GET /api/users` - Получение данных пользователя
+- `POST /api/users` - Создание/обновление пользователя
+
+### МойСклад
+- `GET /api/moysklad/orders` - Получение заказов пользователя
+- `POST /api/moysklad/orders` - Создание заказа
+- `POST /api/moysklad/sync` - Синхронизация пользователя с МойСклад
+
+## Лицензия
+
+MIT

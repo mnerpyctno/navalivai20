@@ -1,7 +1,21 @@
 interface TelegramWebApp {
   ready: () => void;
-  expand: () => void;
   close: () => void;
+  sendData: (data: any) => void;
+  initData: string;
+  initDataUnsafe: {
+    user?: {
+      id: number;
+      first_name: string;
+      last_name?: string;
+      username?: string;
+      language_code?: string;
+      start_param?: string;
+      photo_url?: string;
+      auth_date: number;
+      hash: string;
+    };
+  };
   MainButton: {
     text: string;
     color: string;
@@ -9,30 +23,23 @@ interface TelegramWebApp {
     isVisible: boolean;
     isActive: boolean;
     isProgressVisible: boolean;
-    setText: (text: string) => void;
-    onClick: (callback: () => void) => void;
-    offClick: (callback: () => void) => void;
     show: () => void;
     hide: () => void;
+    onClick: (callback: () => void) => void;
+    offClick: (callback: () => void) => void;
     enable: () => void;
     disable: () => void;
     showProgress: (leaveActive: boolean) => void;
     hideProgress: () => void;
   };
-  initData: string;
-  initDataUnsafe: {
-    query_id: string;
-    user: {
-      id: number;
-      first_name: string;
-      last_name?: string;
-      username?: string;
-      language_code?: string;
-      start_param?: string;
-    };
-    auth_date: number;
-    hash: string;
+  BackButton: {
+    isVisible: boolean;
+    onClick: (callback: () => void) => void;
+    offClick: (callback: () => void) => void;
+    show: () => void;
+    hide: () => void;
   };
+  expand: () => void;
   platform: string;
   version: string;
   colorScheme: string;

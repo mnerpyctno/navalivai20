@@ -5,17 +5,16 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
   id            String    @id @default(cuid())
-  telegramId    String    @unique // ID пользователя в Telegram
-  firstName     String
-  lastName      String?
-  username      String?
-  photoUrl      String?
-  authDate      DateTime  @default(now())
-  moySkladId    String?   // ID пользователя в МойСклад
+  name          String?
+  email         String?   @unique
+  image         String?
+  telegramId    String?   @unique
+  moySkladId    String?   @unique
   ordersCount   Int       @default(0)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -24,31 +23,31 @@ model User {
 }
 
 model Cart {
-  id        String   @id @default(cuid())
-  userId    String   @unique
-  user      User     @relation(fields: [userId], references: [id])
+  id        String     @id @default(cuid())
+  userId    String     @unique
+  user      User       @relation(fields: [userId], references: [id])
   items     CartItem[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 }
 
 model CartItem {
   id        String   @id @default(cuid())
   cartId    String
   cart      Cart     @relation(fields: [cartId], references: [id])
-  productId String   // ID товара в МойСклад
+  productId String
   quantity  Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Order {
-  id            String   @id @default(cuid())
-  userId        String
-  user          User     @relation(fields: [userId], references: [id])
-  moySkladId    String   // ID заказа в МойСклад
-  status        String   // Статус заказа
-  totalAmount   Float
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  moySkladId   String?  @unique
+  status       String
+  totalAmount  Float
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 } 
