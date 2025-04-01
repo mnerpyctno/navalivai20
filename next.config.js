@@ -14,6 +14,9 @@ const nextConfig = {
     optimizeCss: false,
     optimizePackageImports: ['@fortawesome/free-solid-svg-icons', 'react-icons'],
   },
+  // Отключаем генерацию статических страниц для 404 и 500
+  output: 'standalone',
+  poweredByHeader: false,
   webpack: (config, { dev, isServer }) => {
     // Оптимизация для production
     if (!dev && !isServer) {
