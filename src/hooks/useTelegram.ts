@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { TelegramWebApps } from '@/types/telegram';
+import { signIn } from 'next-auth/react';
 
 interface TelegramUser {
   id: number;
@@ -13,12 +14,81 @@ interface TelegramUser {
   hash: string;
 }
 
+interface UserData {
+  id: string;
+  telegramId: string;
+  firstName: string;
+  lastName?: string;
+  username?: string;
+  photoUrl?: string;
+  moySkladId?: string;
+  ordersCount: number;
+  cart?: {
+    items: Array<{
+      id: string;
+      productId: string;
+      quantity: number;
+    }>;
+  };
+  orders?: Array<{
+    id: string;
+    moySkladId: string;
+    status: string;
+    totalAmount: number;
+  }>;
+}
+
 export const useTelegram = () => {
   const [webApp, setWebApp] = useState<TelegramWebApps | null>(null);
   const [user, setUser] = useState<TelegramUser | null>(null);
+  const [userData, setUserData] = useState<UserData | null>(null);
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isTelegramWebApp, setIsTelegramWebApp] = useState(false);
+
+  // Функция для синхронизации данных пользователя с сервером
+  const syncUserData = async (telegramUser: TelegramUser) => {
+    try {
+      // Авторизуем пользователя через NextAuth
+      const result = await signIn('credentials', {
+        telegramId: telegramUser.id.toString(),
+        firstName: telegramUser.first_name,
+        lastName: telegramUser.last_name,
+        username: telegramUser.username,
+        photoUrl: telegramUser.photo_url,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        console.error('Auth error:', result.error);
+        return;
+      }
+
+      // Создаем или обновляем пользователя в базе данных
+      const response = await fetch('/api/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          telegramId: telegramUser.id.toString(),
+          firstName: telegramUser.first_name,
+          lastName: telegramUser.last_name,
+          username: telegramUser.username,
+          photoUrl: telegramUser.photo_url,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to sync user data');
+      }
+
+      const data = await response.json();
+      setUserData(data);
+    } catch (error) {
+      console.error('Error syncing user data:', error);
+    }
+  };
 
   useEffect(() => {
     try {
@@ -37,7 +107,10 @@ export const useTelegram = () => {
         // Пытаемся получить данные пользователя из localStorage
         const savedUser = localStorage.getItem('telegram_user');
         if (savedUser) {
-          setUser(JSON.parse(savedUser));
+          const parsedUser = JSON.parse(savedUser);
+          setUser(parsedUser);
+          // Синхронизируем данные с сервером
+          syncUserData(parsedUser);
           return;
         }
 
@@ -48,8 +121,9 @@ export const useTelegram = () => {
             const initDataObj = JSON.parse(initData);
             if (initDataObj.user) {
               setUser(initDataObj.user);
-              // Сохраняем данные пользователя в localStorage
               localStorage.setItem('telegram_user', JSON.stringify(initDataObj.user));
+              // Синхронизируем данные с сервером
+              syncUserData(initDataObj.user);
             }
           } catch (error) {
             console.error('Error parsing initData:', error);
@@ -115,6 +189,7 @@ export const useTelegram = () => {
   return {
     webApp,
     user,
+    userData,
     isReady,
     error,
     isTelegramWebApp,
