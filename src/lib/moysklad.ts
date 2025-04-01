@@ -158,12 +158,19 @@ export class MoySkladAPI {
     });
 
     // Создаем запись о заказе в базе данных
-    await prisma.order.create({
+    const dbOrder = await prisma.order.create({
       data: {
         userId,
         moySkladId: order.id,
         status: order.state.name,
-        totalAmount: order.sum / 100, // Сумма в копейках
+        total: order.sum / 100, // Сумма в копейках
+        items: {
+          create: items.map(item => ({
+            productId: item.productId,
+            quantity: item.quantity,
+            price: 0 // Добавим цену позже
+          }))
+        }
       },
     });
 
