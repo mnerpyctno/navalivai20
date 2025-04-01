@@ -1,87 +1,37 @@
 import { useEffect, useState } from 'react';
-import { signIn, signOut, useSession } from 'next-auth/react';
 import { TelegramWebApps, TelegramUser } from '@/types/telegram';
 
 export function useTelegram() {
-  const { data: session, status } = useSession();
-  const [isLoading, setIsLoading] = useState(true);
-  const [isTelegramWebApp, setIsTelegramWebApp] = useState(false);
   const [webApp, setWebApp] = useState<TelegramWebApps | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [user, setUser] = useState<TelegramUser | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+  const [isTelegramWebApp, setIsTelegramWebApp] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
-      setIsTelegramWebApp(true);
-      const tg = window.Telegram.WebApp;
-      setWebApp(tg);
-      const user = tg.initDataUnsafe?.user as TelegramUser;
+    try {
+      if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
+        const tg = window.Telegram.WebApp;
+        setWebApp(tg);
+        setIsTelegramWebApp(true);
 
-      if (user) {
-        // Сохраняем данные пользователя в localStorage
-        localStorage.setItem('telegramUser', JSON.stringify(user));
-
-        // Синхронизируем пользователя с МойСклад
-        syncUserWithMoySklad(user);
-      } else {
-        // Если пользователь не авторизован в Telegram, выходим из сессии
-        signOut();
+        // Получаем данные пользователя из localStorage
+        const storedUser = localStorage.getItem('telegramUser');
+        if (storedUser) {
+          try {
+            const parsedUser = JSON.parse(storedUser) as TelegramUser;
+            setUser(parsedUser);
+          } catch (error) {
+            console.error('Error parsing telegram user:', error);
+          }
+        }
       }
+    } catch (error) {
+      setError(error instanceof Error ? error : new Error('Failed to initialize Telegram WebApp'));
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   }, []);
-
-  const syncUserWithMoySklad = async (telegramUser: TelegramUser) => {
-    try {
-      const response = await fetch('/api/moysklad/sync', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ telegramUser }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to sync user with MoySklad');
-      }
-    } catch (error) {
-      console.error('Error syncing user with MoySklad:', error);
-      setError('Failed to sync user with MoySklad');
-    }
-  };
-
-  const getOrders = async () => {
-    try {
-      const response = await fetch('/api/moysklad/orders');
-      if (!response.ok) {
-        throw new Error('Failed to fetch orders');
-      }
-      return await response.json();
-    } catch (error) {
-      console.error('Error fetching orders:', error);
-      return [];
-    }
-  };
-
-  const createOrder = async (items: Array<{ productId: string; quantity: number }>) => {
-    try {
-      const response = await fetch('/api/moysklad/orders', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ items }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to create order');
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error creating order:', error);
-      throw error;
-    }
-  };
 
   const onClose = () => {
     webApp?.close();
@@ -123,11 +73,7 @@ export function useTelegram() {
 
   return {
     webApp,
-    user: session?.user ? {
-      id: parseInt(session.user.id),
-      first_name: session.user.name || '',
-      photo_url: session.user.image || undefined,
-    } as TelegramUser : null,
+    user,
     isReady: !isLoading,
     error,
     isTelegramWebApp,
@@ -138,7 +84,5 @@ export function useTelegram() {
     onMainButtonClick,
     onBackButtonClick,
     sendData,
-    getOrders,
-    createOrder,
   };
 } 
