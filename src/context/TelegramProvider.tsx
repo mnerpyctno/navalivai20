@@ -37,8 +37,11 @@ export function useTelegramContext() {
     if (typeof window === 'undefined') {
       // Возвращаем заглушку для серверного рендеринга
       return {
-        tg: null,
-        user: undefined,
+        webApp: null,
+        user: null,
+        isReady: false,
+        error: null,
+        isTelegramWebApp: false,
         onClose: () => {},
         onToggleMainButton: () => {},
         onToggleBackButton: () => {},
