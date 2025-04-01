@@ -7,6 +7,18 @@ const nextConfig = {
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 60,
   },
+  async headers() {
+    return [
+      {
+        source: '/api/moysklad/:path*',
+        headers: [
+          { key: 'Access-Control-Allow-Origin', value: '*' },
+          { key: 'Access-Control-Allow-Methods', value: 'GET,OPTIONS,PATCH,DELETE,POST,PUT' },
+          { key: 'Access-Control-Allow-Headers', value: 'X-Requested-With, Content-Type, Authorization' },
+        ],
+      },
+    ];
+  },
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
@@ -45,6 +57,15 @@ const nextConfig = {
       };
     }
     return config;
+  },
+  // Оптимизация предзагрузки ресурсов
+  async rewrites() {
+    return [
+      {
+        source: '/telegram-web-app.js',
+        destination: 'https://telegram.org/js/telegram-web-app.js',
+      },
+    ];
   },
 }
 

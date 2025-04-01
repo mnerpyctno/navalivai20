@@ -40,20 +40,30 @@ export class MoySkladAPI {
   }
 
   private async fetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const response = await fetch(`${this.baseUrl}${endpoint}`, {
-      ...options,
-      headers: {
-        'Authorization': `Bearer ${this.token}`,
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
-    });
+    try {
+      const response = await fetch(`${this.baseUrl}${endpoint}`, {
+        ...options,
+        headers: {
+          'Authorization': `Bearer ${this.token}`,
+          'Content-Type': 'application/json',
+          ...options.headers,
+        },
+      });
 
-    if (!response.ok) {
-      throw new Error(`MoySklad API error: ${response.statusText}`);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(
+          `MoySklad API error: ${response.status} ${response.statusText}${
+            errorData ? ` - ${JSON.stringify(errorData)}` : ''
+          }`
+        );
+      }
+
+      return response.json();
+    } catch (error) {
+      console.error('MoySklad API request failed:', error);
+      throw error;
     }
-
-    return response.json();
   }
 
   // Создание или обновление контрагента
