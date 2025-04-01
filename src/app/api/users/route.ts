@@ -2,39 +2,63 @@ import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+import { TelegramUser } from '@/types/telegram';
 
-const prisma = new PrismaClient();
+const prismaClient = new PrismaClient();
 
 // Создание или обновление пользователя
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const userData: TelegramUser = await request.json();
+
+    // Проверяем, существует ли пользователь
+    const existingUser = await prisma.user.findUnique({
+      where: {
+        telegramId: userData.id.toString(),
+      },
+    });
+
+    if (existingUser) {
+      // Обновляем данные существующего пользователя
+      const updatedUser = await prisma.user.update({
+        where: {
+          telegramId: userData.id.toString(),
+        },
+        data: {
+          firstName: userData.first_name,
+          lastName: userData.last_name || null,
+          username: userData.username || null,
+          photoUrl: userData.photo_url || null,
+          authDate: new Date(userData.auth_date * 1000),
+        },
+      });
+
+      return NextResponse.json(updatedUser);
     }
 
-    const { telegramId, firstName, lastName, username, photoUrl } = await request.json();
-
-    const user = await prisma.user.upsert({
-      where: { telegramId },
-      update: {
-        name: firstName,
-        image: photoUrl,
-      },
-      create: {
-        telegramId,
-        name: firstName,
-        image: photoUrl,
+    // Создаем нового пользователя
+    const newUser = await prisma.user.create({
+      data: {
+        telegramId: userData.id.toString(),
+        firstName: userData.first_name,
+        lastName: userData.last_name || null,
+        username: userData.username || null,
+        photoUrl: userData.photo_url || null,
+        authDate: new Date(userData.auth_date * 1000),
         cart: {
           create: {} // Создаем пустую корзину
         }
       },
     });
 
-    return NextResponse.json(user);
+    return NextResponse.json(newUser);
   } catch (error) {
     console.error('Error creating/updating user:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to create/update user' },
+      { status: 500 }
+    );
   }
 }
 
@@ -53,7 +77,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Telegram ID is required' }, { status: 400 });
     }
 
-    const user = await prisma.user.findUnique({
+    const user = await prismaClient.user.findUnique({
       where: { telegramId },
       include: {
         cart: {

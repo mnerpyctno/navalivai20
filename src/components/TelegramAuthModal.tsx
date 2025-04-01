@@ -8,8 +8,10 @@ import TelegramLoginWidget from './TelegramLoginWidget';
 export const TelegramAuthModal = () => {
   const [isOpen, setIsOpen] = useState(true);
   const [isClient, setIsClient] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const { isTelegramWebApp, user } = useTelegram();
+  const { isTelegramWebApp, user, createUser } = useTelegram();
 
   useEffect(() => {
     setIsClient(true);
@@ -28,14 +30,31 @@ export const TelegramAuthModal = () => {
   }, [isTelegramWebApp, user]);
 
   // Функция обработки авторизации через Telegram
-  const handleTelegramAuth = (user: any) => {
-    console.log('Telegram auth success:', user);
-    // Сохраняем данные пользователя в localStorage
-    localStorage.setItem('telegram_user', JSON.stringify(user));
-    setIsOpen(false);
-    document.body.classList.remove('modal-open');
-    // Обновляем состояние без перезагрузки страницы
-    window.dispatchEvent(new Event('storage'));
+  const handleTelegramAuth = async (user: any) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      // Создаем пользователя в базе данных
+      await createUser(user);
+      
+      // Сохраняем данные пользователя в localStorage
+      localStorage.setItem('telegram_user', JSON.stringify(user));
+      
+      setIsOpen(false);
+      document.body.classList.remove('modal-open');
+      
+      // Обновляем состояние без перезагрузки страницы
+      window.dispatchEvent(new Event('storage'));
+      
+      // Перенаправляем на страницу профиля
+      router.push('/profile');
+    } catch (error) {
+      console.error('Error during Telegram auth:', error);
+      setError('Ошибка при авторизации. Пожалуйста, попробуйте еще раз.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Не показываем модальное окно на сервере
@@ -54,9 +73,19 @@ export const TelegramAuthModal = () => {
             Для доступа к полной версии магазина, пожалуйста, войдите через Telegram.
             Это обеспечит безопасную и удобную авторизацию.
           </p>
+          {error && (
+            <div className="error-message">
+              {error}
+            </div>
+          )}
           <div className="telegram-login-widget">
             <TelegramLoginWidget onAuth={handleTelegramAuth} />
           </div>
+          {isLoading && (
+            <div className="loading-message">
+              Загрузка...
+            </div>
+          )}
         </div>
       </div>
     </div>

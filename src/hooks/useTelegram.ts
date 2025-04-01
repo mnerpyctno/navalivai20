@@ -16,13 +16,14 @@ export function useTelegram() {
         setIsTelegramWebApp(true);
 
         // Получаем данные пользователя из localStorage
-        const storedUser = localStorage.getItem('telegramUser');
+        const storedUser = localStorage.getItem('telegram_user');
         if (storedUser) {
           try {
             const parsedUser = JSON.parse(storedUser) as TelegramUser;
             setUser(parsedUser);
           } catch (error) {
             console.error('Error parsing telegram user:', error);
+            localStorage.removeItem('telegram_user');
           }
         }
       }
@@ -32,6 +33,28 @@ export function useTelegram() {
       setIsLoading(false);
     }
   }, []);
+
+  // Функция для создания пользователя в базе данных
+  const createUser = async (userData: TelegramUser) => {
+    try {
+      const response = await fetch('/api/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create user');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error creating user:', error);
+      throw error;
+    }
+  };
 
   const onClose = () => {
     webApp?.close();
@@ -84,5 +107,6 @@ export function useTelegram() {
     onMainButtonClick,
     onBackButtonClick,
     sendData,
+    createUser,
   };
 } 
