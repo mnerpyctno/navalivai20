@@ -46,8 +46,11 @@ export class MoySkladAPI {
         headers: {
           'Authorization': `Bearer ${this.token}`,
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
           ...options.headers,
         },
+        mode: 'cors',
+        credentials: 'omit',
       });
 
       if (!response.ok) {

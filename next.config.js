@@ -10,11 +10,12 @@ const nextConfig = {
   async headers() {
     return [
       {
-        source: '/api/moysklad/:path*',
+        source: '/api/:path*',
         headers: [
           { key: 'Access-Control-Allow-Origin', value: '*' },
           { key: 'Access-Control-Allow-Methods', value: 'GET,OPTIONS,PATCH,DELETE,POST,PUT' },
           { key: 'Access-Control-Allow-Headers', value: 'X-Requested-With, Content-Type, Authorization' },
+          { key: 'Access-Control-Max-Age', value: '86400' },
         ],
       },
     ];
@@ -66,6 +67,23 @@ const nextConfig = {
         destination: 'https://telegram.org/js/telegram-web-app.js',
       },
     ];
+  },
+  // Добавляем middleware для обработки CORS
+  async middleware() {
+    return {
+      async headers(req) {
+        return [
+          {
+            source: '/:path*',
+            headers: [
+              { key: 'Access-Control-Allow-Origin', value: '*' },
+              { key: 'Access-Control-Allow-Methods', value: 'GET,OPTIONS,PATCH,DELETE,POST,PUT' },
+              { key: 'Access-Control-Allow-Headers', value: 'X-Requested-With, Content-Type, Authorization' },
+            ],
+          },
+        ];
+      },
+    };
   },
 }
 
