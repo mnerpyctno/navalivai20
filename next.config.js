@@ -3,7 +3,7 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   images: {
-    domains: ['telegram.org', 'api.moysklad.ru', 'miniature-prod.moysklad.ru'],
+    domains: ['telegram.org', 'api.moysklad.ru', 'miniature-prod.moysklad.ru', 't.me'],
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 60,
   },

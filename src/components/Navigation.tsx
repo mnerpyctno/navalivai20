@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useTelegram } from '@/hooks/useTelegram';
 
 export default function Navigation() {
@@ -17,10 +18,12 @@ export default function Navigation() {
           <div className="flex items-center space-x-4">
             {user ? (
               <Link href="/profile" className="flex items-center space-x-2">
-                <img
-                  src={user.photo_url}
+                <Image
+                  src={user.photo_url || '/default-avatar.png'}
                   alt={user.first_name}
-                  className="w-8 h-8 rounded-full"
+                  width={32}
+                  height={32}
+                  className="rounded-full"
                 />
                 <span className="text-gray-700">{user.first_name}</span>
               </Link>

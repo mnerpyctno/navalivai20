@@ -3,6 +3,7 @@
 import { useTelegram } from '@/hooks/useTelegram';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import Image from 'next/image';
 
 export default function ProfilePage() {
   const { user, isTelegramWebApp } = useTelegram();
@@ -20,10 +21,12 @@ export default function ProfilePage() {
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
         <div className="flex items-center space-x-4 mb-6">
-          <img
+          <Image
             src={user.photo_url}
             alt={user.first_name}
-            className="w-20 h-20 rounded-full"
+            width={80}
+            height={80}
+            className="rounded-full"
           />
           <div>
             <h1 className="text-2xl font-bold">
@@ -44,7 +47,7 @@ export default function ProfilePage() {
               <div>
                 <p className="text-gray-600">Дата регистрации</p>
                 <p className="font-medium">
-                  {new Date(user.auth_date * 1000).toLocaleDateString('ru-RU')}
+                  {user.auth_date ? new Date(user.auth_date * 1000).toLocaleDateString('ru-RU') : 'Не указана'}
                 </p>
               </div>
             </div>
