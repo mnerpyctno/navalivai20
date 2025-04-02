@@ -1,17 +1,21 @@
 import axios, { AxiosInstance } from 'axios';
+import { env } from '@/config/env';
 
 // Конфигурация API
 export const API_VERSION = '1.2';
-export const BASE_URL = process.env.MOYSKLAD_API_URL || 'https://api.moysklad.ru/api/remap/1.2';
 
 // Создаем экземпляр axios с базовой конфигурацией
 export const createMoySkladClient = (): AxiosInstance => {
+  if (!env.moySkladToken) {
+    throw new Error('MOYSKLAD_TOKEN не настроен');
+  }
+
   const client = axios.create({
-    baseURL: BASE_URL,
+    baseURL: env.moySkladApiUrl,
     timeout: 30000,
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${process.env.MOYSKLAD_TOKEN}`,
+      'Authorization': `Bearer ${env.moySkladToken}`,
       'Accept': 'application/json'
     }
   });
@@ -47,5 +51,23 @@ export const createMoySkladClient = (): AxiosInstance => {
   return client;
 };
 
-// Создаем экземпляр API
-export const moySkladClient = createMoySkladClient(); 
+// Создаем экземпляр API только на сервере
+export const moySkladClient = typeof window === 'undefined' ? createMoySkladClient() : null;
+
+// Параметры по умолчанию для запросов
+export const DEFAULT_PARAMS = {
+  limit: 100,
+  offset: 0,
+  expand: 'product,images,productFolder',
+  order: 'name,asc'
+} as const;
+
+// Интерфейс для параметров запросов
+export interface MoySkladParams {
+  limit?: number;
+  offset?: number;
+  expand?: string;
+  filter?: string;
+  order?: string;
+  [key: string]: any;
+} 

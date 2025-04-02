@@ -1,8 +1,11 @@
 import express from 'express';
-import cors from 'cors';
+import { PrismaClient } from '@prisma/client';
+import { env } from './config/env';
 import axios from 'axios';
+import cors from 'cors';
 
 const app = express();
+const prisma = new PrismaClient();
 const port = 3002;
 
 // Константа с токеном для отладки
@@ -15,7 +18,7 @@ const msClient = axios.create({
   headers: {
     'Authorization': `Bearer ${MS_TOKEN}`,
     'Content-Type': 'application/json',
-    'Accept': 'application/json'
+    'Accept': 'application/json;charset=utf-8'
   },
   timeout: 30000,
   validateStatus: function (status: number) {
@@ -58,12 +61,15 @@ msClient.interceptors.response.use(
 );
 
 // Middleware
-app.use(cors({
-  origin: 'http://localhost:3000',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
 app.use(express.json());
+app.use(cors({
+  origin: ['http://localhost:3000', 'http://localhost:3002'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
+  exposedHeaders: ['Content-Length', 'Content-Range'],
+  maxAge: 86400,
+  credentials: true
+}));
 
 // Логирование всех запросов
 app.use((req: express.Request, _res: express.Response, next: express.NextFunction) => {
@@ -71,7 +77,7 @@ app.use((req: express.Request, _res: express.Response, next: express.NextFunctio
 });
 
 // Прокси-эндпоинт для всех запросов к MoySklad
-app.get('/api/ms-proxy', async (req: express.Request, res: express.Response) => {
+app.get('/proxy', async (req: express.Request, res: express.Response) => {
   try {
     const { method, url, params } = req.query;
 
@@ -97,11 +103,25 @@ app.get('/api/ms-proxy', async (req: express.Request, res: express.Response) => 
     const requestMethod = (method as string).toLowerCase();
     const requestUrl = (url as string).startsWith('/') ? (url as string).slice(1) : url as string;
 
-    const response = await msClient({
+    console.log('Отправка запроса к MoySklad:', {
       method: requestMethod,
       url: requestUrl,
-      params: parsedParams
+      params: parsedParams,
+      timestamp: new Date().toISOString()
     });
+
+    const config = {
+      method: requestMethod,
+      url: requestUrl,
+      params: parsedParams,
+      headers: {
+        'Authorization': `Bearer ${MS_TOKEN}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json;charset=utf-8'
+      }
+    };
+
+    const response = await msClient(config);
 
     if (response.status === 401) {
       console.error('Ошибка авторизации:', {
@@ -166,6 +186,6 @@ app.get('/health', (_req: express.Request, res: express.Response) => {
   res.json({ status: 'ok' });
 });
 
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+app.listen(env.port, () => {
+  console.log(`Server is running on port ${env.port}`);
 }); 

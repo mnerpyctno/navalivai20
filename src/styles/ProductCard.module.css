@@ -22,6 +22,7 @@
   padding-top: 100%;
   background: #f5f5f5;
   overflow: hidden;
+  cursor: pointer;
 }
 
 .image {
@@ -156,6 +157,9 @@
   border-radius: 8px;
   overflow: hidden;
   margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .modalImage {
@@ -222,12 +226,6 @@
   cursor: pointer;
 }
 
-.inStock {
-  color: #34C759;
-  font-size: 14px;
-  font-weight: 500;
-}
-
 .outOfStock {
   color: #FF3B30;
   font-size: 14px;
@@ -250,6 +248,32 @@
 }
 
 .stockUnavailable {
-  color: #e74c3c;
+  color: #FF3B30;
   font-weight: 500;
+}
+
+.infoButton {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  color: #000;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.infoButton:hover {
+  background: #fff;
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 } 

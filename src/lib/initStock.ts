@@ -1,69 +1,43 @@
 import { moySkladClient } from '@/api/config';
-import { MoySkladStock } from '@/lib/types';
-import { stockStore } from './stockStore';
+import { StockData } from '@/types/stock';
 
 /**
  * Инициализация данных об остатках
  */
-export async function initStock(): Promise<void> {
+export async function initStock(): Promise<StockData[]> {
   try {
-    const response = await moySkladClient.get('', {
+    const response = await moySkladClient.get('report/stock/bystore', {
       params: {
-        method: 'GET',
-        url: 'report/stock/bystore',
-        params: JSON.stringify({
-          limit: 1000,
-          offset: 0,
-          expand: 'product,store',
-          moment: new Date().toISOString(),
-          groupBy: 'product',
-          stockMode: 'all',
-          store: 'all'
-        })
+        limit: 100,
+        offset: 0,
+        expand: 'product,store',
+        moment: new Date().toISOString(),
+        groupBy: 'product',
+        stockMode: 'all',
+        store: 'all',
+        filter: 'stockMode=all',
+        order: 'name,asc'
       }
     });
 
-    if (!response.data?.rows) {
-      throw new Error('Нет данных в ответе');
+    if (!response.data) {
+      console.warn('Пустой ответ от API МойСклад');
+      return [];
     }
 
-    // Преобразуем данные в нужный формат
-    const stocks = response.data.rows.map((stock: any) => {
-      // Извлекаем ID товара из URL в meta
-      const productId = stock.meta?.href?.match(/\/product\/([^?]+)/)?.[1];
-      
-      if (!productId) {
-        console.warn('Не удалось получить ID товара:', stock);
-        return null;
-      }
-
-      // Получаем общее количество товара по всем складам
-      let totalStock = 0;
-      
-      // Проверяем наличие stockByStore
-      if (stock.stockByStore && Array.isArray(stock.stockByStore)) {
-        totalStock = stock.stockByStore.reduce((sum: number, store: any) => {
-          const quantity = typeof store.stock === 'number' ? store.stock : 0;
-          return sum + quantity;
-        }, 0);
-      }
-      
-      // Создаем объект в формате, который ожидает StockStore
-      return {
-        quantity: totalStock,
-        product: {
-          id: productId,
-          meta: {
-            href: stock.meta.href
-          }
-        }
-      };
-    }).filter(Boolean); // Удаляем null значения
-
-    console.log('Обработанные остатки:', stocks);
-    stockStore.updateAllStock(stocks);
+    // Проверяем, что response.data является массивом
+    const data = Array.isArray(response.data) ? response.data : [response.data];
+    
+    return data.map((item: any) => ({
+      id: item.product?.id || '',
+      name: item.product?.name || 'Неизвестный товар',
+      quantity: Number(item.quantity) || 0,
+      price: Number(item.price) || 0,
+      store: item.store?.name || 'Неизвестный склад',
+      updatedAt: new Date().toISOString()
+    }));
   } catch (error) {
     console.error('Ошибка при инициализации остатков:', error);
-    throw error;
+    return [];
   }
 } 

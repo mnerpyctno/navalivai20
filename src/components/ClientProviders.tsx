@@ -4,7 +4,7 @@ import { ReactNode } from 'react';
 import { CartProvider } from '@/context/CartContext';
 import { TelegramProvider } from '@/context/TelegramProvider';
 
-export function ClientProviders({ children }: { children: ReactNode }) {
+export default function ClientProviders({ children }: { children: ReactNode }) {
   return (
     <TelegramProvider>
       <CartProvider>

@@ -6,7 +6,7 @@ import { LoadingManager } from './LoadingManager';
 
 const MIN_LOADING_TIME = 6000; // 6 секунд (10 сообщений по 0.6 секунды)
 
-export function InitProvider({ children }: { children: React.ReactNode }) {
+export default function InitProvider({ children }: { children: React.ReactNode }) {
   const [isInitialized, setIsInitialized] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [canShowContent, setCanShowContent] = useState(false);

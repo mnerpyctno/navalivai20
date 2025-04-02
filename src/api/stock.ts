@@ -1,137 +1,100 @@
-import { MoySkladResponse, MoySkladStock } from '@/lib/types';
-import { stockStore } from '@/lib/stockStore';
+import moySkladClient from './config';
+import { StockData } from '@/types/stock';
+
+interface GetStockParams {
+  limit?: number;
+  offset?: number;
+  expand?: string;
+  moment?: string;
+  groupBy?: string;
+  stockMode?: string;
+  store?: string;
+  filter?: string;
+  order?: string;
+  productId?: string;
+}
+
+interface StockQueryParams {
+  moment: string;
+  groupBy: string;
+  store: string;
+  stockMode: string;
+  limit: number;
+  expand: string;
+  order: string;
+  filter?: string;
+}
+
+interface MoySkladResponse {
+  rows: Array<{
+    stock: number;
+    reserve: number;
+    inTransit: number;
+    quantity: number;
+    product?: {
+      id: string;
+      name: string;
+    };
+    store?: {
+      id: string;
+      name: string;
+    };
+  }>;
+}
 
 export const stockApi = {
-  /**
-   * Получение остатков по товарам
-   */
-  async getStock(params: {
-    limit?: number;
-    offset?: number;
-    productId?: string;
-    expand?: string;
-    moment?: string;
-    groupBy?: string;
-    stockMode?: string;
-    store?: string;
-  } = {}): Promise<MoySkladResponse<MoySkladStock>> {
-    if (!stockStore.isDataInitialized()) {
-      throw new Error('Stock data not initialized. Waiting for webhook data.');
-    }
-
-    if (params.productId) {
-      const quantity = stockStore.getStock(params.productId);
-      if (quantity === undefined) {
-        return {
-          rows: [],
-          meta: {
-            href: '/report/stock/bystore',
-            type: 'reportstockbystore',
-            mediaType: 'application/json',
-            size: 0,
-            limit: 1000,
-            offset: 0
-          }
-        };
-      }
-
-      return {
-        rows: [{
-          quantity,
-          product: { meta: { href: `/product/${params.productId}` } },
-          store: { meta: { href: '/store/main' } }
-        }],
-        meta: {
-          href: '/report/stock/bystore',
-          type: 'reportstockbystore',
-          mediaType: 'application/json',
-          size: 1,
-          limit: 1000,
-          offset: 0
-        }
+  async getStock(params: GetStockParams = {}): Promise<StockData[]> {
+    try {
+      const queryParams: StockQueryParams = {
+        moment: params.moment || new Date().toISOString(),
+        groupBy: 'product',
+        store: 'all',
+        stockMode: 'all',
+        limit: params.limit || 100,
+        expand: params.expand || 'product,store',
+        order: params.order || 'name,asc'
       };
-    }
 
-    // Если не указан productId, возвращаем все остатки
-    return {
-      rows: Array.from(stockStore.getAllStock().entries()).map(([productId, quantity]) => ({
-        quantity,
-        product: { meta: { href: `/product/${productId}` } },
-        store: { meta: { href: '/store/main' } }
-      })),
-      meta: {
-        href: '/report/stock/bystore',
-        type: 'reportstockbystore',
-        mediaType: 'application/json',
-        size: stockStore.getAllStock().size,
-        limit: 1000,
-        offset: 0
+      // Если указан productId, используем фильтр по имени товара
+      if (params.productId) {
+        queryParams.filter = `product.name~=${params.productId}`;
       }
-    };
+
+      const response = await moySkladClient.get<MoySkladResponse>('report/stock/bystore', { params: queryParams });
+
+      if (!response.data || !Array.isArray(response.data.rows)) {
+        console.warn('Invalid response format from MoySklad API');
+        return [];
+      }
+
+      return response.data.rows.map((row) => ({
+        id: row.product?.id || '',
+        name: row.product?.name || 'Unknown Product',
+        quantity: row.quantity || 0,
+        price: 0, // Цена не возвращается в отчете об остатках
+        store: row.store?.name || 'Unknown Store',
+        updatedAt: new Date().toISOString()
+      }));
+    } catch (error: any) {
+      console.error('Error fetching stock:', error);
+      if (error.response?.status === 412) {
+        console.warn('Precondition Failed: Invalid filter parameters', error.response.data);
+      }
+      return [];
+    }
   },
 
   /**
    * Получение остатков по конкретному товару
    */
-  async getProductStock(productId: string): Promise<MoySkladResponse<MoySkladStock>> {
-    if (!stockStore.isDataInitialized()) {
-      throw new Error('Stock data not initialized. Waiting for webhook data.');
-    }
-
-    const quantity = stockStore.getStock(productId);
-    if (quantity === undefined) {
-      return {
-        rows: [],
-        meta: {
-          href: '/report/stock/bystore',
-          type: 'reportstockbystore',
-          mediaType: 'application/json',
-          size: 0,
-          limit: 1000,
-          offset: 0
-        }
-      };
-    }
-
-    return {
-      rows: [{
-        quantity,
-        product: { meta: { href: `/product/${productId}` } },
-        store: { meta: { href: '/store/main' } }
-      }],
-      meta: {
-        href: '/report/stock/bystore',
-        type: 'reportstockbystore',
-        mediaType: 'application/json',
-        size: 1,
-        limit: 1000,
-        offset: 0
-      }
-    };
+  async getProductStock(productId: string): Promise<StockData[]> {
+    return this.getStock({ productId });
   },
 
   /**
-   * Получение остатков по всем товарам
+   * Получение всех остатков
    */
-  async getAllStock(): Promise<MoySkladResponse<MoySkladStock>> {
-    if (!stockStore.isDataInitialized()) {
-      throw new Error('Stock data not initialized. Waiting for webhook data.');
-    }
-
-    return {
-      rows: Array.from(stockStore.getAllStock().entries()).map(([productId, quantity]) => ({
-        quantity,
-        product: { meta: { href: `/product/${productId}` } },
-        store: { meta: { href: '/store/main' } }
-      })),
-      meta: {
-        href: '/report/stock/bystore',
-        type: 'reportstockbystore',
-        mediaType: 'application/json',
-        size: stockStore.getAllStock().size,
-        limit: 1000,
-        offset: 0
-      }
-    };
+  async getAllStock(): Promise<StockData[]> {
+    return this.getStock();
   }
 }; 

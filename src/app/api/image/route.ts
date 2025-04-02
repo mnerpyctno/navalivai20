@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import axios from 'axios';
+import { env } from '@/config/env';
 
 export async function GET(request: Request) {
   try {
@@ -11,13 +12,18 @@ export async function GET(request: Request) {
       return new NextResponse('Missing URL parameter', { status: 400 });
     }
 
+    if (!env.moySkladToken) {
+      console.error('Токен МойСклад не настроен');
+      return new NextResponse('MoySklad token not configured', { status: 500 });
+    }
+
     const url = decodeURIComponent(encodedUrl);
     console.log('Загрузка изображения с URL:', url);
 
     const response = await axios.get(url, {
       responseType: 'arraybuffer',
       headers: {
-        'Authorization': `Bearer ${process.env.MOYSKLAD_TOKEN}`,
+        'Authorization': `Bearer ${env.moySkladToken}`,
         'Accept': 'image/*'
       }
     });

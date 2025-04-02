@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { webhooksApi } from '@/api/webhooks';
+import { env } from '@/config/env';
 
 export async function POST(request: Request) {
   try {
@@ -7,6 +8,11 @@ export async function POST(request: Request) {
     
     // Проверяем, что это вебхук с данными об остатках
     if (data.entityType === 'reportstockbystore') {
+      console.log('Получен вебхук с данными об остатках:', {
+        data,
+        timestamp: new Date().toISOString()
+      });
+
       await webhooksApi.handleStockWebhook(data);
     }
 

@@ -1,129 +1,74 @@
-import { moySkladClient } from './config';
-import { MoySkladResponse } from './categories';
+import { moySkladClient, MoySkladParams, DEFAULT_PARAMS } from '@/config/moysklad';
+import { handleMoySkladError } from '@/lib/errors';
+import { MoySkladResponse, MoySkladProduct } from '@/types/product';
 
-export interface MoySkladProduct {
-  id: string;
-  name: string;
-  description?: string;
-  code?: string;
-  images?: {
-    meta: {
-      href: string;
-      type: string;
-      mediaType: string;
-      size: number;
-      limit: number;
-      offset: number;
-    };
-    rows: Array<{
-      meta: {
-        href: string;
-        type: string;
-        mediaType: string;
-      };
-      title: string;
-      filename: string;
-      size: number;
-      updated: string;
-      miniature: {
-        href: string;
-        type: string;
-        mediaType: string;
-        downloadHref?: string;
-      };
-    }>;
-  };
-  salePrices?: Array<{
-    value: number;
-    currency?: {
-      name: string;
-      code: string;
-    };
-  }>;
-  minPrice?: {
-    value: number;
-  };
-  productFolder?: {
-    meta: {
-      href: string;
-    };
-  };
-  archived?: boolean;
-}
-
-export interface MoySkladProductImage {
-  meta: {
-    href: string;
-    type: string;
-    mediaType: string;
-    size: number;
-    limit: number;
-    offset: number;
-  };
-  rows: Array<{
-    meta: {
-      href: string;
-      type: string;
-      mediaType: string;
-      size: number;
-    };
-    miniature: {
-      href: string;
-      downloadHref: string;
-    };
-  }>;
+export interface GetProductsParams extends MoySkladParams {
+  categoryId?: string;
+  searchQuery?: string;
 }
 
 export const productsApi = {
   /**
    * Получение списка товаров
    */
-  async getProducts(params: {
-    limit?: number;
-    offset?: number;
-    categoryId?: string;
-    order?: string;
-    filter?: string;
-    expand?: string;
-  } = {}): Promise<MoySkladResponse<MoySkladProduct>> {
-    const defaultParams: Record<string, any> = {
-      limit: params.limit || 20,
-      offset: params.offset || 0,
-      order: params.order || 'name,asc',
-      filter: params.filter || 'archived=false',
-      expand: params.expand || 'images'
-    };
+  async getProducts(params: GetProductsParams = {}): Promise<MoySkladResponse<MoySkladProduct>> {
+    try {
+      const queryParams = {
+        ...DEFAULT_PARAMS,
+        ...params
+      };
 
-    if (params.categoryId) {
-      defaultParams.filter = defaultParams.filter
-        ? `${defaultParams.filter};${params.categoryId}`
-        : `productFolder=${params.categoryId}`;
-    }
-
-    const response = await moySkladClient.get('', {
-      params: {
-        method: 'get',
-        url: 'entity/product',
-        params: JSON.stringify(defaultParams)
+      // Добавляем фильтр по категории
+      if (params.categoryId) {
+        queryParams.filter = `${queryParams.filter};productFolder=${params.categoryId}`;
       }
-    });
 
-    return response.data;
+      // Добавляем поисковый запрос
+      if (params.searchQuery) {
+        queryParams.filter = `${queryParams.filter};name~=${params.searchQuery}`;
+      }
+
+      const response = await moySkladClient.get('', {
+        params: {
+          method: 'get',
+          url: 'entity/product',
+          params: JSON.stringify(queryParams)
+        }
+      });
+
+      return response.data;
+    } catch (error) {
+      handleMoySkladError(error);
+    }
   },
 
   /**
    * Получение товара по ID
    */
   async getProduct(productId: string): Promise<MoySkladProduct> {
-    const response = await moySkladClient.get('', {
-      params: {
-        method: 'get',
-        url: `entity/product/${productId}`,
-        params: JSON.stringify({
-          expand: 'images,salePrices,productFolder,images.rows'
-        })
-      }
+    try {
+      const response = await moySkladClient.get('', {
+        params: {
+          method: 'get',
+          url: `entity/product/${productId}`,
+          params: JSON.stringify({
+            expand: 'images,salePrices,productFolder,images.rows'
+          })
+        }
+      });
+      return response.data;
+    } catch (error) {
+      handleMoySkladError(error);
+    }
+  },
+
+  /**
+   * Поиск товаров
+   */
+  async searchProducts(query: string, params: GetProductsParams = {}): Promise<MoySkladResponse<MoySkladProduct>> {
+    return this.getProducts({
+      ...params,
+      searchQuery: query
     });
-    return response.data;
   }
 }; 

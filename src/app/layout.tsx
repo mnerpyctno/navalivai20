@@ -1,9 +1,20 @@
 import './globals.css';
 import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
-import { ClientProviders } from '@/components/ClientProviders';
-import { InitProvider } from '@/components/InitProvider';
-import { TelegramAuthModal } from '@/components/TelegramAuthModal';
+import dynamic from 'next/dynamic';
+
+// Логирование загрузки стилей
+console.log('[Layout] Загрузка стилей:', {
+  globalsLoaded: true
+});
+
+const ClientProviders = dynamic(() => import('@/components/ClientProviders'), {
+  ssr: false
+});
+
+const InitProvider = dynamic(() => import('@/components/InitProvider'), {
+  ssr: false
+});
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -13,12 +24,8 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'Наваливай',
-  description: 'Магазин электронных сигарет',
-  metadataBase: new URL(process.env.NEXT_PUBLIC_WEBAPP_URL || 'http://localhost:3000'),
-  other: {
-    'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://telegram.org https://*.telegram.org; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; connect-src 'self' https://api.moysklad.ru https://telegram.org https://*.telegram.org;"
-  }
+  title: 'Navalivaishop',
+  description: 'Магазин Navalivaishop',
 };
 
 export default function RootLayout({
@@ -26,6 +33,7 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  console.log('[Layout] Рендеринг RootLayout');
   return (
     <html lang="ru">
       <head>
@@ -35,15 +43,14 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
       </head>
-      <body className="font-sans antialiased">
-        <ClientProviders>
-          <InitProvider>
-            <main>
+      <body className="font-sans antialiased" suppressHydrationWarning>
+        <div id="app-root">
+          <ClientProviders>
+            <InitProvider>
               {children}
-            </main>
-            <TelegramAuthModal />
-          </InitProvider>
-        </ClientProviders>
+            </InitProvider>
+          </ClientProviders>
+        </div>
       </body>
     </html>
   );

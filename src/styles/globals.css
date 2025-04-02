@@ -1,3 +1,58 @@
+@import './variables.css';
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  background-color: var(--app-background);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.Home_container,
+.Home_container__9OuOz {
+  background-color: var(--button-secondary);
+  min-height: 100vh;
+  width: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* Стили для скроллбара */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--button-secondary);
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--text-secondary);
+  border-radius: 2px;
+}
+
+/* Предотвращение прокрутки страницы при открытом модальном окне */
+body.modal-open {
+  overflow: hidden;
+}
+
 .telegram-modal-overlay {
   position: fixed;
   top: 0;
@@ -62,9 +117,4 @@
   display: flex;
   justify-content: center;
   margin-top: 1rem;
-}
-
-/* Предотвращение прокрутки страницы при открытом модальном окне */
-body.modal-open {
-  overflow: hidden;
 } 

@@ -1,19 +1,12 @@
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
+import { env } from '@/config/env';
+import { cache } from '@/lib/cache';
+import { CACHE_KEYS } from '@/config/cache';
+import { corsPreflightResponse, corsHeaders } from '@/lib/cors';
 
-export async function OPTIONS(request: Request) {
-  const headersList = headers();
-  const origin = headersList.get('origin') || '*';
-
-  return new NextResponse(null, {
-    status: 204,
-    headers: {
-      'Access-Control-Allow-Origin': origin,
-      'Access-Control-Allow-Methods': 'GET, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      'Access-Control-Max-Age': '86400',
-    },
-  });
+export async function OPTIONS() {
+  return corsPreflightResponse();
 }
 
 export async function GET(request: Request) {
@@ -22,53 +15,72 @@ export async function GET(request: Request) {
     const imageUrl = searchParams.get('url');
 
     if (!imageUrl) {
-      return new NextResponse('URL parameter is required', { status: 400 });
+      return new NextResponse('URL параметр обязателен', { 
+        status: 400,
+        headers: corsHeaders
+      });
     }
 
-    // Проверяем, что URL от МойСклад
+    // Проверяем, что URL от Мой Склад
     if (!imageUrl.startsWith('https://api.moysklad.ru/')) {
-      return new NextResponse('Invalid image source', { status: 400 });
+      return new NextResponse('Недопустимый источник изображения', { 
+        status: 400,
+        headers: corsHeaders
+      });
     }
 
-    console.log('Fetching image:', {
-      url: imageUrl,
-      token: process.env.NEXT_PUBLIC_MOYSKLAD_API_TOKEN?.slice(0, 5) + '...'
-    });
+    // Проверяем кэш
+    const cacheKey = CACHE_KEYS.IMAGE(imageUrl);
+    const cachedImage = cache.get<ArrayBuffer>(cacheKey);
+    
+    if (cachedImage) {
+      return new NextResponse(cachedImage, {
+        headers: {
+          'Content-Type': 'image/jpeg',
+          'Cache-Control': 'public, max-age=31536000, immutable',
+          ...corsHeaders
+        },
+      });
+    }
 
+    // Получаем изображение
     const response = await fetch(imageUrl, {
       headers: {
-        'Authorization': `Bearer ${process.env.NEXT_PUBLIC_MOYSKLAD_API_TOKEN}`,
+        'Authorization': `Bearer ${env.moySkladToken}`,
+        'Accept': 'image/*'
       },
     });
 
     if (!response.ok) {
-      console.error('Error fetching image:', {
+      console.error('Ошибка получения изображения:', {
         status: response.status,
         statusText: response.statusText,
         url: imageUrl
       });
-      return new NextResponse('Failed to fetch image', { status: response.status });
+      return new NextResponse('Ошибка получения изображения', { 
+        status: response.status,
+        headers: corsHeaders
+      });
     }
 
     const contentType = response.headers.get('content-type');
     const imageData = await response.arrayBuffer();
 
-    // Получаем origin из заголовков запроса
-    const headersList = headers();
-    const origin = headersList.get('origin') || '*';
-
+    // Кэшируем изображение
+    cache.set(cacheKey, imageData, env.cacheTtl.images);
+    
     return new NextResponse(imageData, {
       headers: {
         'Content-Type': contentType || 'image/jpeg',
         'Cache-Control': 'public, max-age=31536000, immutable',
-        'Access-Control-Allow-Origin': origin,
-        'Access-Control-Allow-Methods': 'GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        'Access-Control-Max-Age': '86400',
+        ...corsHeaders
       },
     });
   } catch (error) {
-    console.error('Error in image proxy:', error);
-    return new NextResponse('Internal Server Error', { status: 500 });
+    console.error('Ошибка при загрузке изображения:', error);
+    return new NextResponse('Внутренняя ошибка сервера', { 
+      status: 500,
+      headers: corsHeaders
+    });
   }
 } 

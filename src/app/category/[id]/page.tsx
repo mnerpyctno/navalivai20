@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import styles from '@/styles/Category.module.css';
-import { fetchProducts } from '@/utils/api';
+import { productsApi } from '@/lib/api';
 import { Product } from '@/types/product';
 import Header from '@/components/Header';
 import { useCart } from '@/context/CartContext';
@@ -21,19 +21,27 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
 
   const loadProducts = useCallback(async (pageNumber: number) => {
     try {
-      const data = await fetchProducts(params.id, pageNumber);
-      setProducts(prev => pageNumber === 1 ? data.products : [...prev, ...data.products]);
-      setHasMore(data.hasMore);
-      setError(null);
-    } catch (err) {
-      console.error('Ошибка при загрузке товаров:', err);
-      setError(err instanceof Error ? err.message : 'Произошла неизвестная ошибка');
-      setProducts(prev => pageNumber === 1 ? [] : prev);
-    } finally {
-      setLoading(false);
-      if (pageNumber === 1) {
-        setInitialLoad(false);
-      }
+      const response = await productsApi.getProducts({
+        limit: ITEMS_PER_PAGE,
+        offset: (pageNumber - 1) * ITEMS_PER_PAGE,
+        categoryId: params.id
+      });
+      
+      const products = response.rows.map(product => ({
+        id: product.id,
+        name: product.name,
+        price: product.salePrices?.[0]?.value ? product.salePrices[0].value / 100 : 0,
+        image: product.images?.rows?.[0]?.miniature?.href || '/default-product.jpg',
+        description: product.description || '',
+        categoryId: product.productFolder?.meta?.href?.split('/').pop() || '',
+        available: true,
+        stock: 0
+      }));
+      
+      setProducts(prev => pageNumber === 1 ? products : [...prev, ...products]);
+      setHasMore((response.meta?.size || 0) > pageNumber * ITEMS_PER_PAGE);
+    } catch (error) {
+      console.error('Ошибка при загрузке товаров:', error);
     }
   }, [params.id]);
 

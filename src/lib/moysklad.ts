@@ -1,4 +1,6 @@
 import { PrismaClient } from '@prisma/client';
+import { moySkladClient, BASE_URL } from '@/api/config';
+import { env } from '@/config/env';
 
 const prisma = new PrismaClient();
 
@@ -25,11 +27,22 @@ interface MoySkladOrder {
 export class MoySkladAPI {
   private static instance: MoySkladAPI;
   private token: string;
-  private baseUrl: string;
 
   private constructor() {
-    this.token = process.env.MOYSKLAD_API_TOKEN || '';
-    this.baseUrl = process.env.MOYSKLAD_API_URL || 'https://api.moysklad.ru/api/remap/1.2';
+    console.log('Инициализация MoySkladAPI');
+    console.log('env.moySkladToken:', env.moySkladToken ? 'Установлен' : 'Не установлен');
+    console.log('process.env.MOYSKLAD_TOKEN:', process.env.MOYSKLAD_TOKEN ? 'Установлен' : 'Не установлен');
+    console.log('typeof window:', typeof window);
+    
+    if (typeof window !== 'undefined') {
+      throw new Error('MoySkladAPI не может быть использован на клиентской стороне');
+    }
+
+    if (!env.moySkladToken) {
+      console.error('Ошибка: MOYSKLAD_TOKEN не настроен');
+      throw new Error('MOYSKLAD_TOKEN не настроен');
+    }
+    this.token = env.moySkladToken;
   }
 
   public static getInstance(): MoySkladAPI {
@@ -41,31 +54,29 @@ export class MoySkladAPI {
 
   private async fetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     try {
-      const response = await fetch(`${this.baseUrl}${endpoint}`, {
-        ...options,
+      const url = new URL('proxy', window.location.origin);
+      url.searchParams.append('method', options.method || 'GET');
+      url.searchParams.append('url', endpoint);
+      
+      if (options.body) {
+        url.searchParams.append('params', options.body as string);
+      }
+
+      const response = await fetch(url.toString(), {
+        method: 'POST',
         headers: {
-          'Authorization': `Bearer ${this.token}`,
           'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          ...options.headers,
-        },
-        mode: 'cors',
-        credentials: 'omit',
-        cache: 'no-cache',
+          'Authorization': `Bearer ${this.token}`
+        }
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        throw new Error(
-          `MoySklad API error: ${response.status} ${response.statusText}${
-            errorData ? ` - ${JSON.stringify(errorData)}` : ''
-          }`
-        );
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      return response.json();
+      return await response.json();
     } catch (error) {
-      console.error('MoySklad API request failed:', error);
+      console.error('Error fetching from MoySklad:', error);
       throw error;
     }
   }
@@ -86,7 +97,7 @@ export class MoySkladAPI {
     }
 
     // Создаем нового контрагента
-    const customer = await this.fetch<MoySkladCustomer>('/entity/counterparty', {
+    const customer = await this.fetch<MoySkladCustomer>(`entity/counterparty`, {
       method: 'POST',
       body: JSON.stringify({
         name: `${telegramUser.first_name} ${telegramUser.last_name || ''}`,
@@ -107,7 +118,7 @@ export class MoySkladAPI {
 
   // Обновление контрагента
   private async updateCustomer(customerId: string, telegramUser: any): Promise<MoySkladCustomer> {
-    return this.fetch<MoySkladCustomer>(`/entity/counterparty/${customerId}`, {
+    return this.fetch<MoySkladCustomer>(`entity/counterparty/${customerId}`, {
       method: 'PUT',
       body: JSON.stringify({
         name: `${telegramUser.first_name} ${telegramUser.last_name || ''}`,
@@ -128,7 +139,7 @@ export class MoySkladAPI {
     }
 
     const orders = await this.fetch<{ rows: MoySkladOrder[] }>(
-      `/entity/customerorder?filter=customer=${user.moySkladId}`
+      `entity/customerorder?filter=customer=${user.moySkladId}`
     );
 
     // Обновляем количество заказов в базе данных
@@ -150,12 +161,12 @@ export class MoySkladAPI {
       throw new Error('User not found or not linked to MoySklad');
     }
 
-    const order = await this.fetch<MoySkladOrder>('/entity/customerorder', {
+    const order = await this.fetch<MoySkladOrder>(`entity/customerorder`, {
       method: 'POST',
       body: JSON.stringify({
         customer: {
           meta: {
-            href: `${this.baseUrl}/entity/counterparty/${user.moySkladId}`,
+            href: `entity/counterparty/${user.moySkladId}`,
             type: 'entity.counterparty',
           },
         },
@@ -163,7 +174,7 @@ export class MoySkladAPI {
           quantity: item.quantity,
           assortment: {
             meta: {
-              href: `${this.baseUrl}/entity/product/${item.productId}`,
+              href: `entity/product/${item.productId}`,
               type: 'entity.product',
             },
           },

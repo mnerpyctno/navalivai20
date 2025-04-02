@@ -1,3 +1,10 @@
+.container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--background-color);
+}
+
 .main {
   width: 100%;
   max-width: var(--max-width);
@@ -70,8 +77,10 @@
   display: flex;
   gap: 12px;
   overflow-x: auto;
-  padding-bottom: 8px;
+  padding: 16px 0;
   margin-bottom: 16px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--text-secondary) var(--button-secondary);
 }
 
 .categories::-webkit-scrollbar {
@@ -307,11 +316,12 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  padding: 20px;
 }
 
 .modalContent {
@@ -322,33 +332,61 @@
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
-  width: 400px;
+  width: 100%;
+  max-width: 500px;
+}
+
+.modalImageContainer {
+  position: relative;
+  width: 100%;
+  padding-bottom: 100%;
+  margin-bottom: 16px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--button-secondary);
+}
+
+.modalImage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain;
 }
 
 .modalTitle {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 600;
   color: var(--text-primary);
-  margin: 0 0 16px;
+  margin: 0 0 12px;
 }
 
 .modalText {
   font-size: 14px;
-  color: var(--text-primary);
+  color: var(--text-secondary);
+  margin: 0 0 16px;
   line-height: 1.5;
-  margin: 0;
+}
+
+.modalPrice {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
 .closeButton {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 24px;
-  height: 24px;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: var(--button-secondary);
   border: none;
   color: var(--text-secondary);
+  font-size: 24px;
+  line-height: 1;
   cursor: pointer;
   display: flex;
   align-items: center;

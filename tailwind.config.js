@@ -6,7 +6,6 @@ module.exports = {
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
     './src/styles/**/*.{js,ts,jsx,tsx,mdx,css}',
   ],
-  important: true,
   theme: {
     extend: {
       fontFamily: {

@@ -1,68 +1,56 @@
-import { moySkladClient } from './config';
+import { moySkladClient, MoySkladParams, DEFAULT_PARAMS } from '@/config/moysklad';
+import { handleMoySkladError } from '@/lib/errors';
+import { MoySkladResponse, MoySkladCategory } from '@/types/product';
 
-export interface MoySkladCategory {
-  id: string;
-  name: string;
-  code?: string;
-  description?: string;
-  externalCode?: string;
-  meta: {
-    href: string;
-    type: string;
-    mediaType: string;
-  };
-}
-
-export interface MoySkladResponse<T> {
-  rows: T[];
-  meta: {
-    href: string;
-    type: string;
-    mediaType: string;
-    size: number;
-    limit: number;
-    offset: number;
-  };
+export interface GetCategoriesParams extends MoySkladParams {
+  parentId?: string;
 }
 
 export const categoriesApi = {
   /**
    * Получение списка категорий
    */
-  async getCategories(params: { 
-    limit?: number; 
-    offset?: number; 
-    order?: string;
-    filter?: string;
-  } = {}): Promise<MoySkladResponse<MoySkladCategory>> {
-    const defaultParams = {
-      limit: 100,
-      offset: 0,
-      order: 'name,asc',
-      ...params
-    };
+  async getCategories(params: GetCategoriesParams = {}): Promise<MoySkladResponse<MoySkladCategory>> {
+    try {
+      const queryParams = {
+        ...DEFAULT_PARAMS,
+        ...params
+      };
 
-    const response = await moySkladClient.get('', {
-      params: {
-        method: 'get',
-        url: 'entity/productfolder',
-        params: JSON.stringify(defaultParams)
+      // Добавляем фильтр по родительской категории
+      if (params.parentId) {
+        queryParams.filter = `${queryParams.filter};productFolder=${params.parentId}`;
       }
-    });
-    return response.data;
+
+      const response = await moySkladClient.get('', {
+        params: {
+          method: 'get',
+          url: 'entity/productfolder',
+          params: JSON.stringify(queryParams)
+        }
+      });
+
+      return response.data;
+    } catch (error) {
+      handleMoySkladError(error);
+    }
   },
 
   /**
    * Получение категории по ID
    */
   async getCategory(categoryId: string): Promise<MoySkladCategory> {
-    const response = await moySkladClient.get('', {
-      params: {
-        method: 'get',
-        url: `entity/productfolder/${categoryId}`,
-        params: JSON.stringify({})
-      }
-    });
-    return response.data;
+    try {
+      const response = await moySkladClient.get('', {
+        params: {
+          method: 'get',
+          url: `entity/productfolder/${categoryId}`,
+          params: JSON.stringify({})
+        }
+      });
+      return response.data;
+    } catch (error) {
+      handleMoySkladError(error);
+    }
   }
 }; 

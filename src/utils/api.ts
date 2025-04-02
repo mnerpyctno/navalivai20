@@ -1,8 +1,9 @@
 import { Product, MoySkladProduct, MoySkladCategory, MoySkladResponse, ProductsResponse } from '@/types/product';
 import { categoriesApi, productsApi, stockApi } from '@/api';
 import { getProductImageUrl } from '@/lib/api';
+import { env } from '@/config/env';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+const API_URL = env.apiUrl;
 
 export const fetchCategories = async (): Promise<MoySkladCategory[]> => {
   try {
@@ -64,8 +65,8 @@ export async function fetchProducts(
         try {
           const stockResponse = await stockApi.getProductStock(product.id);
           
-          if (stockResponse.rows && stockResponse.rows.length > 0) {
-            const totalQuantity = stockResponse.rows.reduce((sum: number, row: any) => {
+          if (stockResponse && stockResponse.length > 0) {
+            const totalQuantity = stockResponse.reduce((sum: number, row: any) => {
               const quantity = typeof row.quantity === 'number' ? row.quantity : 0;
               return sum + quantity;
             }, 0);

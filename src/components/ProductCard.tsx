@@ -3,11 +3,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
-import { stockStore } from '@/lib/stockStore';
 import styles from '@/styles/ProductCard.module.css';
 import { Product } from '@/types/product';
 import ErrorPopup from '@/components/ErrorPopup';
 import ImagePlaceholder from '@/components/ImagePlaceholder';
+import { productsApi } from '@/lib/api';
 
 interface ProductCardProps {
   product: Product;
@@ -24,8 +24,8 @@ export default function ProductCard({ product }: ProductCardProps) {
   useEffect(() => {
     const fetchStock = async () => {
       try {
-        const stockData = await stockStore.getStock(product.id);
-        setStock(stockData);
+        const stockData = await productsApi.getStock(product.id);
+        setStock(stockData.rows?.[0]?.quantity || 0);
       } catch (error) {
         console.error('Ошибка при получении остатка:', error);
       } finally {
@@ -114,9 +114,9 @@ export default function ProductCard({ product }: ProductCardProps) {
           <div className={styles.priceWrapper}>
             {isAvailableForCart ? (
               <>
-                <div className={styles.price}>{product.price} BYN</div>
+                <div className={styles.price}>{product.price} ₽</div>
                 {product.oldPrice && (
-                  <div className={styles.oldPrice}>{product.oldPrice} BYN</div>
+                  <div className={styles.oldPrice}>{product.oldPrice} ₽</div>
                 )}
               </>
             ) : (
@@ -157,12 +157,12 @@ export default function ProductCard({ product }: ProductCardProps) {
               <div className={styles.modalInfo}>
                 <div className={styles.modalPrice}>
                   <span className={styles.modalLabel}>Цена:</span>
-                  <span className={styles.modalValue}>{product.price} BYN</span>
+                  <span className={styles.modalValue}>{product.price} ₽</span>
                 </div>
                 {product.oldPrice && (
                   <div className={styles.modalPrice}>
                     <span className={styles.modalLabel}>Старая цена:</span>
-                    <span className={styles.modalValue}>{product.oldPrice} BYN</span>
+                    <span className={styles.modalValue}>{product.oldPrice} ₽</span>
                   </div>
                 )}
                 <div className={styles.modalStock}>
