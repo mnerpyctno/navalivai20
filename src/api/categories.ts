@@ -15,7 +15,7 @@ const getApiBaseUrl = () => {
   const isDevelopment = process.env.NODE_ENV === 'development';
   return isDevelopment 
     ? 'http://localhost:3002'
-    : process.env.NEXT_PUBLIC_API_URL || 'https://navalivai20-server.vercel.app';
+    : ''; // В продакшене используем относительный путь, так как API находится в том же домене
 };
 
 export const categoriesApi = {
