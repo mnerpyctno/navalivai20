@@ -1,13 +1,25 @@
-import { moySkladClient, MoySkladParams, DEFAULT_PARAMS } from '@/config/moysklad';
-import { handleMoySkladError } from '@/lib/errors';
 import { MoySkladResponse, MoySkladOrder } from '@/types/product';
 
-export interface GetOrdersParams extends MoySkladParams {
+export interface GetOrdersParams {
   userId?: string;
   status?: string;
   dateFrom?: string;
   dateTo?: string;
 }
+
+// Определяем базовый URL API в зависимости от окружения
+const getApiBaseUrl = () => {
+  if (typeof window === 'undefined') {
+    // Серверная сторона
+    return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
+  }
+  
+  // Клиентская сторона
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  return isDevelopment 
+    ? 'http://localhost:3002'
+    : ''; // В продакшене используем относительный путь, так как API находится в том же домене
+};
 
 export const ordersApi = {
   /**
@@ -15,40 +27,26 @@ export const ordersApi = {
    */
   async getOrders(params: GetOrdersParams = {}): Promise<MoySkladResponse<MoySkladOrder>> {
     try {
-      const queryParams = {
-        ...DEFAULT_PARAMS,
-        ...params
-      };
+      const queryParams = new URLSearchParams();
+      if (params.userId) queryParams.append('userId', params.userId);
+      if (params.status) queryParams.append('status', params.status);
+      if (params.dateFrom) queryParams.append('dateFrom', params.dateFrom);
+      if (params.dateTo) queryParams.append('dateTo', params.dateTo);
 
-      // Добавляем фильтр по пользователю
-      if (params.userId) {
-        queryParams.filter = `${queryParams.filter};agent=${params.userId}`;
-      }
-
-      // Добавляем фильтр по статусу
-      if (params.status) {
-        queryParams.filter = `${queryParams.filter};state=${params.status}`;
-      }
-
-      // Добавляем фильтр по дате
-      if (params.dateFrom) {
-        queryParams.filter = `${queryParams.filter};created>=${params.dateFrom}`;
-      }
-      if (params.dateTo) {
-        queryParams.filter = `${queryParams.filter};created<=${params.dateTo}`;
-      }
-
-      const response = await moySkladClient.get('', {
-        params: {
-          method: 'get',
-          url: 'entity/customerorder',
-          params: JSON.stringify(queryParams)
-        }
+      const response = await fetch(`${getApiBaseUrl()}/api/orders?${queryParams.toString()}`, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
-
-      return response.data;
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return await response.json();
     } catch (error) {
-      handleMoySkladError(error);
+      console.error('Error fetching orders:', error);
+      throw error;
     }
   },
 
@@ -57,18 +55,20 @@ export const ordersApi = {
    */
   async getOrder(orderId: string): Promise<MoySkladOrder> {
     try {
-      const response = await moySkladClient.get('', {
-        params: {
-          method: 'get',
-          url: `entity/customerorder/${orderId}`,
-          params: JSON.stringify({
-            expand: 'positions,state,agent,organization'
-          })
-        }
+      const response = await fetch(`${getApiBaseUrl()}/api/orders/${orderId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
-      return response.data;
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return await response.json();
     } catch (error) {
-      handleMoySkladError(error);
+      console.error('Error fetching order:', error);
+      throw error;
     }
   },
 
@@ -89,22 +89,22 @@ export const ordersApi = {
     }>;
   }): Promise<MoySkladOrder> {
     try {
-      const response = await moySkladClient.post('', {
-        params: {
-          method: 'post',
-          url: 'entity/customerorder',
-          params: JSON.stringify({
-            ...data,
-            vatEnabled: true,
-            vatIncluded: true,
-            vatSum: 0,
-            sum: data.positions.reduce((sum, pos) => sum + pos.price * pos.quantity, 0)
-          })
-        }
+      const response = await fetch(`${getApiBaseUrl()}/api/orders`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
       });
-      return response.data;
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return await response.json();
     } catch (error) {
-      handleMoySkladError(error);
+      console.error('Error creating order:', error);
+      throw error;
     }
   },
 
@@ -113,16 +113,22 @@ export const ordersApi = {
    */
   async updateOrderStatus(orderId: string, statusId: string): Promise<MoySkladOrder> {
     try {
-      const response = await moySkladClient.post('', {
-        params: {
-          method: 'post',
-          url: `entity/customerorder/${orderId}/state/${statusId}`,
-          params: JSON.stringify({})
-        }
+      const response = await fetch(`${getApiBaseUrl()}/api/orders/${orderId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ statusId }),
       });
-      return response.data;
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return await response.json();
     } catch (error) {
-      handleMoySkladError(error);
+      console.error('Error updating order status:', error);
+      throw error;
     }
   }
 }; 
