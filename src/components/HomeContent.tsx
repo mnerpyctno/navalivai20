@@ -47,15 +47,23 @@ export default function HomeContent() {
         searchQuery: searchQuery || undefined
       });
       
-      const products = response.rows.map(product => ({
-        id: product.id,
-        name: product.name,
-        price: product.salePrices?.[0]?.value ? product.salePrices[0].value / 100 : 0,
-        image: product.images?.rows?.[0]?.miniature?.href || '/default-product.jpg',
-        description: product.description || '',
-        categoryId: product.productFolder?.meta?.href?.split('/').pop() || '',
-        available: true,
-        stock: 0
+      const products = await Promise.all(response.rows.map(async product => {
+        const stockResponse = await productsApi.getProductStock(product.id);
+        const totalQuantity = stockResponse?.rows?.reduce((sum: number, row: any) => {
+          const quantity = typeof row.quantity === 'number' ? row.quantity : 0;
+          return sum + quantity;
+        }, 0) || 0;
+
+        return {
+          id: product.id,
+          name: product.name,
+          price: product.salePrices?.[0]?.value ? product.salePrices[0].value / 100 : 0,
+          image: product.images?.rows?.[0]?.miniature?.href || '/default-product.jpg',
+          description: product.description || '',
+          categoryId: product.productFolder?.meta?.href?.split('/').pop() || '',
+          available: totalQuantity > 0,
+          stock: totalQuantity
+        };
       }));
       
       if (pageNumber === 1) {

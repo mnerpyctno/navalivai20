@@ -84,7 +84,10 @@ export const productsApi = {
         params: JSON.stringify({
           ...params,
           expand: 'images,salePrices,productFolder,images.rows',
-          filter: 'archived=false'
+          filter: 'archived=false',
+          order: 'name,asc',
+          limit: params.limit || 100,
+          offset: params.offset || 0
         })
       }
     });
@@ -110,6 +113,35 @@ export const productsApi = {
     });
     const data = response.data;
     cache.set(cacheKey, data, CACHE_TTL.products);
+    return data;
+  },
+
+  async getProductStock(productId: string): Promise<MoySkladResponse<any>> {
+    const cacheKey = CACHE_KEYS.STOCK(productId);
+    const cachedData = cache.get<MoySkladResponse<any>>(cacheKey);
+    
+    if (cachedData) {
+      return cachedData;
+    }
+
+    const response = await moySkladApi.get('', {
+      params: {
+        method: 'get',
+        url: '/report/stock/all',
+        params: JSON.stringify({
+          filter: `product.id=${productId}`,
+          limit: 10000,
+          expand: 'product',
+          moment: new Date().toISOString(),
+          groupBy: 'product',
+          store: 'all',
+          order: 'product'
+        })
+      }
+    });
+    
+    const data = response.data;
+    cache.set(cacheKey, data, CACHE_TTL.stock);
     return data;
   },
 

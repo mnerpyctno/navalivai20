@@ -11,7 +11,8 @@ class MoySkladClient {
       baseURL: MOYSKLAD_CONFIG.baseUrl,
       timeout: MOYSKLAD_CONFIG.timeout,
       headers: {
-        ...MOYSKLAD_CONFIG.headers
+        ...MOYSKLAD_CONFIG.headers,
+        'Authorization': `Bearer ${process.env.MOYSKLAD_TOKEN}`
       }
     });
 

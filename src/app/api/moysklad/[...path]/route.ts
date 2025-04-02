@@ -5,10 +5,10 @@ import axios from 'axios';
 
 // Создаем клиент для MoySklad API
 const moySkladApi = axios.create({
-  baseURL: env.moySkladApiUrl,
+  baseURL: process.env.MOYSKLAD_API_URL,
   headers: {
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${env.moySkladToken}`
+    'Authorization': `Bearer ${process.env.MOYSKLAD_TOKEN}`
   }
 });
 

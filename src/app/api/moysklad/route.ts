@@ -39,7 +39,7 @@ export async function GET(request: Request) {
 
     const moySkladUrl = `https://api.moysklad.ru/api/remap/1.2/${url}`;
     const headers = {
-      'Authorization': `Bearer ${env.moyskladApiToken}`,
+      'Authorization': `Bearer ${process.env.MOYSKLAD_TOKEN}`,
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     };
