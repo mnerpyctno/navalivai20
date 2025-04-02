@@ -1,4 +1,4 @@
-import { moySkladClient } from '@/config/moysklad';
+import { moySkladClient } from '@/lib/moysklad/client';
 import { handleMoySkladError } from '@/lib/errors';
 import { cache, CACHE_KEYS } from '@/lib/cache';
 import { env } from '@/config/env';

@@ -53,6 +53,16 @@ class MoySkladClient {
     const response = await this.client.get(path, { params });
     return response.data;
   }
+
+  public async post<T>(path: string, data?: any, params?: any): Promise<T> {
+    const response = await this.client.post(path, data, { params });
+    return response.data;
+  }
+
+  public async delete<T>(path: string, params?: any): Promise<T> {
+    const response = await this.client.delete(path, { params });
+    return response.data;
+  }
 }
 
 export const moySkladClient = MoySkladClient.getInstance(); 
