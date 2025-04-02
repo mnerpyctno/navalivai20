@@ -4,7 +4,19 @@ export interface GetCategoriesParams {
   parentId?: string;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+// Определяем базовый URL API в зависимости от окружения
+const getApiBaseUrl = () => {
+  if (typeof window === 'undefined') {
+    // Серверная сторона
+    return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
+  }
+  
+  // Клиентская сторона
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  return isDevelopment 
+    ? 'http://localhost:3002'
+    : process.env.NEXT_PUBLIC_API_URL || 'https://navalivai20-server.vercel.app';
+};
 
 export const categoriesApi = {
   /**
@@ -17,7 +29,11 @@ export const categoriesApi = {
         queryParams.append('parentId', params.parentId);
       }
 
-      const response = await fetch(`${API_BASE_URL}/api/categories?${queryParams.toString()}`);
+      const response = await fetch(`${getApiBaseUrl()}/api/categories?${queryParams.toString()}`, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -35,7 +51,11 @@ export const categoriesApi = {
    */
   async getCategory(categoryId: string): Promise<MoySkladCategory> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/categories/${categoryId}`);
+      const response = await fetch(`${getApiBaseUrl()}/api/categories/${categoryId}`, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
