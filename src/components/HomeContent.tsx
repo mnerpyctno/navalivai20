@@ -85,7 +85,7 @@ export default function HomeContent() {
     } catch (error) {
       console.error('[Home] Ошибка при загрузке категорий:', error);
     }
-  }, []);
+  }, [categoryImages]);
 
   const loadingRef = useCallback((node: HTMLDivElement | null) => {
     if (observer.current) observer.current.disconnect();

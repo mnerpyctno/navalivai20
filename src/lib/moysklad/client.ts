@@ -63,6 +63,15 @@ class MoySkladClient {
     const response = await this.client.delete(path, { params });
     return response.data;
   }
+
+  public async put<T>(path: string, data?: any, params?: any): Promise<T> {
+    const response = await this.client.put(path, data, { params });
+    return response.data;
+  }
+
+  public getBaseUrl(): string {
+    return MOYSKLAD_CONFIG.baseUrl;
+  }
 }
 
 export const moySkladClient = MoySkladClient.getInstance(); 
