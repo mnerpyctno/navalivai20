@@ -1,10 +1,10 @@
-import { moySkladClient, MoySkladParams, DEFAULT_PARAMS } from '@/config/moysklad';
-import { handleMoySkladError } from '@/lib/errors';
 import { MoySkladResponse, MoySkladCategory } from '@/types/product';
 
-export interface GetCategoriesParams extends MoySkladParams {
+export interface GetCategoriesParams {
   parentId?: string;
 }
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export const categoriesApi = {
   /**
@@ -12,27 +12,21 @@ export const categoriesApi = {
    */
   async getCategories(params: GetCategoriesParams = {}): Promise<MoySkladResponse<MoySkladCategory>> {
     try {
-      const queryParams = {
-        ...DEFAULT_PARAMS,
-        ...params
-      };
-
-      // Добавляем фильтр по родительской категории
+      const queryParams = new URLSearchParams();
       if (params.parentId) {
-        queryParams.filter = `${queryParams.filter};productFolder=${params.parentId}`;
+        queryParams.append('parentId', params.parentId);
       }
 
-      const response = await moySkladClient.get('', {
-        params: {
-          method: 'get',
-          url: 'entity/productfolder',
-          params: JSON.stringify(queryParams)
-        }
-      });
-
-      return response.data;
+      const response = await fetch(`${API_BASE_URL}/api/categories?${queryParams.toString()}`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return await response.json();
     } catch (error) {
-      handleMoySkladError(error);
+      console.error('Error fetching categories:', error);
+      throw error;
     }
   },
 
@@ -41,16 +35,16 @@ export const categoriesApi = {
    */
   async getCategory(categoryId: string): Promise<MoySkladCategory> {
     try {
-      const response = await moySkladClient.get('', {
-        params: {
-          method: 'get',
-          url: `entity/productfolder/${categoryId}`,
-          params: JSON.stringify({})
-        }
-      });
-      return response.data;
+      const response = await fetch(`${API_BASE_URL}/api/categories/${categoryId}`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return await response.json();
     } catch (error) {
-      handleMoySkladError(error);
+      console.error('Error fetching category:', error);
+      throw error;
     }
   }
 }; 
