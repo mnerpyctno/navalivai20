@@ -6,16 +6,11 @@ export const API_VERSION = '1.2';
 
 // Создаем экземпляр axios с базовой конфигурацией
 export const createMoySkladClient = (): AxiosInstance => {
-  if (!env.moySkladToken) {
-    throw new Error('MOYSKLAD_TOKEN не настроен');
-  }
-
   const client = axios.create({
-    baseURL: env.moySkladApiUrl,
+    baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002',
     timeout: 30000,
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${env.moySkladToken}`,
       'Accept': 'application/json'
     }
   });
@@ -51,8 +46,8 @@ export const createMoySkladClient = (): AxiosInstance => {
   return client;
 };
 
-// Создаем экземпляр API только на сервере
-export const moySkladClient = typeof window === 'undefined' ? createMoySkladClient() : null;
+// Создаем экземпляр API
+export const moySkladClient = createMoySkladClient();
 
 // Параметры по умолчанию для запросов
 export const DEFAULT_PARAMS = {

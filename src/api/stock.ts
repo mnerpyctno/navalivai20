@@ -1,4 +1,4 @@
-import moySkladClient from './config';
+import { moySkladClient } from './config';
 import { StockData } from '@/types/stock';
 
 interface GetStockParams {
@@ -60,14 +60,29 @@ export const stockApi = {
         queryParams.filter = `product.name~=${params.productId}`;
       }
 
-      const response = await moySkladClient.get<MoySkladResponse>('report/stock/bystore', { params: queryParams });
+      const response = await moySkladClient.get('/proxy', {
+        params: {
+          method: 'get',
+          url: 'report/stock/bystore',
+          params: JSON.stringify(queryParams)
+        }
+      });
 
       if (!response.data || !Array.isArray(response.data.rows)) {
         console.warn('Invalid response format from MoySklad API');
         return [];
       }
 
-      return response.data.rows.map((row) => ({
+      return response.data.rows.map((row: {
+        product?: {
+          id: string;
+          name: string;
+        };
+        quantity: number;
+        store?: {
+          name: string;
+        };
+      }) => ({
         id: row.product?.id || '',
         name: row.product?.name || 'Unknown Product',
         quantity: row.quantity || 0,

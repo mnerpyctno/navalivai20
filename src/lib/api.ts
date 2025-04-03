@@ -17,14 +17,16 @@ import { InternalAxiosRequestConfig } from 'axios';
 // Экспортируем типы
 export type { Product, Category };
 
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 1000; // 1 секунда
+
 // Создаем базовый API клиент для работы с MoySklad API через прокси
 const moySkladApi = axios.create({
   baseURL: `${env.apiUrl}/proxy`,
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json;charset=utf-8'
-  },
-  withCredentials: true
+    'Accept': 'application/json'
+  }
 });
 
 // Добавляем интерцептор для логирования запросов
@@ -33,36 +35,72 @@ moySkladApi.interceptors.request.use(
     if (!config.method) {
       config.method = 'get';
     }
-    console.log('Making request to MoySklad API:', {
-      url: config.url,
-      method: config.method,
-      params: config.params,
-      timestamp: new Date().toISOString()
-    });
     return config;
   },
   (error: Error) => {
-    console.error('Ошибка при отправке запроса:', error);
     return Promise.reject(error);
   }
 );
 
-// Добавляем интерцептор для обработки ответов
+// Добавляем интерцептор для обработки ошибок
 moySkladApi.interceptors.response.use(
-  (response) => {
-    return response;
-  },
-  (error: any) => {
-    console.error('Ошибка ответа:', {
-      status: error.response?.status,
-      data: error.response?.data,
-      config: {
-        url: error.config?.url,
-        method: error.config?.method,
-        params: error.config?.params,
-        headers: error.config?.headers
+  response => response,
+  async error => {
+    const config = error.config;
+    
+    // Если это ошибка 412 или 429 и мы еще не превысили лимит попыток
+    if ((error.response?.status === 412 || error.response?.status === 429) && 
+        (!config._retry || config._retry < MAX_RETRIES)) {
+      
+      config._retry = (config._retry || 0) + 1;
+      
+      // Получаем время ожидания из заголовка или используем значение по умолчанию
+      const retryAfter = error.response?.headers['x-lognex-retry-after'] || 3;
+      // Используем экспоненциальную задержку: 3с, 6с, 12с
+      const delay = parseInt(retryAfter) * 1000 * Math.pow(2, config._retry - 1);
+      
+      console.log(`Повторная попытка запроса ${config._retry}/${MAX_RETRIES} через ${delay/1000} секунд`);
+      
+      // Ждем указанное время перед повторной попыткой
+      await new Promise(resolve => setTimeout(resolve, delay));
+      
+      // Повторяем запрос
+      return moySkladApi(config);
+    }
+    
+    // Добавляем более информативные сообщения об ошибках
+    if (error.response) {
+      const status = error.response.status;
+      const data = error.response.data;
+      
+      switch (status) {
+        case 412:
+          error.message = data.message || 'Условие запроса не выполнено';
+          break;
+        case 429:
+          error.message = data.message || 'Превышен лимит запросов к API';
+          break;
+        case 401:
+          error.message = 'Ошибка авторизации';
+          break;
+        case 403:
+          error.message = 'Доступ запрещен';
+          break;
+        case 404:
+          error.message = 'Ресурс не найден';
+          break;
+        case 500:
+          error.message = 'Внутренняя ошибка сервера';
+          break;
+        default:
+          error.message = data.message || 'Произошла ошибка при выполнении запроса';
       }
-    });
+    } else if (error.request) {
+      error.message = 'Сервер не отвечает';
+    } else {
+      error.message = 'Ошибка при настройке запроса';
+    }
+    
     return Promise.reject(error);
   }
 );
@@ -117,32 +155,14 @@ export const productsApi = {
   },
 
   async getProductStock(productId: string): Promise<MoySkladResponse<any>> {
-    const cacheKey = CACHE_KEYS.STOCK(productId);
-    const cachedData = cache.get<MoySkladResponse<any>>(cacheKey);
-    
-    if (cachedData) {
-      return cachedData;
-    }
-
-    const response = await moySkladApi.get('', {
-      params: {
-        method: 'get',
-        url: '/report/stock/all',
-        params: JSON.stringify({
-          filter: `product.id=${productId}`,
-          limit: 10000,
-          expand: 'product',
-          moment: new Date().toISOString(),
-          groupBy: 'product',
-          store: 'all',
-          order: 'product'
-        })
-      }
-    });
-    
-    const data = response.data;
-    cache.set(cacheKey, data, CACHE_TTL.stock);
-    return data;
+    // Временно отключаем запрос остатков
+    console.log('Запрос остатков временно отключен');
+    return {
+      meta: {
+        size: 0
+      },
+      rows: []
+    };
   },
 
   async getCategories(): Promise<MoySkladResponse<MoySkladCategory>> {
@@ -165,32 +185,14 @@ export const productsApi = {
   },
 
   async getStock(productId: string): Promise<MoySkladStock> {
-    const cacheKey = CACHE_KEYS.STOCK(productId);
-    const cachedData = cache.get<MoySkladStock>(cacheKey);
-    
-    if (cachedData) {
-      return cachedData;
-    }
-
-    const response = await moySkladApi.get('', {
-      params: {
-        method: 'get',
-        url: '/report/stock/all',
-        params: JSON.stringify({
-          filter: `product.id=${productId}`,
-          limit: 10000,
-          expand: 'product',
-          moment: new Date().toISOString(),
-          groupBy: 'product',
-          store: 'all',
-          order: 'product'
-        })
-      }
-    });
-    
-    const data = response.data;
-    cache.set(cacheKey, data, CACHE_TTL.stock);
-    return data;
+    // Временно отключаем запрос остатков
+    console.log('Запрос остатков временно отключен');
+    return {
+      meta: {
+        size: 0
+      },
+      rows: []
+    } as MoySkladStock;
   },
 
   async createOrder(orderData: any): Promise<MoySkladOrder> {
@@ -215,6 +217,16 @@ export const productsApi = {
   }
 };
 
-export const getProductImageUrl = (productId: string, imageId: string): string => {
-  return `/api/images/${productId}/${imageId}`;
+export const getProductImageUrl = (product: MoySkladProduct): string | null => {
+  if (!product.id) {
+    console.error('Product ID is missing:', { product });
+    return null;
+  }
+
+  const imageUrl = `/api/images/${product.id}?miniature=true`;
+  console.log('Generated image URL:', { productId: product.id, imageUrl });
+  
+  return imageUrl;
 };
+
+export default moySkladApi;

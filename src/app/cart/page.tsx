@@ -3,19 +3,20 @@
 import { useCart } from '@/context/CartContext';
 import styles from '@/styles/Cart.module.css';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Link from 'next/link';
 import ErrorPopup from '@/components/ErrorPopup';
 import ImagePlaceholder from '@/components/ImagePlaceholder';
 import { stockStore } from '@/lib/stockStore';
+import { productsApi } from '@/api/products';
 
 interface CartItem {
   id: string;
   name: string;
   price: number;
   quantity: number;
-  image: string;
+  image: string | null;
   stock: number;
 }
 
@@ -23,6 +24,29 @@ export default function Cart() {
   const { items, updateQuantity, removeFromCart } = useCart();
   const totalItemsCount = items.reduce((total, item) => total + item.quantity, 0);
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
+  const [productImages, setProductImages] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const fetchImages = async () => {
+      const imagePromises = items.map(async (item) => {
+        try {
+          const images = await productsApi.getProductImages(item.id);
+          if (images.length > 0) {
+            setProductImages(prev => ({
+              ...prev,
+              [item.id]: images[0].miniature
+            }));
+          }
+        } catch (error) {
+          console.error('Error fetching images for item:', item.id, error);
+        }
+      });
+
+      await Promise.all(imagePromises);
+    };
+
+    fetchImages();
+  }, [items]);
 
   const totalAmount = items.reduce((total, item) => {
     return total + item.price * item.quantity;
@@ -100,7 +124,12 @@ export default function Cart() {
   };
 
   const handleImageError = (id: string) => {
+    console.error('Image loading error for item:', id);
     setImageErrors(prev => ({ ...prev, [id]: true }));
+  };
+
+  const handleImageLoad = (id: string) => {
+    setImageErrors(prev => ({ ...prev, [id]: false }));
   };
 
   return (
@@ -113,23 +142,24 @@ export default function Cart() {
               {items.map((item) => (
                 <div key={item.id} className={styles.cartItem}>
                   <div className={styles.imageContainer}>
-                    {!imageErrors[item.id] ? (
+                    {!imageErrors[item.id] && productImages[item.id] ? (
                       <Image
-                        src={item.image}
+                        src={productImages[item.id]}
                         alt={item.name}
-                        width={80}
-                        height={80}
+                        fill
+                        sizes="80px"
                         className={styles.image}
                         onError={() => handleImageError(item.id)}
+                        onLoad={() => handleImageLoad(item.id)}
                       />
                     ) : (
-                      <ImagePlaceholder className={styles.image} />
+                      <ImagePlaceholder />
                     )}
                   </div>
                   <div className={styles.itemInfo}>
                     <div className={styles.itemHeader}>
                       <h3 className={styles.itemName}>{item.name}</h3>
-                      <div className={styles.itemPrice}>{item.price} BYN</div>
+                      <div className={styles.itemPrice}>{item.price} ₽</div>
                     </div>
                     <div className={styles.quantityControls}>
                       <button

@@ -9,20 +9,6 @@ async function delay(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function fetchWithRetry(url: string, options: RequestInit, retries = MAX_RETRIES): Promise<Response> {
-  try {
-    const response = await fetch(url, options);
-    return response;
-  } catch (error) {
-    if (retries > 0) {
-      console.log(`Retrying request (${MAX_RETRIES - retries + 1}/${MAX_RETRIES})...`);
-      await delay(RETRY_DELAY);
-      return fetchWithRetry(url, options, retries - 1);
-    }
-    throw error;
-  }
-}
-
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -37,29 +23,51 @@ export async function GET(request: Request) {
       );
     }
 
-    const moySkladUrl = `https://api.moysklad.ru/api/remap/1.2/${url}`;
-    const headers = {
-      'Authorization': `Bearer ${process.env.MOYSKLAD_TOKEN}`,
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-    };
+    let retries = 0;
+    while (retries < MAX_RETRIES) {
+      try {
+        const moySkladUrl = `${MOYSKLAD_API_URL}/${url}`;
+        const headers = {
+          'Authorization': `Bearer ${process.env.MOYSKLAD_TOKEN}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        };
 
-    const response = await fetch(moySkladUrl, {
-      method,
-      headers,
-      body: params ? params : undefined
-    });
+        const response = await fetch(moySkladUrl, {
+          method,
+          headers,
+          body: params ? params : undefined
+        });
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      return NextResponse.json(
-        { error: errorData || 'MoySklad API error' },
-        { status: response.status }
-      );
+        if (response.status === 412 || response.status === 429) {
+          const retryAfter = response.headers.get('x-lognex-retry-after');
+          if (retries < MAX_RETRIES - 1) {
+            await delay(parseInt(retryAfter || '3') * 1000);
+            retries++;
+            continue;
+          }
+        }
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => null);
+          return NextResponse.json(
+            { error: errorData || 'MoySklad API error' },
+            { status: response.status }
+          );
+        }
+
+        const data = await response.json();
+        return NextResponse.json(data);
+      } catch (error) {
+        if (retries === MAX_RETRIES - 1) {
+          throw error;
+        }
+        await delay(RETRY_DELAY);
+        retries++;
+      }
     }
 
-    const data = await response.json();
-    return NextResponse.json(data);
+    throw new Error('Max retries exceeded');
   } catch (error) {
     console.error('Error in MoySklad proxy:', error);
     return NextResponse.json(

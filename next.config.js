@@ -3,7 +3,7 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   images: {
-    domains: ['telegram.org', 'api.moysklad.ru', 'miniature-prod.moysklad.ru', 't.me'],
+    domains: ['telegram.org', 'api.moysklad.ru', 'miniature-prod.moysklad.ru', 't.me', 'localhost'],
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 60,
     remotePatterns: [
@@ -12,6 +12,12 @@ const nextConfig = {
         hostname: 'api.moysklad.ru',
         pathname: '/api/remap/1.2/download/**',
       },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '3002',
+        pathname: '/api/images/**',
+      }
     ],
   },
   async headers() {
@@ -84,7 +90,7 @@ const nextConfig = {
       },
       {
         source: '/api/images/:path*',
-        destination: 'https://api.moysklad.ru/api/remap/1.2/download/:path*',
+        destination: 'http://localhost:3002/api/images/:path*',
       }
     ];
   }

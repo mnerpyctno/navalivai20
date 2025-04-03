@@ -8,7 +8,7 @@ export default function ImagePlaceholder({ className }: ImagePlaceholderProps) {
   return (
     <div className={`${styles.placeholder} ${className || ''}`}>
       <div className={styles.content}>
-        <span className={styles.text}>NO PHOTO</span>
+        <span className={styles.text}>Нет фото</span>
       </div>
     </div>
   );

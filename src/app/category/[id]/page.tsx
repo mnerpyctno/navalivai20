@@ -3,10 +3,12 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import styles from '@/styles/Category.module.css';
-import { productsApi } from '@/lib/api';
+import { productsApi } from '@/api/products';
 import { Product } from '@/types/product';
 import Header from '@/components/Header';
 import { useCart } from '@/context/CartContext';
+import { ITEMS_PER_PAGE } from '@/config/constants';
+import ImagePlaceholder from '@/components/ImagePlaceholder';
 
 export default function CategoryPage({ params }: { params: { id: string } }) {
   const [products, setProducts] = useState<Product[]>([]);
@@ -14,6 +16,8 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [productImages, setProductImages] = useState<Record<string, string>>({});
+  const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
   const observer = useRef<IntersectionObserver | null>(null);
   const loadingRef = useRef<HTMLDivElement | null>(null);
   const [initialLoad, setInitialLoad] = useState(true);
@@ -82,6 +86,39 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
     }
   }, [page, loadProducts, initialLoad]);
 
+  useEffect(() => {
+    const fetchImages = async () => {
+      const imagePromises = products.map(async (product) => {
+        try {
+          const images = await productsApi.getProductImages(product.id);
+          if (images.length > 0) {
+            setProductImages(prev => ({
+              ...prev,
+              [product.id]: images[0].miniature
+            }));
+          }
+        } catch (error) {
+          console.error('Error fetching images for product:', product.id, error);
+        }
+      });
+
+      await Promise.all(imagePromises);
+    };
+
+    if (products.length > 0) {
+      fetchImages();
+    }
+  }, [products]);
+
+  const handleImageError = (productId: string) => {
+    console.error('Image loading error for product:', productId);
+    setImageErrors(prev => ({ ...prev, [productId]: true }));
+  };
+
+  const handleImageLoad = (productId: string) => {
+    setImageErrors(prev => ({ ...prev, [productId]: false }));
+  };
+
   if (initialLoad) {
     return (
       <main className={styles.main}>
@@ -126,17 +163,19 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
           {products.map((product) => (
             <div key={product.id} className={styles.productCard}>
               <div className={styles.productImageContainer}>
-                <Image
-                  src={product.image || '/placeholder.png'}
-                  alt={product.name}
-                  fill
-                  loading="lazy"
-                  className={styles.productImage}
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.src = '/placeholder.png';
-                  }}
-                />
+                {!imageErrors[product.id] && productImages[product.id] ? (
+                  <Image
+                    src={productImages[product.id]}
+                    alt={product.name}
+                    fill
+                    loading="lazy"
+                    className={styles.productImage}
+                    onError={() => handleImageError(product.id)}
+                    onLoad={() => handleImageLoad(product.id)}
+                  />
+                ) : (
+                  <ImagePlaceholder className={styles.productImage} />
+                )}
               </div>
               <div className={styles.productInfo}>
                 <h3>{product.name}</h3>
@@ -146,7 +185,8 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
                   onClick={() => addToCart({
                     ...product,
                     id: product.id,
-                    quantity: 1
+                    quantity: 1,
+                    image: productImages[product.id] || null
                   })}
                 >
                   В корзину

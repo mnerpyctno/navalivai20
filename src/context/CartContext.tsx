@@ -7,10 +7,12 @@ export interface CartItem {
   name: string;
   price: number;
   oldPrice?: number;
-  image: string;
+  image: string | null;
   quantity: number;
   available: boolean;
   stock: number;
+  description: string;
+  categoryId: string;
 }
 
 interface CartContextType {

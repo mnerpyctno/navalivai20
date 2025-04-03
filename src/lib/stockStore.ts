@@ -55,39 +55,26 @@ class StockStore {
    * Получение остатка по ID товара
    */
   getStock(productId: string): number {
-    if (!this.isInitialized) {
-      console.warn('StockStore не инициализирован');
-      return 0;
-    }
-    return this.stockCache.get(productId) ?? 0;
+    // Временно отключаем запросы остатков
+    console.log('Запрос остатков временно отключен');
+    return 0;
   }
 
   /**
    * Получение всех остатков
    */
   getAllStock(): Map<string, number> {
-    if (!this.isInitialized) {
-      console.warn('StockStore не инициализирован');
-      return new Map();
-    }
-    return this.stockCache;
+    // Временно отключаем запросы остатков
+    console.log('Запрос остатков временно отключен');
+    return new Map();
   }
 
   /**
    * Обновление всех остатков
    */
   updateAllStock(stocks: MoySkladStock[]): void {
-    this.stockCache.clear();
-    
-    stocks.forEach(stock => {
-      const productId = this.extractProductId(stock);
-      if (productId) {
-        this.stockCache.set(productId, stock.quantity);
-      } else {
-        console.warn('Пропущен товар без ID:', stock);
-      }
-    });
-    
+    // Временно отключаем обновление остатков
+    console.log('Обновление остатков временно отключено');
     this.isInitialized = true;
     this.notifySubscribers();
   }

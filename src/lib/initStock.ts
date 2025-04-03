@@ -5,6 +5,11 @@ import { StockData } from '@/types/stock';
  * Инициализация данных об остатках
  */
 export async function initStock(): Promise<StockData[]> {
+  // Временно отключаем инициализацию остатков
+  console.log('Инициализация остатков временно отключена');
+  return [];
+  
+  /*
   try {
     const response = await moySkladClient.get('report/stock/bystore', {
       params: {
@@ -40,4 +45,5 @@ export async function initStock(): Promise<StockData[]> {
     console.error('Ошибка при инициализации остатков:', error);
     return [];
   }
+  */
 } 

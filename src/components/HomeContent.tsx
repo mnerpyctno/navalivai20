@@ -12,7 +12,7 @@ import { Product } from '@/types/product';
 interface Category {
   id: string;
   name: string;
-  image: string;
+  image: string | null;
 }
 
 export default function HomeContent() {
@@ -48,11 +48,15 @@ export default function HomeContent() {
       });
       
       const products = await Promise.all(response.rows.map(async product => {
-        const stockResponse = await productsApi.getProductStock(product.id);
-        const totalQuantity = stockResponse?.rows?.reduce((sum: number, row: any) => {
-          const quantity = typeof row.quantity === 'number' ? row.quantity : 0;
-          return sum + quantity;
-        }, 0) || 0;
+        // Временно отключаем запрос остатков
+        // const stockResponse = await productsApi.getProductStock(product.id);
+        // const totalQuantity = stockResponse?.rows?.reduce((sum: number, row: any) => {
+        //   const quantity = typeof row.quantity === 'number' ? row.quantity : 0;
+        //   return sum + quantity;
+        // }, 0) || 0;
+        
+        // Возвращаем фиктивное значение остатков
+        const totalQuantity = 0;
 
         return {
           id: product.id,
@@ -138,7 +142,7 @@ export default function HomeContent() {
           >
             <div className={styles.categoryImageWrapper}>
               <Image
-                src={category.image}
+                src={category.image || '/placeholder.png'}
                 alt={category.name}
                 fill
                 className={styles.categoryImage}
