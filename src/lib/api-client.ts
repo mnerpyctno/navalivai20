@@ -3,6 +3,7 @@ import { API_CONFIG } from '@/config/api';
 import { handleMoySkladError } from '@/lib/errorHandler';
 import { MoySkladProduct, MoySkladResponse, ProductsResponse, MoySkladCategory } from '@/types/product';
 import { env } from '@/config/env';
+import { getCachedData, cacheData } from '@/lib/cache';
 
 // Создаем базовый API клиент для работы с нашими API Routes
 export const api = axios.create({
@@ -135,23 +136,24 @@ export async function fetchProducts(
   searchQuery?: string
 ): Promise<ProductsResponse> {
   try {
-    // Проверка работы консоли
-    console.warn('=== ПРОВЕРКА ЛОГИРОВАНИЯ ===');
-    console.warn('Функция fetchProducts запущена');
+    const cacheKey = `products:${categoryId || 'all'}:${page}:${limit}`;
+    const cachedData = await getCachedData<ProductsResponse>(cacheKey);
     
+    if (cachedData) {
+      return cachedData;
+    }
+
     let allProducts: MoySkladProduct[] = [];
     let offset = 0;
     let hasMore = true;
     let totalRequests = 0;
+    const batchSize = Math.min(limit, 100); // Ограничиваем размер пакета
+    let lastResponse: any = null;
 
-    console.warn('=== Начало загрузки товаров ===');
-    console.warn('Параметры запроса:', { categoryId, searchQuery });
-
-    // Получаем все товары с помощью пагинации
-    while (hasMore) {
+    while (hasMore && totalRequests < 5) { // Ограничиваем количество запросов
       totalRequests++;
       const params = {
-        limit: MAX_LIMIT,
+        limit: batchSize,
         offset,
         categoryId,
         expand: 'images,salePrices,productFolder,images.rows',
@@ -167,85 +169,45 @@ export async function fetchProducts(
         params.filter = `${params.filter};productFolder=${categoryId}`;
       }
 
-      console.warn(`\nЗапрос #${totalRequests}:`);
-      console.warn(`Offset: ${offset}`);
-      console.warn(`Параметры запроса:`, params);
-
-      const response = await api.get('/moysklad/entity/product', { params });
+      lastResponse = await api.get('/moysklad/entity/product', { params });
       
-      const products = response.data.rows || [];
+      const products = lastResponse.data.rows || [];
       allProducts = [...allProducts, ...products];
       
-      console.warn(`Результаты запроса #${totalRequests}:`);
-      console.warn(`- Получено товаров в текущем запросе: ${products.length}`);
-      console.warn(`- Всего получено товаров: ${allProducts.length}`);
-      console.warn(`- Всего товаров в системе: ${response.data.meta?.size || 0}`);
-      console.warn(`- Процент загрузки: ${((allProducts.length / (response.data.meta?.size || 1)) * 100).toFixed(2)}%`);
+      hasMore = products.length === batchSize;
+      offset += batchSize;
 
-      // Проверяем, есть ли еще товары
-      hasMore = products.length === MAX_LIMIT;
-      if (hasMore) {
-        offset += MAX_LIMIT;
+      if (allProducts.length >= limit) {
+        allProducts = allProducts.slice(0, limit);
+        hasMore = false;
       }
     }
 
-    console.warn('\n=== Итоги загрузки товаров ===');
-    console.warn(`Всего сделано запросов: ${totalRequests}`);
-    console.warn(`Общее количество полученных товаров: ${allProducts.length}`);
+    if (!lastResponse) {
+      throw new Error('Не удалось получить данные от сервера');
+    }
 
-    // Получаем остатки для всех товаров одним запросом
-    console.warn('\n=== Загрузка остатков ===');
-    const stockResponse = await api.get('/moysklad/report/stock/bystore', {
-      params: {
-        limit: MAX_LIMIT,
-        expand: 'product',
-        moment: new Date().toISOString(),
-        groupBy: 'product',
-        store: 'all',
-        order: 'product'
-      }
-    });
+    const transformedProducts = allProducts.map(product => ({
+      id: product.id,
+      name: product.name,
+      price: product.salePrices?.[0]?.value ? product.salePrices[0].value / 100 : 0,
+      image: product.images?.rows?.[0]?.miniature?.href || '/default-product.jpg',
+      description: product.description || '',
+      categoryId: product.productFolder?.meta?.href?.split('/').pop() || '',
+      available: true,
+      stock: 0
+    }));
 
-    console.warn(`Получено записей об остатках: ${stockResponse.data.rows?.length || 0}`);
-
-    // Создаем мапу остатков для быстрого доступа
-    const stockMap = new Map(
-      stockResponse.data.rows.map((row: any) => [
-        row.product?.id,
-        row.quantity || 0
-      ])
-    );
-
-    const products = allProducts.map((product: MoySkladProduct) => {
-      const stock = stockMap.get(product.id) || 0;
-      const image = product.images?.rows?.[0];
-      const imageUrl = image?.miniature?.href || image?.meta?.href || '';
-      
-      return {
-        id: product.id,
-        name: product.name,
-        price: product.salePrices?.[0]?.value ? product.salePrices[0].value / 100 : 0,
-        image: getImageUrl(imageUrl),
-        description: product.description || '',
-        categoryId: product.productFolder?.meta?.href?.split('/').pop() || '',
-        available: stock > 0,
-        stock
-      };
-    });
-
-    console.warn('\n=== Итоги обработки ===');
-    console.warn(`Обработано товаров: ${products.length}`);
-    console.warn(`Товаров с остатками: ${products.filter(p => p.stock > 0).length}`);
-    console.warn(`Товаров без остатков: ${products.filter(p => p.stock === 0).length}`);
-
-    const total = allProducts.length;
-    return {
-      products,
-      total,
-      hasMore: false
+    const result: ProductsResponse = {
+      products: transformedProducts,
+      total: lastResponse.data.meta?.size || transformedProducts.length,
+      hasMore
     };
+
+    await cacheData(cacheKey, result, 5); // Кэшируем на 5 минут
+    return result;
+
   } catch (error) {
-    console.error('Error fetching products:', error);
-    throw new Error('Ошибка при получении списка товаров');
+    throw error instanceof Error ? error : new Error('Не удалось загрузить товары');
   }
 } 

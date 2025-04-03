@@ -64,8 +64,13 @@
 }
 
 .searchIcon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
   color: var(--text-secondary);
-  font-size: 14px;
+  pointer-events: none;
+  transition: all 0.3s ease;
 }
 
 .searchInput {
@@ -130,6 +135,19 @@
   align-items: center;
   justify-content: center;
   padding: 0 4px;
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: translateY(-50%) rotate(0deg);
+  }
+  to {
+    transform: translateY(-50%) rotate(360deg);
+  }
 }
 
 @media (max-width: 480px) {

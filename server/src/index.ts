@@ -107,7 +107,6 @@ app.get('/proxy', async (req: express.Request, res: express.Response) => {
 
     // Специальная обработка для /report/stock/bystore
     if (requestUrl === 'report/stock/bystore') {
-      console.log('Запрос остатков временно отключен');
       return res.json({
         meta: {
           size: 0
@@ -147,7 +146,6 @@ app.get('/proxy', async (req: express.Request, res: express.Response) => {
             const retryAfter = parseInt(headers['x-lognex-retry-after'] || '3');
             // Используем экспоненциальную задержку: 3с, 6с, 12с
             const delay = retryAfter * 1000 * Math.pow(2, retries);
-            console.log(`Повторная попытка ${retries + 1}/${maxRetries} через ${delay/1000} секунд`);
             await new Promise(resolve => setTimeout(resolve, delay));
             retries++;
             continue;
@@ -177,7 +175,6 @@ app.get('/proxy', async (req: express.Request, res: express.Response) => {
         
         // Если это сетевая ошибка и мы еще не превысили лимит попыток
         if (retries < maxRetries - 1) {
-          console.log(`Сетевая ошибка, повторная попытка ${retries + 1}/${maxRetries}`);
           // Используем экспоненциальную задержку: 1с, 2с, 4с
           const delay = 1000 * Math.pow(2, retries);
           await new Promise(resolve => setTimeout(resolve, delay));
@@ -229,8 +226,6 @@ app.get('/api/products/:productId/images', async (req: express.Request, res: exp
   try {
     const { productId } = req.params;
     
-    console.log('Fetching images for product:', { productId });
-    
     if (!productId) {
       console.error('Product ID is missing');
       return res.status(400).json({ error: 'Product ID is required' });
@@ -253,11 +248,6 @@ app.get('/api/products/:productId/images', async (req: express.Request, res: exp
     }
 
     const product = response.data;
-    console.log('Product data:', { 
-      productId,
-      hasImages: !!product.images,
-      imageCount: product.images?.rows?.length || 0
-    });
     
     if (!product.images || !product.images.rows || product.images.rows.length === 0) {
       console.error('No images found for product:', { productId });
@@ -275,12 +265,6 @@ app.get('/api/products/:productId/images', async (req: express.Request, res: exp
       full: image.meta?.href || image.full?.href || `/api/images/${productId}`
     }));
 
-    console.log('Formatted images:', { 
-      productId,
-      count: formattedImages.length,
-      images: formattedImages
-    });
-
     // Устанавливаем заголовки кэширования
     res.setHeader('Cache-Control', 'public, max-age=3600');
     res.json(formattedImages);
@@ -296,35 +280,13 @@ app.get('/api/products/:productId/images', async (req: express.Request, res: exp
 
 // Эндпоинт для получения остатков товара
 app.get('/api/stock', async (req, res) => {
-  // Временно отключаем запрос остатков
-  console.log('Запрос остатков временно отключен');
+  // Возвращаем пустой массив остатков
   return res.json({
     meta: {
       size: 0
     },
     rows: []
   });
-  
-  /*
-  try {
-    const { productId } = req.query;
-    if (!productId) {
-      return res.status(400).json({ error: 'Product ID is required' });
-    }
-
-    const response = await moySkladClient.get('report/stock/bystore', {
-      params: {
-        filter: `product=${productId}`,
-        limit: 100
-      }
-    });
-
-    res.json(response.data);
-  } catch (error) {
-    console.error('Stock error:', error);
-    res.status(500).json({ error: 'Failed to fetch stock data' });
-  }
-  */
 });
 
 // Эндпоинт для проксирования изображений товаров
@@ -332,8 +294,6 @@ app.get('/api/images/:imageId', async (req, res) => {
   try {
     const { imageId } = req.params;
     const { miniature } = req.query;
-
-    console.log('Image request:', { imageId, miniature });
 
     if (!imageId) {
       console.error('Image ID is missing');
@@ -363,7 +323,6 @@ app.get('/api/images/:imageId', async (req, res) => {
     if (miniature === 'true') {
       const image = product.images.rows[0];
       if (image.miniature && image.miniature.href) {
-        console.log('Fetching miniature image:', { url: image.miniature.href });
         const imageResponse = await moySkladClient.get(image.miniature.href, {
           responseType: 'arraybuffer'
         });
@@ -372,7 +331,6 @@ app.get('/api/images/:imageId', async (req, res) => {
         res.setHeader('Cache-Control', 'public, max-age=31536000');
         return res.send(imageResponse.data);
       } else if (image.tiny && image.tiny.href) {
-        console.log('Fetching tiny image as fallback:', { url: image.tiny.href });
         const imageResponse = await moySkladClient.get(image.tiny.href, {
           responseType: 'arraybuffer'
         });
@@ -386,7 +344,6 @@ app.get('/api/images/:imageId', async (req, res) => {
     // Для полного изображения
     const image = product.images.rows[0];
     if (image.meta && image.meta.href) {
-      console.log('Fetching full image:', { url: image.meta.href });
       const imageResponse = await moySkladClient.get(image.meta.href, {
         responseType: 'arraybuffer'
       });
@@ -395,7 +352,6 @@ app.get('/api/images/:imageId', async (req, res) => {
       res.setHeader('Cache-Control', 'public, max-age=31536000');
       return res.send(imageResponse.data);
     } else if (image.full && image.full.href) {
-      console.log('Fetching full image from full property:', { url: image.full.href });
       const imageResponse = await moySkladClient.get(image.full.href, {
         responseType: 'arraybuffer'
       });
@@ -420,9 +376,9 @@ app.get('/api/images/:imageId', async (req, res) => {
 });
 
 // Обработка ошибок
-app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error('Global error handler:', err.stack);
-  res.status(500).json({ error: 'Something broke!' });
+  res.status(500).json({ error: 'Internal Server Error' });
 });
 
 // Проверка работоспособности сервера

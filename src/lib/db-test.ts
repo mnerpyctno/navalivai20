@@ -2,79 +2,62 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-async function testDatabaseConnection() {
+export async function testDatabase() {
   try {
-    // Проверяем подключение к базе данных
     await prisma.$connect();
-    console.log('✅ Подключение к базе данных успешно установлено');
-
-    // Проверяем создание тестового пользователя
+    
+    // Создаем тестового пользователя
     const testUser = await prisma.user.create({
       data: {
-        telegramId: 'test_' + Date.now(),
+        telegramId: '123456789',
+        username: 'test_user',
         firstName: 'Test',
-        lastName: 'User',
-        username: 'testuser',
-        authDate: new Date(),
-      },
+        lastName: 'User'
+      }
     });
-    console.log('✅ Тестовый пользователь создан:', testUser);
 
-    // Проверяем чтение пользователя
+    // Читаем тестового пользователя
     const user = await prisma.user.findUnique({
-      where: { id: testUser.id },
+      where: { telegramId: '123456789' }
     });
-    console.log('✅ Тестовый пользователь успешно прочитан:', user);
 
-    // Проверяем создание корзины
+    // Создаем тестовую корзину
     const cart = await prisma.cart.create({
       data: {
-        userId: testUser.id,
-      },
+        userId: user!.id,
+        status: 'active'
+      }
     });
-    console.log('✅ Тестовая корзина создана:', cart);
 
-    // Проверяем создание элемента корзины
+    // Создаем тестовый элемент корзины
     const cartItem = await prisma.cartItem.create({
       data: {
         cartId: cart.id,
-        productId: 'test_product',
-        quantity: 1,
-      },
+        productId: 'test-product-id',
+        quantity: 1
+      }
     });
-    console.log('✅ Тестовый элемент корзины создан:', cartItem);
 
-    // Проверяем создание заказа
+    // Создаем тестовый заказ
     const order = await prisma.order.create({
       data: {
-        userId: testUser.id,
-        total: 100,
-        items: {
-          create: {
-            productId: 'test_product',
-            quantity: 1,
-            price: 100,
-          },
-        },
-      },
+        userId: user!.id,
+        status: 'pending',
+        total: 1000
+      }
     });
-    console.log('✅ Тестовый заказ создан:', order);
 
-    // Очищаем тестовые данные
-    await prisma.orderItem.deleteMany({ where: { orderId: order.id } });
-    await prisma.order.delete({ where: { id: order.id } });
-    await prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
+    // Удаляем тестовые данные
+    await prisma.cartItem.delete({ where: { id: cartItem.id } });
     await prisma.cart.delete({ where: { id: cart.id } });
-    await prisma.user.delete({ where: { id: testUser.id } });
-    console.log('✅ Тестовые данные успешно удалены');
+    await prisma.order.delete({ where: { id: order.id } });
+    await prisma.user.delete({ where: { id: user!.id } });
 
-    console.log('✅ Все тесты успешно пройдены!');
   } catch (error) {
     console.error('❌ Ошибка при тестировании базы данных:', error);
-  } finally {
-    await prisma.$disconnect();
+    throw error;
   }
 }
 
 // Запускаем тесты
-testDatabaseConnection(); 
+testDatabase(); 

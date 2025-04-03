@@ -36,54 +36,43 @@ export default function HomeContent() {
     'Еда и напитки': '/Еда и напитки.png'
   };
 
-  const loadProducts = useCallback(async (pageNumber: number) => {
+  const loadProducts = useCallback(async () => {
     try {
       setLoading(true);
-      setError(null);
       const response = await productsApi.getProducts({
-        limit: ITEMS_PER_PAGE,
-        offset: (pageNumber - 1) * ITEMS_PER_PAGE,
-        categoryId: selectedCategory || undefined,
-        searchQuery: searchQuery || undefined
+        categoryId: selectedCategory,
+        searchQuery: searchQuery,
+        offset: (page - 1) * ITEMS_PER_PAGE,
+        limit: ITEMS_PER_PAGE
+      });
+
+      const newProducts = response.rows.map(product => ({
+        id: product.id,
+        name: product.name,
+        description: product.description || '',
+        price: product.salePrices?.[0]?.value ? product.salePrices[0].value / 100 : 0,
+        image: product.images?.rows?.[0]?.miniature?.href || '/default-product.jpg',
+        categoryId: product.categoryId || '',
+        available: true,
+        stock: 0
+      }));
+
+      setProducts(prev => {
+        const productMap = new Map(prev.map(p => [p.id, p]));
+        newProducts.forEach(product => {
+          productMap.set(product.id, product);
+        });
+        return Array.from(productMap.values());
       });
       
-      const products = await Promise.all(response.rows.map(async product => {
-        // Временно отключаем запрос остатков
-        // const stockResponse = await productsApi.getProductStock(product.id);
-        // const totalQuantity = stockResponse?.rows?.reduce((sum: number, row: any) => {
-        //   const quantity = typeof row.quantity === 'number' ? row.quantity : 0;
-        //   return sum + quantity;
-        // }, 0) || 0;
-        
-        // Возвращаем фиктивное значение остатков
-        const totalQuantity = 0;
-
-        return {
-          id: product.id,
-          name: product.name,
-          price: product.salePrices?.[0]?.value ? product.salePrices[0].value / 100 : 0,
-          image: product.images?.rows?.[0]?.miniature?.href || '/default-product.jpg',
-          description: product.description || '',
-          categoryId: product.productFolder?.meta?.href?.split('/').pop() || '',
-          available: totalQuantity > 0,
-          stock: totalQuantity
-        };
-      }));
-      
-      if (pageNumber === 1) {
-        setProducts(products);
-      } else {
-        setProducts(prev => [...prev, ...products]);
-      }
-      setHasMore((response.meta?.size || 0) > pageNumber * ITEMS_PER_PAGE);
-      setTotal(response.meta?.size || 0);
+      setHasMore(response.meta.size > (page * ITEMS_PER_PAGE));
     } catch (error) {
-      setError('Ошибка при загрузке товаров');
       console.error('[Home] Ошибка при загрузке товаров:', error);
+      setError('Ошибка при загрузке товаров');
     } finally {
       setLoading(false);
     }
-  }, [selectedCategory, searchQuery]);
+  }, [selectedCategory, searchQuery, page]);
 
   const loadCategories = useCallback(async () => {
     try {
@@ -96,6 +85,7 @@ export default function HomeContent() {
       setCategories(categories);
     } catch (error) {
       console.error('[Home] Ошибка при загрузке категорий:', error);
+      setError('Ошибка при загрузке категорий');
     }
   }, [categoryImages]);
 
@@ -118,12 +108,12 @@ export default function HomeContent() {
 
   useEffect(() => {
     setPage(1);
-    loadProducts(1);
+    loadProducts();
   }, [selectedCategory, searchQuery, loadProducts]);
 
   useEffect(() => {
     if (page > 1) {
-      loadProducts(page);
+      loadProducts();
     }
   }, [page, loadProducts]);
 

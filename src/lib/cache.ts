@@ -75,4 +75,34 @@ export const CACHE_KEYS = {
   STOCK: (productId?: string) => `stock:${productId || 'all'}`,
   SEARCH: (query: string) => `search:${query}`,
   IMAGE: (url: string) => `image:${url}`
-} as const; 
+} as const;
+
+// Функции для работы с кэшем
+export async function getCachedData<T>(key: string): Promise<T | null> {
+  try {
+    const cached = localStorage.getItem(key);
+    if (cached) {
+      const { data, timestamp } = JSON.parse(cached);
+      if (Date.now() - timestamp < 5 * 60 * 1000) { // 5 минут
+        return data;
+      }
+      localStorage.removeItem(key);
+    }
+    return null;
+  } catch (error) {
+    console.error('Error getting cached data:', error);
+    return null;
+  }
+}
+
+export async function cacheData<T>(key: string, data: T, ttlMinutes: number = 5): Promise<void> {
+  try {
+    const cacheItem = {
+      data,
+      timestamp: Date.now()
+    };
+    localStorage.setItem(key, JSON.stringify(cacheItem));
+  } catch (error) {
+    console.error('Error caching data:', error);
+  }
+} 

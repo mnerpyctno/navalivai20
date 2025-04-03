@@ -6,8 +6,8 @@ import styles from '../styles/Header.module.css';
 import { useCart } from '@/context/CartContext';
 import { usePathname } from 'next/navigation';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHome, faArrowLeft, faSearch, faUser, faShoppingCart, faTimes } from '@fortawesome/free-solid-svg-icons';
-import { useState, useEffect, useCallback } from 'react';
+import { faHome, faArrowLeft, faSearch, faUser, faShoppingCart, faTimes, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useSearchParams } from 'next/navigation';
 
@@ -16,39 +16,110 @@ export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
-  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+  const [isSearching, setIsSearching] = useState(false);
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
   const searchParams = useSearchParams();
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isNavigating = useRef(false);
+  const initialMount = useRef(true);
+  const lastQuery = useRef('');
+  const searchInProgress = useRef(false);
 
-  // Обновляем URL при изменении поискового запроса
+  // Инициализация значения поиска из URL только при первом рендере
   useEffect(() => {
-    const currentQuery = searchParams.get('q') || '';
-    if (currentQuery !== searchQuery) {
+    if (initialMount.current) {
+      const currentQuery = searchParams.get('q') || '';
       setSearchQuery(currentQuery);
+      lastQuery.current = currentQuery;
+      initialMount.current = false;
     }
-  }, [pathname, searchQuery, searchParams]);
+  }, [searchParams]);
 
-  // Обновляем URL при изменении поискового запроса с задержкой
+  // Обработка изменений поискового запроса
   useEffect(() => {
-    if (debouncedSearchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(debouncedSearchQuery.trim())}`);
-    } else if (pathname === '/search') {
-      router.push('/search');
+    if (!initialMount.current && !searchInProgress.current) {
+      const trimmedQuery = debouncedSearchQuery.trim();
+      
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+
+      if (trimmedQuery && trimmedQuery !== lastQuery.current) {
+        setIsSearching(true);
+        lastQuery.current = trimmedQuery;
+        searchInProgress.current = true;
+        
+        searchTimeoutRef.current = setTimeout(() => {
+          if (!isNavigating.current) {
+            isNavigating.current = true;
+            router.push(`/search?q=${encodeURIComponent(trimmedQuery)}`);
+          }
+        }, 300);
+      } 
+      else if (!trimmedQuery && pathname === '/search') {
+        router.push('/');
+      }
     }
+
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
   }, [debouncedSearchQuery, router, pathname]);
+
+  // Сброс состояния поиска при размонтировании
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+      isNavigating.current = false;
+    };
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+    const trimmedQuery = searchQuery.trim();
+    
+    if (trimmedQuery && trimmedQuery !== lastQuery.current) {
+      setIsSearching(true);
+      lastQuery.current = trimmedQuery;
+      
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+      
+      searchTimeoutRef.current = setTimeout(() => {
+        if (!isNavigating.current) {
+          isNavigating.current = true;
+          router.push(`/search?q=${encodeURIComponent(trimmedQuery)}`);
+        }
+      }, 500);
     }
   };
 
   const handleClearSearch = () => {
     setSearchQuery('');
-    if (pathname === '/search') {
-      router.push('/search');
+    setIsSearching(false);
+    isNavigating.current = false;
+    lastQuery.current = '';
+    
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+      searchTimeoutRef.current = null;
     }
+    
+    if (pathname === '/search') {
+      router.push('/');
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    isNavigating.current = false;
   };
 
   return (
@@ -68,15 +139,15 @@ export default function Header() {
         
         <form onSubmit={handleSearch} className={styles.searchBox}>
           <FontAwesomeIcon 
-            icon={faSearch} 
-            className={styles.searchIcon}
+            icon={isSearching ? faSpinner : faSearch} 
+            className={`${styles.searchIcon} ${isSearching ? styles.spinning : ''}`}
           />
           <input 
             type="text" 
             placeholder="Найти товар..." 
             className={styles.searchInput}
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={handleInputChange}
           />
           {searchQuery && (
             <button

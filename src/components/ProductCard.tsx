@@ -24,50 +24,36 @@ export default function ProductCard({ product }: ProductCardProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchProductData = async () => {
       try {
         setIsLoading(true);
-        // Временно отключаем запрос остатков
-        // const [stockData, imagesData] = await Promise.all([
-        //   productsApi.getStock(product.id),
-        //   productsApi.getProductImages(product.id)
-        // ]);
-        
-        // Используем только запрос изображений
         const imagesData = await productsApi.getProductImages(product.id);
         
-        // Создаем фиктивные данные об остатках
-        const stockData = {
-          meta: { size: 0 },
-          rows: []
-        };
+        setStock({
+          rows: [{
+            quantity: 0,
+            product: { id: product.id, name: product.name },
+            store: { id: 'default', name: 'Default Store' }
+          }]
+        } as MoySkladStock);
         
-        console.log('Received stock data:', stockData);
-        console.log('Received images data:', imagesData);
-        
-        setStock(stockData);
         setProductImages(imagesData);
       } catch (err) {
         console.error('Error fetching product data:', err);
-        setError('Ошибка загрузки данных');
+        setError('Ошибка при загрузке данных о товаре');
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchData();
+    fetchProductData();
   }, [product.id]);
 
   const handleImageError = useCallback(() => {
-    console.error('Image loading error for product:', product.id);
     setImageError(true);
-    
-    // Убираем логику загрузки следующего изображения
-    console.log('Image loading error, showing placeholder for product:', product.id);
-  }, [product.id]);
+  }, []);
 
   const handleImageLoad = useCallback(() => {
-    console.log('Image loaded successfully for product:', product.id);
     setImageError(false);
   }, []);
 

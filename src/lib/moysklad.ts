@@ -29,15 +29,6 @@ export class MoySkladAPI {
   private token: string;
 
   private constructor() {
-    console.log('Инициализация MoySkladAPI');
-    console.log('env.moySkladToken:', env.moySkladToken ? 'Установлен' : 'Не установлен');
-    console.log('process.env.MOYSKLAD_TOKEN:', process.env.MOYSKLAD_TOKEN ? 'Установлен' : 'Не установлен');
-    console.log('typeof window:', typeof window);
-    
-    if (typeof window !== 'undefined') {
-      throw new Error('MoySkladAPI не может быть использован на клиентской стороне');
-    }
-
     if (!env.moySkladToken) {
       console.error('Ошибка: MOYSKLAD_TOKEN не настроен');
       throw new Error('MOYSKLAD_TOKEN не настроен');
@@ -54,20 +45,13 @@ export class MoySkladAPI {
 
   private async fetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     try {
-      const url = new URL('proxy', window.location.origin);
-      url.searchParams.append('method', options.method || 'GET');
-      url.searchParams.append('url', endpoint);
-      
-      if (options.body) {
-        url.searchParams.append('params', options.body as string);
-      }
-
-      const response = await fetch(url.toString(), {
-        method: 'POST',
+      const response = await fetch(`${this.baseUrl}${endpoint}`, {
+        ...options,
         headers: {
+          ...options.headers,
+          'Authorization': `Bearer ${this.token}`,
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.token}`
-        }
+        },
       });
 
       if (!response.ok) {

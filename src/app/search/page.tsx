@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import styles from '@/styles/Home.module.css';
 import Header from '@/components/Header';
 import ProductCard from '@/components/ProductCard';
@@ -11,6 +11,7 @@ import { ITEMS_PER_PAGE } from '@/config/constants';
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const query = searchParams.get('q') || '';
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -19,20 +20,68 @@ export default function SearchPage() {
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
   const observer = useRef<IntersectionObserver | null>(null);
+  const searchCache = useRef<Record<string, { products: Product[], total: number, timestamp: number }>>({});
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const loadingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isMounted = useRef(false);
+  const searchInProgress = useRef(false);
+  const initialMount = useRef(true);
+  const lastQuery = useRef('');
+  const CACHE_TTL = 5 * 60 * 1000; // 5 минут
+
+  // Инициализация компонента
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+      if (loadingTimeoutRef.current) {
+        clearTimeout(loadingTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Сброс состояния при изменении поискового запроса
   useEffect(() => {
-    setProducts([]);
-    setTotal(0);
-    setHasMore(true);
-    setPage(1);
-    setLoading(true);
+    if (!initialMount.current) {
+      if (loadingTimeoutRef.current) {
+        clearTimeout(loadingTimeoutRef.current);
+      }
+      
+      if (query !== lastQuery.current) {
+        setProducts([]);
+        setTotal(0);
+        setHasMore(true);
+        setPage(1);
+        setLoading(true);
+        setIsInitialLoad(true);
+        searchInProgress.current = false;
+        lastQuery.current = query;
+        
+        if (!query) {
+          loadingTimeoutRef.current = setTimeout(() => {
+            if (isMounted.current) {
+              setLoading(false);
+              setIsInitialLoad(false);
+            }
+          }, 300);
+        }
+      }
+    } else {
+      initialMount.current = false;
+      lastQuery.current = query;
+    }
+    
+    return () => {
+      if (loadingTimeoutRef.current) {
+        clearTimeout(loadingTimeoutRef.current);
+      }
+    };
   }, [query]);
 
   const loadingRef = useCallback((node: HTMLDivElement | null) => {
     if (observer.current) observer.current.disconnect();
     observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && !loading && hasMore) {
+      if (entries[0].isIntersecting && !loading && hasMore && !searchInProgress.current) {
         setPage(prev => prev + 1);
       }
     }, {
@@ -42,17 +91,38 @@ export default function SearchPage() {
     if (node) observer.current.observe(node);
   }, [loading, hasMore]);
 
-  const loadProducts = async (pageNumber: number) => {
+  const loadProducts = useCallback(async (pageNumber: number) => {
+    if (searchInProgress.current || !query) return;
+    
     try {
+      searchInProgress.current = true;
       setLoading(true);
       setError(null);
+
+      const cacheKey = `${query}:${pageNumber}`;
+      const cached = searchCache.current[cacheKey];
+      const now = Date.now();
+
+      if (cached && (now - cached.timestamp) < CACHE_TTL) {
+        if (isMounted.current) {
+          setProducts(cached.products);
+          setTotal(cached.total);
+          setHasMore(cached.total > ITEMS_PER_PAGE);
+          setLoading(false);
+          setIsInitialLoad(false);
+        }
+        return;
+      }
+
       const response = await productsApi.getProducts({
         limit: ITEMS_PER_PAGE,
         offset: (pageNumber - 1) * ITEMS_PER_PAGE,
         searchQuery: query
       });
       
-      const products = response.rows.map(product => ({
+      if (!isMounted.current) return;
+      
+      const newProducts = response.rows.map(product => ({
         id: product.id,
         name: product.name,
         price: product.salePrices?.[0]?.value ? product.salePrices[0].value / 100 : 0,
@@ -64,55 +134,48 @@ export default function SearchPage() {
       }));
       
       if (pageNumber === 1) {
-        setProducts(products);
+        setProducts(newProducts);
+        searchCache.current[cacheKey] = {
+          products: newProducts,
+          total: response.meta?.size || 0,
+          timestamp: now
+        };
       } else {
-        setProducts(prev => [...prev, ...products]);
+        setProducts(prev => [...prev, ...newProducts]);
       }
+      
+      setTotal(response.meta?.size || 0);
       setHasMore((response.meta?.size || 0) > pageNumber * ITEMS_PER_PAGE);
     } catch (error) {
-      setError('Ошибка при загрузке товаров');
-      console.error('Ошибка при загрузке товаров:', error);
+      if (isMounted.current) {
+        setError('Ошибка при загрузке товаров');
+        console.error('Ошибка при загрузке товаров:', error);
+      }
     } finally {
-      setLoading(false);
+      if (isMounted.current) {
+        setLoading(false);
+        setIsInitialLoad(false);
+        searchInProgress.current = false;
+      }
     }
-  };
+  }, [query]);
 
   useEffect(() => {
-    const searchProducts = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const response = await productsApi(undefined, page, ITEMS_PER_PAGE, query);
-        
-        // Сохраняем позицию скролла перед обновлением состояния
-        const scrollPosition = window.scrollY;
-        
-        if (page === 1) {
-          setProducts(response.products);
-        } else {
-          setProducts(prev => [...prev, ...response.products]);
-        }
-        setTotal(response.total);
-        setHasMore(response.products.length === ITEMS_PER_PAGE);
-        
-        // Восстанавливаем позицию скролла после обновления состояния
-        requestAnimationFrame(() => {
-          window.scrollTo(0, scrollPosition);
-        });
-      } catch (error) {
-        setError(error instanceof Error ? error.message : 'Произошла ошибка при поиске');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (query) {
-      searchProducts();
-    } else {
+    if (query && !searchInProgress.current) {
+      loadProducts(page);
+    } else if (!query) {
       setLoading(false);
       setError(null);
+      setIsInitialLoad(false);
     }
-  }, [query, page]);
+  }, [query, page, loadProducts]);
+
+  // Очистка кэша при размонтировании
+  useEffect(() => {
+    return () => {
+      searchCache.current = {};
+    };
+  }, []);
 
   return (
     <main className={styles.main}>
@@ -126,9 +189,10 @@ export default function SearchPage() {
         </div>
       )}
       <div className={styles.productsGrid}>
-        {loading && page === 1 ? (
+        {loading && isInitialLoad ? (
           <div className={styles.loading}>
             <div className={styles.spinner} />
+            <p>Поиск товаров...</p>
           </div>
         ) : error ? (
           <div className={styles.error}>{error}</div>
@@ -152,7 +216,7 @@ export default function SearchPage() {
           </div>
         )}
       </div>
-      {(loading || hasMore) && !error && (
+      {(loading || hasMore) && !error && !isInitialLoad && (
         <div ref={loadingRef} className={styles.loading}>
           <div className={styles.spinner} />
           <p>Загрузка товаров...</p>

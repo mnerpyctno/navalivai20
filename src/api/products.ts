@@ -98,39 +98,19 @@ export const productsApi = {
    */
   async getProductImages(productId: string): Promise<ProductImage[]> {
     try {
-      console.log('Fetching images for product:', { productId });
-      
-      if (!productId) {
-        console.error('Product ID is missing');
-        return [];
-      }
-
       const response = await fetch(`${API_BASE_URL}/api/products/${productId}/images`);
       
       if (!response.ok) {
-        console.error('Error response from server:', {
-          status: response.status,
-          statusText: response.statusText
-        });
-        
-        if (response.status === 404) {
-          return [];
-        }
-        
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error('Failed to fetch images');
       }
       
       const data = await response.json();
       
-      console.log('Received images data:', { data });
-      
       if (!Array.isArray(data)) {
-        console.error('Invalid response format:', { data });
-        return [];
+        throw new Error('Invalid response format');
       }
       
       if (data.length === 0) {
-        console.log('No images found for product:', { productId });
         return [];
       }
       
@@ -146,7 +126,6 @@ export const productsApi = {
       });
       
       if (validImages.length === 0) {
-        console.error('No valid images found for product:', { productId });
         return [];
       }
       

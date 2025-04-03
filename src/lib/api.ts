@@ -223,9 +223,7 @@ export const getProductImageUrl = (product: MoySkladProduct): string | null => {
     return null;
   }
 
-  const imageUrl = `/api/images/${product.id}?miniature=true`;
-  console.log('Generated image URL:', { productId: product.id, imageUrl });
-  
+  const imageUrl = `${env.apiUrl}/images/${product.id}?miniature=true`;
   return imageUrl;
 };
 
