@@ -5,9 +5,9 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import styles from '@/styles/Home.module.css';
 import Header from '@/components/Header';
 import ProductCard from '@/components/ProductCard';
-import { productsApi } from '@/lib/api';
 import { Product } from '@/types/product';
 import { ITEMS_PER_PAGE } from '@/config/constants';
+import { env } from '@/config/env';
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
@@ -20,62 +20,35 @@ export default function SearchPage() {
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
   const observer = useRef<IntersectionObserver | null>(null);
-  const searchCache = useRef<Record<string, { products: Product[], total: number, timestamp: number }>>({});
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const loadingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isMounted = useRef(false);
   const searchInProgress = useRef(false);
-  const initialMount = useRef(true);
-  const lastQuery = useRef('');
-  const CACHE_TTL = 5 * 60 * 1000; // 5 минут
 
   // Инициализация компонента
   useEffect(() => {
     isMounted.current = true;
+    // Загружаем результаты поиска при монтировании компонента
+    if (query) {
+      loadProducts(1);
+    }
     return () => {
       isMounted.current = false;
-      if (loadingTimeoutRef.current) {
-        clearTimeout(loadingTimeoutRef.current);
-      }
     };
   }, []);
 
   // Сброс состояния при изменении поискового запроса
   useEffect(() => {
-    if (!initialMount.current) {
-      if (loadingTimeoutRef.current) {
-        clearTimeout(loadingTimeoutRef.current);
-      }
-      
-      if (query !== lastQuery.current) {
-        setProducts([]);
-        setTotal(0);
-        setHasMore(true);
-        setPage(1);
-        setLoading(true);
-        setIsInitialLoad(true);
-        searchInProgress.current = false;
-        lastQuery.current = query;
-        
-        if (!query) {
-          loadingTimeoutRef.current = setTimeout(() => {
-            if (isMounted.current) {
-              setLoading(false);
-              setIsInitialLoad(false);
-            }
-          }, 300);
-        }
-      }
+    if (query) {
+      setProducts([]);
+      setTotal(0);
+      setHasMore(true);
+      setPage(1);
+      setLoading(true);
+      searchInProgress.current = false;
+      loadProducts(1);
     } else {
-      initialMount.current = false;
-      lastQuery.current = query;
+      setLoading(false);
+      setError(null);
     }
-    
-    return () => {
-      if (loadingTimeoutRef.current) {
-        clearTimeout(loadingTimeoutRef.current);
-      }
-    };
   }, [query]);
 
   const loadingRef = useCallback((node: HTMLDivElement | null) => {
@@ -99,53 +72,48 @@ export default function SearchPage() {
       setLoading(true);
       setError(null);
 
-      const cacheKey = `${query}:${pageNumber}`;
-      const cached = searchCache.current[cacheKey];
-      const now = Date.now();
-
-      if (cached && (now - cached.timestamp) < CACHE_TTL) {
-        if (isMounted.current) {
-          setProducts(cached.products);
-          setTotal(cached.total);
-          setHasMore(cached.total > ITEMS_PER_PAGE);
-          setLoading(false);
-          setIsInitialLoad(false);
-        }
-        return;
+      const offset = (pageNumber - 1) * ITEMS_PER_PAGE;
+      const response = await fetch(`/api/search?q=${encodeURIComponent(query)}&limit=${ITEMS_PER_PAGE}&offset=${offset}`);
+      
+      if (!response.ok) {
+        throw new Error('Ошибка при загрузке товаров');
       }
 
-      const response = await productsApi.getProducts({
-        limit: ITEMS_PER_PAGE,
-        offset: (pageNumber - 1) * ITEMS_PER_PAGE,
-        searchQuery: query
-      });
+      const data = await response.json();
       
       if (!isMounted.current) return;
       
-      const newProducts = response.rows.map(product => ({
-        id: product.id,
-        name: product.name,
-        price: product.salePrices?.[0]?.value ? product.salePrices[0].value / 100 : 0,
-        image: product.images?.rows?.[0]?.miniature?.href || '/default-product.jpg',
-        description: product.description || '',
-        categoryId: product.productFolder?.meta?.href?.split('/').pop() || '',
-        available: true,
-        stock: 0
-      }));
+      const newProducts = data.rows.map((product: any) => {
+        // Находим цену продажи в массиве salePrices
+        const retailPrice = product.salePrices?.find((price: any) => 
+          price.priceType?.name === 'Цена продажи' || 
+          price.priceType?.name === 'Розничная цена' ||
+          price.priceType?.name === 'Цена'
+        ) || product.salePrices?.[0];
+        
+        // Получаем значение цены и делим на 100 (копейки в рубли)
+        const price = retailPrice?.value ? retailPrice.value / 100 : 0;
+        
+        return {
+          id: product.id,
+          name: product.name,
+          description: product.description || '',
+          price: price,
+          imageUrl: product.image || null,
+          categoryId: product.categoryId || '',
+          available: true,
+          stock: 0
+        };
+      });
       
       if (pageNumber === 1) {
         setProducts(newProducts);
-        searchCache.current[cacheKey] = {
-          products: newProducts,
-          total: response.meta?.size || 0,
-          timestamp: now
-        };
       } else {
         setProducts(prev => [...prev, ...newProducts]);
       }
       
-      setTotal(response.meta?.size || 0);
-      setHasMore((response.meta?.size || 0) > pageNumber * ITEMS_PER_PAGE);
+      setTotal(data.meta.size);
+      setHasMore(data.meta.offset + data.meta.limit < data.meta.size);
     } catch (error) {
       if (isMounted.current) {
         setError('Ошибка при загрузке товаров');
@@ -154,7 +122,6 @@ export default function SearchPage() {
     } finally {
       if (isMounted.current) {
         setLoading(false);
-        setIsInitialLoad(false);
         searchInProgress.current = false;
       }
     }
@@ -163,19 +130,8 @@ export default function SearchPage() {
   useEffect(() => {
     if (query && !searchInProgress.current) {
       loadProducts(page);
-    } else if (!query) {
-      setLoading(false);
-      setError(null);
-      setIsInitialLoad(false);
     }
   }, [query, page, loadProducts]);
-
-  // Очистка кэша при размонтировании
-  useEffect(() => {
-    return () => {
-      searchCache.current = {};
-    };
-  }, []);
 
   return (
     <main className={styles.main}>
@@ -189,7 +145,7 @@ export default function SearchPage() {
         </div>
       )}
       <div className={styles.productsGrid}>
-        {loading && isInitialLoad ? (
+        {loading && page === 1 ? (
           <div className={styles.loading}>
             <div className={styles.spinner} />
             <p>Поиск товаров...</p>
@@ -216,7 +172,7 @@ export default function SearchPage() {
           </div>
         )}
       </div>
-      {(loading || hasMore) && !error && !isInitialLoad && (
+      {(loading || hasMore) && !error && page > 1 && (
         <div ref={loadingRef} className={styles.loading}>
           <div className={styles.spinner} />
           <p>Загрузка товаров...</p>

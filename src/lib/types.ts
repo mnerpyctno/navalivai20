@@ -2,10 +2,10 @@
 export interface Product {
   id: string;
   name: string;
-  price: number;
-  image: string;
   description: string;
-  categoryId: string | null;
+  price: number;
+  oldPrice?: number;
+  categoryId: string;
   available: boolean;
   stock: number;
 }
@@ -13,6 +13,29 @@ export interface Product {
 export interface Category {
   id: string;
   name: string;
+  image?: string;
+}
+
+export interface Order {
+  id: string;
+  customerId: string;
+  positions: OrderPosition[];
+  description?: string;
+  status: string;
+  createdAt: string;
+}
+
+export interface OrderPosition {
+  productId: string;
+  quantity: number;
+  price: number;
+}
+
+export interface Customer {
+  id: string;
+  name: string;
+  phone: string;
+  email?: string;
 }
 
 export interface MoySkladResponse<T> {
@@ -24,21 +47,6 @@ export interface MoySkladResponse<T> {
     size: number;
     limit: number;
     offset: number;
-  };
-}
-
-export interface MoySkladStock {
-  quantity: number;
-  product: {
-    id?: string;
-    meta: {
-      href: string;
-    };
-  };
-  store: {
-    meta: {
-      href: string;
-    };
   };
 }
 

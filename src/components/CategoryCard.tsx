@@ -1,29 +1,26 @@
 import Image from 'next/image';
+import Link from 'next/link';
 import styles from '@/styles/CategoryCard.module.css';
-import { Category } from '@/data/categories';
 
 interface CategoryCardProps {
-  category: Category;
-  isSelected: boolean;
-  onClick: () => void;
+  id: number;
+  name: string;
+  image: string;
 }
 
-export default function CategoryCard({ category, isSelected, onClick }: CategoryCardProps) {
+export default function CategoryCard({ id, name, image }: CategoryCardProps) {
   return (
-    <button
-      className={`${styles.card} ${isSelected ? styles.selected : ''}`}
-      onClick={onClick}
-    >
+    <Link href={`/category/${id}`} className={styles.card}>
       <div className={styles.imageWrapper}>
         <Image
-          src={category.image}
-          alt={category.name}
-          width={80}
-          height={80}
+          src={image}
+          alt={name}
+          width={300}
+          height={300}
           className={styles.image}
         />
       </div>
-      <span className={styles.name}>{category.name}</span>
-    </button>
+      <h3 className={styles.name}>{name}</h3>
+    </Link>
   );
 } 

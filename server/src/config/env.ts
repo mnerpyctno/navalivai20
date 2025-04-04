@@ -1,42 +1,65 @@
-import dotenv from 'dotenv';
+import { config } from 'dotenv';
+import { z } from 'zod';
+import path from 'path';
 
-// Загружаем переменные окружения из .env файла
-dotenv.config();
+// Загружаем переменные окружения
+const envPath = path.resolve(__dirname, '../../.env');
+config({ path: envPath });
 
-export const env = {
-  // API URLs
-  apiUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002',
-  moySkladApiUrl: process.env.MOYSKLAD_API_URL || 'https://api.moysklad.ru/api/remap/1.2',
+// Проверяем наличие обязательных переменных
+if (!process.env.MOYSKLAD_TOKEN) {
+  console.error('Ошибка: MOYSKLAD_TOKEN не установлен в .env файле');
+  process.exit(1);
+}
 
+const envSchema = z.object({
   // API Tokens
-  moySkladToken: process.env.MOYSKLAD_TOKEN,
-
-  // Database URLs
-  databaseUrl: process.env.DATABASE_URL,
-  directUrl: process.env.DIRECT_URL,
-
-  // Supabase Configuration
-  supabaseUrl: process.env.SUPABASE_URL,
-  supabaseAnonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-  supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
-
-  // Telegram Configuration
-  telegramBotToken: process.env.TELEGRAM_BOT_TOKEN,
-  telegramSecretKey: process.env.TELEGRAM_SECRET_KEY,
-  telegramBotUsername: process.env.TELEGRAM_BOT_USERNAME,
-
-  // URLs
-  webappUrl: process.env.NEXT_PUBLIC_WEBAPP_URL || 'http://localhost:3000',
-  nextAuthUrl: process.env.NEXTAUTH_URL || 'http://localhost:3000',
-  nextAuthSecret: process.env.NEXTAUTH_SECRET,
-
+  MOYSKLAD_TOKEN: z.string(),
+  
+  // Database
+  databaseUrl: z.string().url().optional(),
+  
+  // Supabase
+  supabaseUrl: z.string().url().optional(),
+  supabaseKey: z.string().optional(),
+  supabaseServiceKey: z.string().optional(),
+  
+  // Telegram
+  telegramBotToken: z.string().optional(),
+  
   // Cache TTL
-  cacheTtlProducts: parseInt(process.env.CACHE_TTL_PRODUCTS || '300000'),
-  cacheTtlCategories: parseInt(process.env.CACHE_TTL_CATEGORIES || '3600000'),
-  cacheTtlStock: parseInt(process.env.CACHE_TTL_STOCK || '300000'),
-  cacheTtlImages: parseInt(process.env.CACHE_TTL_IMAGES || '86400000'),
+  cacheTtl: z.object({
+    products: z.number().default(3600),
+    categories: z.number().default(86400),
+    stock: z.number().default(300),
+    images: z.number().default(86400)
+  }),
 
-  // Environment
-  nodeEnv: process.env.NODE_ENV || 'development',
-  port: parseInt(process.env.PORT || '3002')
-} as const; 
+  // CORS
+  CLIENT_URL: z.string().default('http://localhost:3000'),
+
+  // API URL
+  API_URL: z.string().default('http://localhost:3002'),
+
+  // Server URL
+  SERVER_URL: z.string().default('http://localhost:3002')
+});
+
+// Парсим переменные окружения
+export const env = envSchema.parse({
+  MOYSKLAD_TOKEN: process.env.MOYSKLAD_TOKEN,
+  CLIENT_URL: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  API_URL: process.env.API_URL || 'http://localhost:3002',
+  SERVER_URL: process.env.SERVER_URL || 'http://localhost:3002',
+  databaseUrl: process.env.DATABASE_URL,
+  supabaseUrl: process.env.SUPABASE_URL,
+  supabaseKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+  supabaseServiceKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+  telegramBotToken: process.env.TELEGRAM_BOT_TOKEN,
+  cacheTtl: {
+    products: Number(process.env.CACHE_TTL_PRODUCTS) || 3600,
+    categories: Number(process.env.CACHE_TTL_CATEGORIES) || 86400,
+    stock: Number(process.env.CACHE_TTL_STOCK) || 300,
+    images: Number(process.env.CACHE_TTL_IMAGES) || 86400
+  }
+}); 

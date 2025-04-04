@@ -3,12 +3,12 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import styles from '@/styles/Category.module.css';
-import { productsApi } from '@/api/products';
 import { Product } from '@/types/product';
 import Header from '@/components/Header';
 import { useCart } from '@/context/CartContext';
 import { ITEMS_PER_PAGE } from '@/config/constants';
 import ImagePlaceholder from '@/components/ImagePlaceholder';
+import { env } from '@/config/env';
 
 export default function CategoryPage({ params }: { params: { id: string } }) {
   const [products, setProducts] = useState<Product[]>([]);
@@ -25,25 +25,42 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
 
   const loadProducts = useCallback(async (pageNumber: number) => {
     try {
-      const response = await productsApi.getProducts({
-        limit: ITEMS_PER_PAGE,
-        offset: (pageNumber - 1) * ITEMS_PER_PAGE,
-        categoryId: params.id
+      const response = await fetch(`/api/products?categoryId=${params.id}&limit=${ITEMS_PER_PAGE}&offset=${(pageNumber - 1) * ITEMS_PER_PAGE}`);
+      if (!response.ok) {
+        throw new Error('Ошибка при загрузке товаров');
+      }
+      const data = await response.json();
+      
+      const newProducts = data.rows.map((product: any) => {
+        // Находим цену продажи в массиве salePrices
+        const retailPrice = product.salePrices?.find((price: any) => 
+          price.priceType?.name === 'Цена продажи' || 
+          price.priceType?.name === 'Розничная цена' ||
+          price.priceType?.name === 'Цена'
+        ) || product.salePrices?.[0];
+        
+        // Получаем значение цены и делим на 100 (копейки в рубли)
+        const price = retailPrice?.value ? retailPrice.value / 100 : 0;
+        
+        return {
+          id: product.id,
+          name: product.name,
+          description: product.description || '',
+          price: price,
+          imageUrl: product.imageUrl,
+          categoryId: product.categoryId,
+          categoryName: product.categoryName,
+          available: true,
+          stock: 0,
+          article: product.article || '',
+          weight: product.weight || 0,
+          volume: product.volume || 0,
+          isArchived: product.isArchived || false
+        };
       });
       
-      const products = response.rows.map(product => ({
-        id: product.id,
-        name: product.name,
-        price: product.salePrices?.[0]?.value ? product.salePrices[0].value / 100 : 0,
-        image: product.images?.rows?.[0]?.miniature?.href || '/default-product.jpg',
-        description: product.description || '',
-        categoryId: product.productFolder?.meta?.href?.split('/').pop() || '',
-        available: true,
-        stock: 0
-      }));
-      
-      setProducts(prev => pageNumber === 1 ? products : [...prev, ...products]);
-      setHasMore((response.meta?.size || 0) > pageNumber * ITEMS_PER_PAGE);
+      setProducts(prev => pageNumber === 1 ? newProducts : [...prev, ...newProducts]);
+      setHasMore((data.meta?.size || 0) > pageNumber * ITEMS_PER_PAGE);
     } catch (error) {
       console.error('Ошибка при загрузке товаров:', error);
     }
@@ -90,7 +107,11 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
     const fetchImages = async () => {
       const imagePromises = products.map(async (product) => {
         try {
-          const images = await productsApi.getProductImages(product.id);
+          const response = await fetch(`/api/products/${product.id}/images`);
+          if (!response.ok) {
+            throw new Error('Ошибка при загрузке изображений');
+          }
+          const images = await response.json();
           if (images.length > 0) {
             setProductImages(prev => ({
               ...prev,
@@ -163,9 +184,9 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
           {products.map((product) => (
             <div key={product.id} className={styles.productCard}>
               <div className={styles.productImageContainer}>
-                {!imageErrors[product.id] && productImages[product.id] ? (
+                {product.imageUrl ? (
                   <Image
-                    src={productImages[product.id]}
+                    src={product.imageUrl}
                     alt={product.name}
                     fill
                     loading="lazy"
@@ -184,9 +205,7 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
                   className={styles.addToCartButton}
                   onClick={() => addToCart({
                     ...product,
-                    id: product.id,
-                    quantity: 1,
-                    image: productImages[product.id] || null
+                    id: product.id
                   })}
                 >
                   В корзину

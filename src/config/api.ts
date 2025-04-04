@@ -2,9 +2,8 @@ import { env } from './env';
 
 // Базовые настройки API
 export const API_CONFIG = {
-  // Базовые URL
-  baseUrl: env.apiUrl,
-  moySkladUrl: env.moySkladUrl,
+  // Базовый URL API
+  baseUrl: env.API_URL || 'http://localhost:3002',
   
   // Таймауты
   timeout: 30000,

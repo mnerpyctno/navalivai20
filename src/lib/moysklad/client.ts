@@ -1,40 +1,20 @@
-import axios, { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
-import { MOYSKLAD_CONFIG, MoySkladParams } from './config';
+import { apiClient } from '../api/client';
+import { MOYSKLAD_CONFIG } from './config';
 import { handleMoySkladError } from './errors';
 
 class MoySkladClient {
   private static instance: MoySkladClient;
-  private client: AxiosInstance;
 
   private constructor() {
-    this.client = axios.create({
-      baseURL: MOYSKLAD_CONFIG.baseUrl,
-      timeout: MOYSKLAD_CONFIG.timeout,
-      headers: {
-        ...MOYSKLAD_CONFIG.headers,
-        'Authorization': `Bearer ${process.env.MOYSKLAD_TOKEN}`
-      }
-    });
-
     this.setupInterceptors();
   }
 
   private setupInterceptors() {
-    this.client.interceptors.request.use(
-      (config: InternalAxiosRequestConfig) => {
-        return config;
-      },
-      (error) => {
+    apiClient.client.interceptors.response.use(
+      response => response,
+      error => {
+        handleMoySkladError(error);
         return Promise.reject(error);
-      }
-    );
-
-    this.client.interceptors.response.use(
-      (response: AxiosResponse) => {
-        return response;
-      },
-      (error) => {
-        return handleMoySkladError(error);
       }
     );
   }
@@ -46,32 +26,20 @@ class MoySkladClient {
     return MoySkladClient.instance;
   }
 
-  public async request<T>(config: any): Promise<T> {
-    return this.client.request(config);
+  public async get<T>(url: string, params?: any) {
+    return apiClient.get<T>(url, params);
   }
 
-  public async get<T>(path: string, params?: any): Promise<T> {
-    const response = await this.client.get(path, { params });
-    return response.data;
+  public async post<T>(url: string, data?: any) {
+    return apiClient.post<T>(url, data);
   }
 
-  public async post<T>(path: string, data?: any, params?: any): Promise<T> {
-    const response = await this.client.post(path, data, { params });
-    return response.data;
+  public async put<T>(url: string, data?: any) {
+    return apiClient.put<T>(url, data);
   }
 
-  public async delete<T>(path: string, params?: any): Promise<T> {
-    const response = await this.client.delete(path, { params });
-    return response.data;
-  }
-
-  public async put<T>(path: string, data?: any, params?: any): Promise<T> {
-    const response = await this.client.put(path, data, { params });
-    return response.data;
-  }
-
-  public getBaseUrl(): string {
-    return MOYSKLAD_CONFIG.baseUrl;
+  public async delete<T>(url: string) {
+    return apiClient.delete<T>(url);
   }
 }
 

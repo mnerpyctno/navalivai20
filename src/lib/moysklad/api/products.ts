@@ -1,10 +1,13 @@
 import { moySkladClient } from '../client';
-import { MoySkladParams, MOYSKLAD_CONFIG } from '../config';
-import { MoySkladProduct, MoySkladResponse } from '@/types/product';
+import { MOYSKLAD_CONFIG } from '../config';
+import { MoySkladProduct, MoySkladResponse } from '../types';
+import { AxiosResponse } from 'axios';
 
-export interface GetProductsParams extends MoySkladParams {
+export interface GetProductsParams {
   categoryId?: string;
   searchQuery?: string;
+  limit?: number;
+  offset?: number;
 }
 
 export const productsApi = {
@@ -25,7 +28,8 @@ export const productsApi = {
       filter: filters.join(';')
     };
 
-    return moySkladClient.get<MoySkladResponse<MoySkladProduct>>('entity/product', queryParams);
+    const response = await moySkladClient.get<MoySkladResponse<MoySkladProduct>>('/entity/product', queryParams);
+    return response.data;
   },
 
   async getProductById(id: string): Promise<MoySkladProduct> {
@@ -33,16 +37,7 @@ export const productsApi = {
       ...MOYSKLAD_CONFIG.defaultProductParams
     };
 
-    return moySkladClient.get<MoySkladProduct>(`entity/product/${id}`, queryParams);
-  },
-
-  async getProductStock(id: string): Promise<number> {
-    const response = await moySkladClient.get<any>('report/stock/bystore', {
-      filter: `product.id=${id}`
-    });
-    
-    return response.rows?.reduce((sum: number, row: any) => {
-      return sum + (row.stock || 0);
-    }, 0) || 0;
+    const response = await moySkladClient.get<MoySkladProduct>(`/entity/product/${id}`, queryParams);
+    return response.data;
   }
 }; 

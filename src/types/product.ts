@@ -1,19 +1,26 @@
 export interface Product {
   id: string;
   name: string;
+  description: string;
   price: number;
   oldPrice?: number;
-  image: string | null;
-  description: string;
+  imageUrl: string | null;
   categoryId: string;
+  categoryName?: string;
   available: boolean;
   stock: number;
+  quantity?: number;
+  article?: string;
+  weight?: number;
+  volume?: number;
+  isArchived?: boolean;
 }
 
 export interface Category {
   id: string;
   name: string;
   description: string;
+  image: string;
 }
 
 export interface MoySkladResponse<T> {
@@ -29,19 +36,41 @@ export interface MoySkladProduct {
   description?: string;
   salePrices?: Array<{
     value: number;
+    priceType?: {
+      name: string;
+    };
   }>;
   images?: {
     rows: Array<{
+      meta: {
+        href: string;
+        type: string;
+        mediaType: string;
+      };
+      title: string;
       miniature: {
         href: string;
+        type: string;
+        mediaType: string;
+      };
+      tiny: {
+        href: string;
+        type: string;
+        mediaType: string;
       };
     }>;
   };
   productFolder?: {
+    id: string;
+    name: string;
     meta: {
       href: string;
     };
   };
+  article?: string;
+  weight?: number;
+  volume?: number;
+  archived?: boolean;
 }
 
 export interface MoySkladCategory {
@@ -55,20 +84,6 @@ export interface MoySkladCategory {
       };
     }>;
   };
-}
-
-export interface MoySkladStock {
-  rows: Array<{
-    quantity: number;
-    product: {
-      id: string;
-      name: string;
-    };
-    store: {
-      id: string;
-      name: string;
-    };
-  }>;
 }
 
 export interface MoySkladOrder {
@@ -101,6 +116,7 @@ export interface MoySkladImage {
     href: string;
     type: string;
     mediaType: string;
+    downloadHref?: string;
   };
   title: string;
   miniature: {
@@ -113,6 +129,7 @@ export interface MoySkladImage {
     type: string;
     mediaType: string;
   };
+  downloadHref?: string;
 }
 
 export interface ProductsResponse {

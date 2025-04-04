@@ -15,13 +15,6 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
-.Home_container,
-.Home_container__9OuOz {
-  background-color: var(--button-secondary);
-  min-height: 100vh;
-  width: 100%;
-}
-
 a {
   color: inherit;
   text-decoration: none;
@@ -117,4 +110,20 @@ body.modal-open {
   display: flex;
   justify-content: center;
   margin-top: 1rem;
+}
+
+:root {
+  --page-max-width: 1200px;
+  --page-padding: 20px;
+  --page-padding-mobile: 16px;
+  --header-height: 80px;
+  --header-height-mobile: 70px;
+}
+
+.contentContainer {
+  max-width: var(--page-max-width);
+  margin: 16px auto 0;
+  width: 100%;
+  flex: 1;
+  padding: 0 var(--page-padding);
 } 

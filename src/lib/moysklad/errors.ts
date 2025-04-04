@@ -1,53 +1,34 @@
 import { AxiosError } from 'axios';
-import { MoySkladError } from './config';
 
-export class MoySkladApiError extends Error {
-  constructor(
-    public status: number,
-    public code: number,
-    message: string,
-    public moreInfo?: string
-  ) {
-    super(message);
-    this.name = 'MoySkladApiError';
-  }
-}
+export const handleMoySkladError = (error: unknown) => {
+  if (error instanceof AxiosError) {
+    if (error.response) {
+      // Сервер ответил с ошибкой
+      console.error('MoySklad API Error:', {
+        status: error.response.status,
+        data: error.response.data,
+        url: error.config?.url,
+        method: error.config?.method,
+        params: error.config?.params
+      });
 
-export function handleMoySkladError(error: AxiosError): never {
-  if (error.response) {
-    const { status, data } = error.response;
-    const moySkladError = data as MoySkladError;
-    
-    console.error('MoySklad API Error:', {
-      status,
-      code: moySkladError.code,
-      message: moySkladError.error,
-      moreInfo: moySkladError.moreInfo,
-      url: error.config?.url,
-      method: error.config?.method,
-      params: error.config?.params,
-      headers: {
-        ...error.config?.headers,
-        Authorization: '[REDACTED]'
-      }
-    });
+      throw new Error(error.response.data.error || 'Ошибка при обращении к API МойСклад');
+    } else if (error.request) {
+      // Запрос был сделан, но ответ не получен
+      console.error('Network Error:', {
+        request: error.request,
+        config: error.config
+      });
 
-    throw new MoySkladApiError(
-      status,
-      moySkladError.code,
-      moySkladError.error,
-      moySkladError.moreInfo
-    );
-  }
-
-  if (error.request) {
-    console.error('Network Error:', {
-      request: error.request,
-      config: error.config
-    });
+      throw new Error('Ошибка сети при обращении к API МойСклад');
+    } else {
+      // Ошибка при настройке запроса
+      console.error('Request Error:', error.message);
+      throw new Error('Ошибка при настройке запроса к API МойСклад');
+    }
   } else {
-    console.error('Request Error:', error.message);
+    // Неизвестная ошибка
+    console.error('Unknown Error:', error);
+    throw new Error('Неизвестная ошибка при обращении к API МойСклад');
   }
-
-  throw error;
-} 
+}; 

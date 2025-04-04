@@ -2,23 +2,13 @@ import { z } from 'zod';
 
 // Проверяем наличие обязательных переменных окружения
 const requiredEnvVars = [
-  'NEXT_PUBLIC_API_URL',
-  'MOYSKLAD_TOKEN'
+  'NEXT_PUBLIC_API_URL'
 ] as const;
 
 // Логируем значения переменных окружения только на сервере
 if (typeof window === 'undefined') {
   console.log('\n=== Server-side Environment Variables ===');
-  console.log('NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL);
-  console.log('MOYSKLAD_TOKEN:', process.env.MOYSKLAD_TOKEN ? 'Установлен' : 'Не установлен');
   console.log('NODE_ENV:', process.env.NODE_ENV);
-  console.log('Все переменные окружения:', Object.keys(process.env));
-  console.log('=====================================\n');
-} else {
-  console.log('\n=== Client-side Environment Variables ===');
-  console.log('NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL);
-  console.log('NODE_ENV:', process.env.NODE_ENV);
-  console.log('window.location.origin:', window.location.origin);
   console.log('=====================================\n');
 }
 
@@ -31,12 +21,8 @@ for (const envVar of requiredEnvVars) {
 }
 
 const envSchema = z.object({
-  // API URLs
-  apiUrl: z.string().url(),
-  moySkladApiUrl: z.string().url().optional(),
-  
-  // API Tokens
-  moySkladToken: z.string().optional(),
+  // API URL
+  API_URL: z.string().default('http://localhost:3002'),
   
   // Database
   databaseUrl: z.string().url().optional(),
@@ -48,70 +34,30 @@ const envSchema = z.object({
   
   // Telegram
   telegramBotToken: z.string().optional(),
-  telegramChatId: z.string().optional(),
-  
-  // Cache TTL (in seconds)
-  cacheTtl: z.object({
-    products: z.number().min(0),
-    categories: z.number().min(0),
-    stock: z.number().min(0),
-    images: z.number().min(0)
-  }),
-  
-  // Features
-  features: z.object({
-    enableCache: z.boolean(),
-    enableLogging: z.boolean()
-  }),
-  
-  // Environment
-  nodeEnv: z.enum(['development', 'production', 'test']),
-  
-  // Development
-  isDevelopment: z.boolean(),
-  isProduction: z.boolean()
-});
-
-export const env = envSchema.parse({
-  // API URLs
-  apiUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002',
-  moySkladApiUrl: 'https://api.moysklad.ru/api/remap/1.2',
-  
-  // API Tokens
-  moySkladToken: process.env.MOYSKLAD_TOKEN,
-  
-  // Database
-  databaseUrl: process.env.DATABASE_URL,
-  
-  // Supabase
-  supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
-  supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-  supabaseServiceKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
-  
-  // Telegram
-  telegramBotToken: process.env.TELEGRAM_BOT_TOKEN,
-  telegramChatId: process.env.TELEGRAM_CHAT_ID,
   
   // Cache TTL
+  cacheTtl: z.object({
+    products: z.number().default(0),
+    categories: z.number().default(0),
+    stock: z.number().default(0),
+    images: z.number().default(0)
+  })
+});
+
+// Используем process.env напрямую
+export const env = envSchema.parse({
+  API_URL: process.env.NEXT_PUBLIC_API_URL,
+  databaseUrl: process.env.DATABASE_URL,
+  supabaseUrl: process.env.SUPABASE_URL,
+  supabaseKey: process.env.SUPABASE_KEY,
+  supabaseServiceKey: process.env.SUPABASE_SERVICE_KEY,
+  telegramBotToken: process.env.TELEGRAM_BOT_TOKEN,
   cacheTtl: {
-    products: Number(process.env.CACHE_TTL_PRODUCTS) || 300,
-    categories: Number(process.env.CACHE_TTL_CATEGORIES) || 3600,
-    stock: Number(process.env.CACHE_TTL_STOCK) || 60,
-    images: Number(process.env.CACHE_TTL_IMAGES) || 86400
-  },
-  
-  // Features
-  features: {
-    enableCache: process.env.ENABLE_CACHE === 'true',
-    enableLogging: process.env.ENABLE_LOGGING === 'true'
-  },
-  
-  // Environment
-  nodeEnv: process.env.NODE_ENV || 'development',
-  
-  // Development
-  isDevelopment: process.env.NODE_ENV === 'development',
-  isProduction: process.env.NODE_ENV === 'production'
+    products: Number(process.env.NEXT_PUBLIC_CACHE_TTL_PRODUCTS) || 0,
+    categories: Number(process.env.NEXT_PUBLIC_CACHE_TTL_CATEGORIES) || 0,
+    stock: Number(process.env.NEXT_PUBLIC_CACHE_TTL_STOCK) || 0,
+    images: Number(process.env.NEXT_PUBLIC_CACHE_TTL_IMAGES) || 0
+  }
 });
 
 // Проверяем, что мы в браузере

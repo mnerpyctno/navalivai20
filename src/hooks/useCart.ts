@@ -52,13 +52,12 @@ export function useCart() {
 
   const updateQuantity = (productId: string, quantity: number) => {
     if (quantity < 1) return;
-    setItems(currentItems => {
-      const item = currentItems.find(item => item.id === productId);
-      if (!item || quantity > item.stock) return currentItems;
-      return currentItems.map(item =>
+    
+    setItems(currentItems =>
+      currentItems.map(item =>
         item.id === productId ? { ...item, quantity } : item
-      );
-    });
+      )
+    );
   };
 
   const clearCart = () => {

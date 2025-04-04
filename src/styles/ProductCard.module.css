@@ -252,62 +252,26 @@
   font-weight: 500;
 }
 
-.infoButton {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.9);
-  border: none;
-  color: #000;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
+@media (max-width: 480px) {
+  .card {
+    max-width: none;
+  }
 
-.infoButton:hover {
-  background: #fff;
-  transform: scale(1.1);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
+  .modal {
+    width: 100%;
+    padding: 16px;
+  }
 
-.imageNavigation {
-  position: absolute;
-  bottom: 20px;
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  z-index: 10;
-}
+  .modalTitle {
+    font-size: 16px;
+  }
 
-.navButton {
-  background: rgba(255, 255, 255, 0.8);
-  border: none;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 20px;
-  transition: all 0.3s ease;
-}
+  .modalPrice,
+  .modalLabel {
+    font-size: 14px;
+  }
 
-.navButton:hover {
-  background: rgba(255, 255, 255, 0.9);
-}
-
-.navButton:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+  .modalValue {
+    font-size: 12px;
+  }
 } 

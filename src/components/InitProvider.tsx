@@ -10,22 +10,47 @@ export default function InitProvider({ children }: { children: React.ReactNode }
   const [isInitialized, setIsInitialized] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [canShowContent, setCanShowContent] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     const init = async () => {
       try {
-        // Запускаем инициализацию
+        // Запускаем инициализацию сразу
         const initPromise = initApp();
+        
+        // Предварительно загружаем основные данные
+        const preloadData = async () => {
+          try {
+            // Загружаем категории
+            const categoriesResponse = await fetch('/api/categories');
+            if (!categoriesResponse.ok) throw new Error('Failed to load categories');
+            
+            // Загружаем первую страницу товаров
+            const productsResponse = await fetch('/api/products?limit=9&offset=0');
+            if (!productsResponse.ok) throw new Error('Failed to load products');
+          } catch (error) {
+            console.error('Ошибка при предварительной загрузке данных:', error);
+          }
+        };
+
+        // Запускаем предварительную загрузку данных
+        const preloadPromise = preloadData();
         
         // Устанавливаем минимальное время загрузки
         const minLoadingPromise = new Promise(resolve => 
           setTimeout(resolve, MIN_LOADING_TIME)
         );
 
-        // Ждем завершения инициализации и минимального времени загрузки
-        await Promise.all([initPromise, minLoadingPromise]);
-        
+        // Ждем завершения инициализации и предварительной загрузки
+        await Promise.all([initPromise, preloadPromise]);
         setIsInitialized(true);
+
+        // Ждем минимальное время загрузки
+        await minLoadingPromise;
         setCanShowContent(true);
       } catch (err) {
         console.error('Ошибка инициализации:', err);
@@ -35,6 +60,10 @@ export default function InitProvider({ children }: { children: React.ReactNode }
 
     init();
   }, []);
+
+  if (!isMounted) {
+    return null;
+  }
 
   if (error) {
     return (
@@ -47,9 +76,10 @@ export default function InitProvider({ children }: { children: React.ReactNode }
     );
   }
 
-  if (!canShowContent) {
-    return <LoadingManager />;
-  }
-
-  return <>{children}</>;
+  return (
+    <>
+      {!canShowContent && <LoadingManager />}
+      {isInitialized && children}
+    </>
+  );
 } 

@@ -28,32 +28,16 @@ app.get('/api/ms-proxy', async (req, res) => {
     try {
         const { method, url, params } = req.query;
         if (!method || !url) {
-            console.error('Отсутствуют обязательные параметры:', { method, url });
             return res.status(400).json({ error: 'Missing required parameters' });
         }
-        console.log('Прокси запрос:', {
-            method,
-            url,
-            params,
-            headers: {
-                'Authorization': `Bearer ${MS_TOKEN.substring(0, 10)}...`
-            }
-        });
         const response = await msClient.request({
             method: method,
             url: url,
             params: params
         });
-        console.log('Ответ от MoySklad:', response.data);
         res.json(response.data);
     }
     catch (error) {
-        console.error('Proxy error:', {
-            message: error.message,
-            response: (_a = error.response) === null || _a === void 0 ? void 0 : _a.data,
-            status: (_b = error.response) === null || _b === void 0 ? void 0 : _b.status,
-            headers: (_c = error.response) === null || _c === void 0 ? void 0 : _c.headers
-        });
         if (error.response) {
             res.status(error.response.status).json({
                 error: error.response.data
@@ -71,6 +55,45 @@ app.get('/api/ms-proxy', async (req, res) => {
         }
     }
 });
+app.get('/api/images/:path*', async (req, res) => {
+    try {
+        const imageUrl = decodeURIComponent(req.params.path);
+        const response = await axios_1.default.get(imageUrl, {
+            responseType: 'arraybuffer',
+            headers: {
+                'Accept': 'image/*'
+            }
+        });
+
+        res.setHeader('Content-Type', response.headers['content-type']);
+        res.setHeader('Cache-Control', 'public, max-age=31536000');
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.send(response.data);
+    } catch (error) {
+        console.error('Error fetching image:', error);
+        res.status(500).json({ error: 'Failed to fetch image' });
+    }
+});
+app.get('/api/moysklad/image/:path*', async (req, res) => {
+    try {
+        const imageId = req.params.path.split('?')[0];
+        const response = await msClient.get(`/download/${imageId}`, {
+            responseType: 'arraybuffer',
+            headers: {
+                'Accept': 'image/*',
+                'Authorization': `Bearer ${MS_TOKEN}`
+            }
+        });
+
+        res.setHeader('Content-Type', response.headers['content-type']);
+        res.setHeader('Cache-Control', 'public, max-age=31536000');
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.send(response.data);
+    } catch (error) {
+        console.error('Error fetching Moysklad image:', error);
+        res.status(500).json({ error: 'Failed to fetch image' });
+    }
+});
 app.use((err, req, res, next) => {
     console.error('Global error handler:', err.stack);
     res.status(500).json({ error: 'Something broke!' });
@@ -80,6 +103,5 @@ app.get('/health', (req, res) => {
 });
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
-    console.log(`MoySklad token: ${MS_TOKEN.substring(0, 10)}...`);
 });
 //# sourceMappingURL=index.js.map

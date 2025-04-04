@@ -3,53 +3,28 @@
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
-import { productsApi, ProductImage } from '@/api/products';
-import { Product, MoySkladStock } from '@/types/product';
-import styles from '@/styles/ProductCard.module.css';
-import ErrorPopup from '@/components/ErrorPopup';
-import ImagePlaceholder from '@/components/ImagePlaceholder';
+import { Product } from '@/types/product';
+import styles from './ProductCard.module.css';
+import ImagePlaceholder from './ImagePlaceholder';
+import Link from 'next/link';
 
 interface ProductCardProps {
   product: Product;
+  categoryName?: string;
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+interface CartProduct extends Product {
+  quantity: number;
+}
+
+export default function ProductCard({ product, categoryName }: ProductCardProps) {
   const { addToCart, items } = useCart();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [stock, setStock] = useState<MoySkladStock | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
-  const [productImages, setProductImages] = useState<ProductImage[]>([]);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    const fetchProductData = async () => {
-      try {
-        setIsLoading(true);
-        const imagesData = await productsApi.getProductImages(product.id);
-        
-        setStock({
-          rows: [{
-            quantity: 0,
-            product: { id: product.id, name: product.name },
-            store: { id: 'default', name: 'Default Store' }
-          }]
-        } as MoySkladStock);
-        
-        setProductImages(imagesData);
-      } catch (err) {
-        console.error('Error fetching product data:', err);
-        setError('Ошибка при загрузке данных о товаре');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchProductData();
-  }, [product.id]);
-
-  const handleImageError = useCallback(() => {
+  const handleImageError = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
+    const target = e.target as HTMLImageElement;
     setImageError(true);
   }, []);
 
@@ -57,69 +32,81 @@ export default function ProductCard({ product }: ProductCardProps) {
     setImageError(false);
   }, []);
 
+  const getImageUrl = useCallback(() => {
+    if (!product.imageUrl) return null;
+    
+    // Если URL содержит storage.files.mow1.cloud.servers.ru, используем прокси
+    if (product.imageUrl.includes('storage.files.mow1.cloud.servers.ru')) {
+      return `/api/images/${encodeURIComponent(product.imageUrl)}`;
+    }
+    
+    // Если URL содержит api.moysklad.ru, используем прокси МойСклад
+    if (product.imageUrl.includes('api.moysklad.ru')) {
+      return `/api/moysklad/image?url=${encodeURIComponent(product.imageUrl)}`;
+    }
+    
+    // Для остальных случаев возвращаем оригинальный URL
+    return product.imageUrl;
+  }, [product.imageUrl]);
+
   const handleAddToCart = () => {
-    if (!stock?.rows?.[0]?.quantity) {
-      setError('Товар отсутствует в наличии');
+    if (!product.available) {
       return;
     }
 
-    addToCart({
+    const cartProduct: CartProduct = {
       ...product,
-      quantity: 1,
-      available: stock.rows[0].quantity > 0,
-      stock: stock.rows[0].quantity,
-      description: product.description || '',
-      categoryId: product.categoryId || '',
-      image: currentImage?.miniature || null
-    });
+      quantity: 1
+    };
+
+    addToCart(cartProduct);
   };
 
-  const currentImage = productImages[currentImageIndex];
-
   const existingItem = items.find(item => item.id === product.id);
-  const isInStock = !isLoading && stock && stock.rows?.[0]?.quantity && stock.rows[0].quantity > 0;
-  const isAvailableForCart = isInStock && (!existingItem || existingItem.quantity < stock.rows[0].quantity);
+  const isAvailableForCart = product.available && (!existingItem || existingItem.quantity < 1);
 
   const renderImage = () => {
-    if (isLoading) {
-      return <div className={styles.loading}>Загрузка...</div>;
-    }
-
-    if (imageError || !currentImage) {
+    const imageUrl = getImageUrl();
+    
+    if (!imageUrl || imageError) {
       return <ImagePlaceholder />;
     }
 
     return (
       <Image
-        src={currentImage.miniature}
+        src={imageUrl}
         alt={product.name}
-        fill
-        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-        className={styles.image}
         onError={handleImageError}
         onLoad={handleImageLoad}
-        priority={false}
-        loading="lazy"
+        className={`${styles.productImage} product-card`}
+        width={300}
+        height={300}
+        priority
+        unoptimized={true}
+        quality={100}
       />
     );
   };
 
   const renderModalImage = () => {
-    if (!currentImage || imageError) {
+    const imageUrl = getImageUrl();
+    
+    if (!imageUrl || imageError) {
       return <ImagePlaceholder />;
     }
 
     return (
       <Image
-        src={currentImage.miniature}
+        src={imageUrl}
         alt={product.name}
-        fill
-        sizes="100vw"
-        className={styles.modalImage}
         onError={handleImageError}
         onLoad={handleImageLoad}
-        priority={true}
-        loading="eager"
+        className={styles.modalImage}
+        width={500}
+        height={500}
+        priority
+        unoptimized={true}
+        quality={100}
       />
     );
   };
@@ -134,12 +121,17 @@ export default function ProductCard({ product }: ProductCardProps) {
           <div className={styles.titleWrapper}>
             <h3 className={styles.name}>{product.name}</h3>
           </div>
+          {categoryName && (
+            <Link href={`/category/${product.categoryId}`} className={styles.category}>
+              {categoryName}
+            </Link>
+          )}
           <div className={styles.priceWrapper}>
             {isAvailableForCart ? (
               <>
-                <span className={styles.price}>{product.price} ₽</span>
+                <span className={styles.price}>{product.price} BYN</span>
                 {product.oldPrice && (
-                  <span className={styles.oldPrice}>{product.oldPrice} ₽</span>
+                  <span className={styles.oldPrice}>{product.oldPrice} BYN</span>
                 )}
               </>
             ) : (
@@ -169,22 +161,23 @@ export default function ProductCard({ product }: ProductCardProps) {
               </div>
 
               <h2 className={styles.modalTitle}>{product.name}</h2>
+              {categoryName && (
+                <div className={styles.modalCategory}>
+                  {categoryName}
+                </div>
+              )}
               
               <div className={styles.modalInfo}>
                 <div className={styles.modalPrice}>
-                  {product.price} ₽
+                  {product.price} BYN
                   {product.oldPrice && (
-                    <span className={styles.oldPrice}>{product.oldPrice} ₽</span>
+                    <span className={styles.oldPrice}>{product.oldPrice} BYN</span>
                   )}
                 </div>
                 
                 <div className={styles.stockInfo}>
-                  {isLoading ? (
-                    <span className={styles.stockLoading}>Проверка наличия...</span>
-                  ) : stock?.rows?.[0]?.quantity ? (
-                    <span className={styles.stockAvailable}>
-                      В наличии: {stock.rows[0].quantity} шт.
-                    </span>
+                  {product.available ? (
+                    <span className={styles.stockAvailable}>В наличии</span>
                   ) : (
                     <span className={styles.stockUnavailable}>Нет в наличии</span>
                   )}
@@ -201,13 +194,6 @@ export default function ProductCard({ product }: ProductCardProps) {
             </div>
           </div>
         </div>
-      )}
-
-      {error && (
-        <ErrorPopup
-          message={error}
-          onClose={() => setError(null)}
-        />
       )}
     </>
   );

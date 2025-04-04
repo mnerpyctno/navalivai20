@@ -3,22 +3,68 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   images: {
-    domains: ['telegram.org', 'api.moysklad.ru', 'miniature-prod.moysklad.ru', 't.me', 'localhost'],
-    formats: ['image/avif', 'image/webp'],
-    minimumCacheTTL: 60,
     remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'miniature-prod.moysklad.ru',
+        pathname: '/miniature/**',
+      },
       {
         protocol: 'https',
         hostname: 'api.moysklad.ru',
         pathname: '/api/remap/1.2/download/**',
       },
       {
-        protocol: 'http',
-        hostname: 'localhost',
-        port: '3002',
-        pathname: '/api/images/**',
+        protocol: 'https',
+        hostname: 'storage.files.mow1.cloud.servers.ru',
+        pathname: '/v1/**',
       }
     ],
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 0,
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    domains: ['miniature-prod.moysklad.ru', 'api.moysklad.ru', 'storage.files.mow1.cloud.servers.ru'],
+  },
+  async rewrites() {
+    return [
+      {
+        source: '/telegram-web-app.js',
+        destination: 'https://telegram.org/js/telegram-web-app.js',
+      },
+      {
+        source: '/api/moysklad/image/:path*',
+        destination: 'http://localhost:3002/api/moysklad/image/:path*',
+      },
+      {
+        source: '/api/images/:path*',
+        destination: 'http://localhost:3002/api/images/:path*',
+      },
+      {
+        source: '/api/categories',
+        destination: 'http://localhost:3002/api/categories',
+      },
+      {
+        source: '/api/categories/:path*',
+        destination: 'http://localhost:3002/api/categories/:path*',
+      },
+      {
+        source: '/api/products',
+        destination: 'http://localhost:3002/api/products',
+      },
+      {
+        source: '/api/products/:path*',
+        destination: 'http://localhost:3002/api/products/:path*',
+      },
+      {
+        source: '/api/search',
+        destination: 'http://localhost:3002/api/search',
+      },
+      {
+        source: '/api/search/:path*',
+        destination: 'http://localhost:3002/api/search/:path*',
+      }
+    ];
   },
   async headers() {
     return [
@@ -27,7 +73,19 @@ const nextConfig = {
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; connect-src 'self' http://localhost:3000 http://localhost:3002 https://api.moysklad.ru https://telegram.org https://*.telegram.org; img-src 'self' https://api.moysklad.ru https://miniature-prod.moysklad.ru data:; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://telegram.org https://*.telegram.org; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;"
+            value: "default-src 'self'; connect-src 'self' http://localhost:3000 http://localhost:3002 https://api.moysklad.ru https://telegram.org https://*.telegram.org; img-src 'self' https://miniature-prod.moysklad.ru https://api.moysklad.ru https://storage.files.mow1.cloud.servers.ru:8080 https://tinyimage-prod.moysklad.ru data:; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://telegram.org https://*.telegram.org; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;"
+          },
+          {
+            key: 'Access-Control-Allow-Origin',
+            value: '*'
+          },
+          {
+            key: 'Access-Control-Allow-Methods',
+            value: 'GET, OPTIONS'
+          },
+          {
+            key: 'Access-Control-Allow-Headers',
+            value: 'Content-Type, Authorization'
           }
         ]
       }
@@ -81,19 +139,6 @@ const nextConfig = {
     };
     return config;
   },
-  // Оптимизация предзагрузки ресурсов
-  async rewrites() {
-    return [
-      {
-        source: '/telegram-web-app.js',
-        destination: 'https://telegram.org/js/telegram-web-app.js',
-      },
-      {
-        source: '/api/images/:path*',
-        destination: 'http://localhost:3002/api/images/:path*',
-      }
-    ];
-  }
 };
 
 module.exports = nextConfig; 

@@ -2,11 +2,11 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import styles from './LoadingScreen.module.css';
 
 const loadingMessages = [
   { text: 'Ищем товар на складе...', emoji: '🔍' },
   { text: 'Делаем затяжку...', emoji: '💨' },
-  { text: 'Проверяем остатки...', emoji: '📦' },
   { text: 'Настраиваем ватты...', emoji: '⚡' },
   { text: 'Подбираем вкус...', emoji: '👅' },
   { text: 'Проверяем аккумулятор...', emoji: '🔋' },
@@ -47,9 +47,9 @@ export default function LoadingScreen() {
   const progress = ((currentMessageIndex + 1) / loadingMessages.length) * 100;
 
   return (
-    <div className="loading-screen">
-      <div className="loading-container">
-        <div className="loading-content">
+    <div className={styles.loadingScreen}>
+      <div className={styles.loadingContainer}>
+        <div className={styles.loadingContent}>
           <AnimatePresence mode="wait">
             <motion.div
               key={currentMessageIndex}
@@ -60,7 +60,7 @@ export default function LoadingScreen() {
               className="flex flex-col items-center"
             >
               <motion.div
-                className="loading-emoji"
+                className={styles.loadingEmoji}
                 animate={{ 
                   scale: [1, 1.2, 1],
                   rotate: [0, 5, -5, 0],
@@ -75,7 +75,7 @@ export default function LoadingScreen() {
                 {currentMessage.emoji}
               </motion.div>
               <motion.div
-                className="loading-text"
+                className={styles.loadingText}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
@@ -87,9 +87,9 @@ export default function LoadingScreen() {
           </AnimatePresence>
         </div>
 
-        <div className="loading-progress">
+        <div className={styles.loadingProgress}>
           <motion.div
-            className="loading-progress-bar"
+            className={styles.loadingProgressBar}
             initial={{ width: '0%' }}
             animate={{ width: `${progress}%` }}
             transition={{ duration: 0.3 }}

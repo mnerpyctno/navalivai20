@@ -9,11 +9,13 @@ console.log('[Layout] Загрузка стилей:', {
 });
 
 const ClientProviders = dynamic(() => import('@/components/ClientProviders'), {
-  ssr: false
+  ssr: false,
+  loading: () => null
 });
 
 const InitProvider = dynamic(() => import('@/components/InitProvider'), {
-  ssr: false
+  ssr: false,
+  loading: () => null
 });
 
 export const viewport: Viewport = {
@@ -35,7 +37,7 @@ export default function RootLayout({
 }) {
   console.log('[Layout] Рендеринг RootLayout');
   return (
-    <html lang="ru">
+    <html lang="ru" suppressHydrationWarning>
       <head>
         <Script
           src="https://telegram.org/js/telegram-web-app.js"

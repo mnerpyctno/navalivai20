@@ -8,8 +8,8 @@ import Header from '@/components/Header';
 import Link from 'next/link';
 import ErrorPopup from '@/components/ErrorPopup';
 import ImagePlaceholder from '@/components/ImagePlaceholder';
-import { stockStore } from '@/lib/stockStore';
-import { productsApi } from '@/api/products';
+import { env } from '@/config/env';
+import { Product } from '@/types/product';
 
 interface CartItem {
   id: string;
@@ -30,7 +30,11 @@ export default function Cart() {
     const fetchImages = async () => {
       const imagePromises = items.map(async (item) => {
         try {
-          const images = await productsApi.getProductImages(item.id);
+          const response = await fetch(`/api/products/${item.id}/images`);
+          if (!response.ok) {
+            throw new Error('Ошибка при загрузке изображений');
+          }
+          const images = await response.json();
           if (images.length > 0) {
             setProductImages(prev => ({
               ...prev,
@@ -81,32 +85,11 @@ export default function Cart() {
   const [error, setError] = useState<string | null>(null);
 
   const handleQuantityChange = async (itemId: string, newQuantity: number) => {
-    try {
-      const item = items.find(item => item.id === itemId);
-      if (!item) return;
-
-      if (newQuantity < 1) {
-        removeFromCart(itemId);
-        return;
-      }
-
-      const stockData = await stockStore.getStock(itemId);
-      if (stockData === null || stockData === undefined) {
-        setError('Нет данных о наличии');
-        return;
-      }
-
-      if (newQuantity > stockData) {
-        setError('Недостаточно товара на складе');
-        return;
-      }
-
-      updateQuantity(itemId, newQuantity);
-      setError(null);
-    } catch (error) {
-      console.error('Ошибка при обновлении количества:', error);
-      setError('Ошибка при обновлении количества');
+    if (newQuantity < 1) {
+      return;
     }
+    
+    updateQuantity(itemId, newQuantity);
   };
 
   const handleAddStamp = async (itemId: string) => {

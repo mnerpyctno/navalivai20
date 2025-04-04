@@ -5,8 +5,9 @@
   right: 0;
   background: var(--app-background);
   box-shadow: var(--shadow);
-  z-index: 100;
+  z-index: 1000;
   height: var(--header-height);
+  padding: 8px 0;
 }
 
 .headerContent {
@@ -80,7 +81,8 @@
   font-size: 14px;
   background: var(--button-secondary);
   color: var(--text-primary);
-  padding: 0;
+  padding: 0 0 0 24px;
+  width: 100%;
 }
 
 .searchInput::placeholder {
@@ -118,6 +120,17 @@
   justify-content: center;
   width: 32px;
   height: 32px;
+  border: none;
+  background: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  padding: 0;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.cartIconWrapper:hover {
+  background-color: var(--button-secondary);
 }
 
 .cartBadge {
@@ -135,6 +148,7 @@
   align-items: center;
   justify-content: center;
   padding: 0 4px;
+  z-index: 1001;
 }
 
 .spinning {

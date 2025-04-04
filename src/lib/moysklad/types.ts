@@ -12,16 +12,25 @@ export interface MoySkladProduct {
   name: string;
   code: string;
   article: string;
-  price: number;
-  images: {
+  description?: string;
+  images?: {
+    meta: {
+      size: number;
+    };
     rows: Array<{
-      mini: {
+      miniature: {
         href: string;
       };
     }>;
   };
-  meta: {
-    href: string;
+  salePrices?: Array<{
+    value: number;
+  }>;
+  productFolder?: {
+    name: string;
+    meta: {
+      href: string;
+    };
   };
 }
 
@@ -31,20 +40,6 @@ export interface MoySkladStore {
   meta: {
     href: string;
   };
-}
-
-export interface MoySkladStockRow {
-  stock: number;
-  reserve: number;
-  inTransit: number;
-  quantity: number;
-  product?: MoySkladProduct;
-  store?: MoySkladStore;
-}
-
-export interface MoySkladStock {
-  meta: MoySkladMeta;
-  rows: MoySkladStockRow[];
 }
 
 export interface MoySkladCategory {
@@ -60,4 +55,16 @@ export interface MoySkladCategory {
   meta: {
     href: string;
   };
+}
+
+export interface MoySkladResponse<T> {
+  meta: {
+    href: string;
+    type: string;
+    mediaType: string;
+    size: number;
+    limit: number;
+    offset: number;
+  };
+  rows: T[];
 } 

@@ -7,7 +7,7 @@ import { useCart } from '@/context/CartContext';
 import { usePathname } from 'next/navigation';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHome, faArrowLeft, faSearch, faUser, faShoppingCart, faTimes, faSpinner } from '@fortawesome/free-solid-svg-icons';
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useSearchParams } from 'next/navigation';
 
@@ -22,44 +22,46 @@ export default function Header() {
   const searchParams = useSearchParams();
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isNavigating = useRef(false);
-  const initialMount = useRef(true);
-  const lastQuery = useRef('');
-  const searchInProgress = useRef(false);
 
-  // Инициализация значения поиска из URL только при первом рендере
+  // Инициализация значения поиска из URL
   useEffect(() => {
-    if (initialMount.current) {
-      const currentQuery = searchParams.get('q') || '';
+    const currentQuery = searchParams.get('q') || '';
+    if (currentQuery !== searchQuery) {
       setSearchQuery(currentQuery);
-      lastQuery.current = currentQuery;
-      initialMount.current = false;
     }
   }, [searchParams]);
 
   // Обработка изменений поискового запроса
   useEffect(() => {
-    if (!initialMount.current && !searchInProgress.current) {
-      const trimmedQuery = debouncedSearchQuery.trim();
-      
-      if (searchTimeoutRef.current) {
-        clearTimeout(searchTimeoutRef.current);
-      }
+    const trimmedQuery = debouncedSearchQuery.trim();
+    
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
 
-      if (trimmedQuery && trimmedQuery !== lastQuery.current) {
-        setIsSearching(true);
-        lastQuery.current = trimmedQuery;
-        searchInProgress.current = true;
-        
-        searchTimeoutRef.current = setTimeout(() => {
-          if (!isNavigating.current) {
-            isNavigating.current = true;
-            router.push(`/search?q=${encodeURIComponent(trimmedQuery)}`);
+    if (trimmedQuery.length >= 2) {
+      setIsSearching(true);
+      
+      searchTimeoutRef.current = setTimeout(() => {
+        if (!isNavigating.current) {
+          isNavigating.current = true;
+          const newPath = `/search?q=${encodeURIComponent(trimmedQuery)}`;
+          if (pathname !== '/search' || searchParams.get('q') !== trimmedQuery) {
+            router.push(newPath, { scroll: false });
           }
-        }, 300);
-      } 
-      else if (!trimmedQuery && pathname === '/search') {
-        router.push('/');
-      }
+          setIsSearching(false);
+          isNavigating.current = false;
+        }
+      }, 500);
+    } else if (pathname === '/search' && trimmedQuery.length < 2) {
+      // Добавляем задержку перед перенаправлением на главную страницу
+      searchTimeoutRef.current = setTimeout(() => {
+        if (!isNavigating.current) {
+          isNavigating.current = true;
+          router.push('/', { scroll: false });
+          isNavigating.current = false;
+        }
+      }, 1000);
     }
 
     return () => {
@@ -67,25 +69,14 @@ export default function Header() {
         clearTimeout(searchTimeoutRef.current);
       }
     };
-  }, [debouncedSearchQuery, router, pathname]);
-
-  // Сброс состояния поиска при размонтировании
-  useEffect(() => {
-    return () => {
-      if (searchTimeoutRef.current) {
-        clearTimeout(searchTimeoutRef.current);
-      }
-      isNavigating.current = false;
-    };
-  }, []);
+  }, [debouncedSearchQuery, router, pathname, searchParams]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmedQuery = searchQuery.trim();
     
-    if (trimmedQuery && trimmedQuery !== lastQuery.current) {
+    if (trimmedQuery.length >= 2) {
       setIsSearching(true);
-      lastQuery.current = trimmedQuery;
       
       if (searchTimeoutRef.current) {
         clearTimeout(searchTimeoutRef.current);
@@ -94,7 +85,12 @@ export default function Header() {
       searchTimeoutRef.current = setTimeout(() => {
         if (!isNavigating.current) {
           isNavigating.current = true;
-          router.push(`/search?q=${encodeURIComponent(trimmedQuery)}`);
+          const newPath = `/search?q=${encodeURIComponent(trimmedQuery)}`;
+          if (pathname !== '/search' || searchParams.get('q') !== trimmedQuery) {
+            router.push(newPath, { scroll: false });
+          }
+          setIsSearching(false);
+          isNavigating.current = false;
         }
       }, 500);
     }
@@ -103,8 +99,6 @@ export default function Header() {
   const handleClearSearch = () => {
     setSearchQuery('');
     setIsSearching(false);
-    isNavigating.current = false;
-    lastQuery.current = '';
     
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
@@ -112,14 +106,27 @@ export default function Header() {
     }
     
     if (pathname === '/search') {
-      router.push('/');
+      // Добавляем задержку перед перенаправлением на главную страницу
+      searchTimeoutRef.current = setTimeout(() => {
+        if (!isNavigating.current) {
+          isNavigating.current = true;
+          router.push('/', { scroll: false });
+          isNavigating.current = false;
+        }
+      }, 1000);
+    }
+  };
+
+  const handleBack = () => {
+    if (!isNavigating.current) {
+      isNavigating.current = true;
+      router.back();
+      isNavigating.current = false;
     }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setSearchQuery(value);
-    isNavigating.current = false;
+    setSearchQuery(e.target.value);
   };
 
   return (
@@ -131,9 +138,9 @@ export default function Header() {
               <FontAwesomeIcon icon={faHome} size="lg" />
             </Link>
           ) : (
-            <Link href="/" className={styles.actionButton}>
+            <button onClick={handleBack} className={styles.actionButton}>
               <FontAwesomeIcon icon={faArrowLeft} size="lg" />
-            </Link>
+            </button>
           )}
         </div>
         
@@ -159,18 +166,13 @@ export default function Header() {
             </button>
           )}
         </form>
-
+        
         <div className={styles.rightActions}>
-          <Link href="/profile" className={styles.actionButton}>
-            <FontAwesomeIcon icon={faUser} size="lg" />
-          </Link>
-          <Link href="/cart" className={styles.actionButton}>
-            <div className={styles.cartIconWrapper}>
-              <FontAwesomeIcon icon={faShoppingCart} size="lg" />
-              {totalItems > 0 && (
-                <span className={styles.cartBadge}>{totalItems}</span>
-              )}
-            </div>
+          <Link href="/cart" className={styles.cartIconWrapper}>
+            <FontAwesomeIcon icon={faShoppingCart} size="lg" />
+            {totalItems > 0 && (
+              <span className={styles.cartBadge}>{totalItems}</span>
+            )}
           </Link>
         </div>
       </div>
