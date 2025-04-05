@@ -3,6 +3,8 @@ export interface Category {
   name: string;
   parentId?: string;
   pathName?: string;
+  description?: string;
+  image?: string;
 }
 
 export interface MoySkladCategory {

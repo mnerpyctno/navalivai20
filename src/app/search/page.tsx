@@ -8,7 +8,7 @@ import ProductCard from '@/components/ProductCard';
 import { Product } from '@/types/product';
 import { ITEMS_PER_PAGE } from '@/config/constants';
 import { env } from '@/config/env';
-import { LoadingScreen } from '@/components/LoadingScreen';
+import LoadingScreen from '@/components/LoadingScreen';
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
@@ -130,10 +130,14 @@ export default function SearchPage() {
   }, [query]);
 
   useEffect(() => {
-    if (query && !searchInProgress.current) {
-      loadProducts(page);
+    if (query) {
+      loadProducts(1);
     }
-  }, [query, page, loadProducts]);
+  }, [query, loadProducts]);
+
+  useEffect(() => {
+    loadProducts(1);
+  }, [loadProducts]);
 
   if (loading) {
     return <LoadingScreen />;
