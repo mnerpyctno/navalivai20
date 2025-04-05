@@ -21,14 +21,14 @@
     }
   ],
   "env": {
-    "MOYSKLAD_TOKEN": "@next-public-moysklad-token",
-    "NEXT_PUBLIC_MOYSKLAD_TOKEN": "@next-public-moysklad-token",
-    "NEXT_PUBLIC_MOYSKLAD_API_TOKEN": "@next-public-moysklad-api-token",
-    "SUPABASE_ANON_KEY": "@supabase-anon-key",
-    "TELEGRAM_BOT_TOKEN": "@telegram-bot-token",
-    "TELEGRAM_BOT_USERNAME": "@telegram-bot-username",
-    "TELEGRAM_SECRET_KEY": "@telegram-secret-key",
-    "NEXT_PUBLIC_WEBAPP_URL": "@next-public-webapp-url",
+    "MOYSKLAD_TOKEN": "NEXT_PUBLIC_MOYSKLAD_TOKEN",
+    "NEXT_PUBLIC_MOYSKLAD_TOKEN": "NEXT_PUBLIC_MOYSKLAD_TOKEN",
+    "NEXT_PUBLIC_MOYSKLAD_API_TOKEN": "NEXT_PUBLIC_MOYSKLAD_API_TOKEN",
+    "SUPABASE_ANON_KEY": "SUPABASE_ANON_KEY",
+    "TELEGRAM_BOT_TOKEN": "TELEGRAM_BOT_TOKEN",
+    "TELEGRAM_BOT_USERNAME": "TELEGRAM_BOT_USERNAME",
+    "TELEGRAM_SECRET_KEY": "TELEGRAM_SECRET_KEY",
+    "NEXT_PUBLIC_WEBAPP_URL": "NEXT_PUBLIC_WEBAPP_URL",
     "NODE_ENV": "production"
   },
   "regions": ["fra1"]
