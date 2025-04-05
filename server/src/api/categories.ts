@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { moySkladClient } from '../config/moysklad';
 import { handleMoySkladError } from '../utils/errorHandler';
-import { Category, MoySkladCategory } from '../../src/types/category';
+import { Category, MoySkladCategory } from '../../shared/types/product';
 
 const router = Router();
 

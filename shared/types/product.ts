@@ -3,24 +3,12 @@ export interface Category {
   name: string;
   parentId?: string;
   pathName?: string;
-  children?: Category[];
 }
 
 export interface MoySkladCategory {
-  meta: {
-    href: string;
-    type: string;
-    mediaType: string;
-  };
   id: string;
   name: string;
-  productFolder?: {
-    meta: {
-      href: string;
-      type: string;
-      mediaType: string;
-    };
-  };
+  parentId?: string;
   pathName?: string;
 }
 
@@ -37,56 +25,30 @@ export interface Product {
   name: string;
   description?: string;
   price: number;
-  images: string[];
-  category?: Category;
-  stock: StockInfo[];
-  archived: boolean;
-  active: boolean;
+  imageUrl?: string;
+  categoryId?: string;
+  categoryName?: string;
+  available: boolean;
+  stock?: number;
 }
 
 export interface MoySkladProduct {
-  meta: {
-    href: string;
-    type: string;
-    mediaType: string;
-  };
   id: string;
   name: string;
   description?: string;
-  salePrices: {
-    value: number;
-    priceType: {
-      name: string;
-    };
-  }[];
-  images: {
-    meta: {
-      href: string;
-      type: string;
-      mediaType: string;
-    };
-    title: string;
-    filename: string;
+  price: number;
+  imageUrl?: string;
+  categoryId?: string;
+  categoryName?: string;
+  available: boolean;
+  stock?: number;
+}
+
+export interface MoySkladResponse<T> {
+  rows: T[];
+  meta: {
     size: number;
-    updated: string;
-    miniature: {
-      href: string;
-      type: string;
-      mediaType: string;
-    };
-    tiny: {
-      href: string;
-      type: string;
-      mediaType: string;
-    };
-  }[];
-  productFolder?: {
-    meta: {
-      href: string;
-      type: string;
-      mediaType: string;
-    };
+    limit: number;
+    offset: number;
   };
-  archived: boolean;
-  active: boolean;
 } 
