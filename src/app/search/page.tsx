@@ -8,6 +8,7 @@ import ProductCard from '@/components/ProductCard';
 import { Product } from '@/types/product';
 import { ITEMS_PER_PAGE } from '@/config/constants';
 import { env } from '@/config/env';
+import { LoadingScreen } from '@/components/LoadingScreen';
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
@@ -133,6 +134,10 @@ export default function SearchPage() {
       loadProducts(page);
     }
   }, [query, page, loadProducts]);
+
+  if (loading) {
+    return <LoadingScreen />;
+  }
 
   return (
     <main className={styles.main}>
