@@ -22,15 +22,12 @@
   ],
   "env": {
     "MOYSKLAD_TOKEN": "@moysklad-token",
-    "DATABASE_URL": "@database-url",
-    "DIRECT_URL": "@direct-url",
-    "NEXTAUTH_URL": "@nextauth-url",
-    "NEXTAUTH_SECRET": "@nextauth-secret",
-    "SUPABASE_URL": "@supabase-url",
+    "NEXT_PUBLIC_MOYSKLAD_TOKEN": "@next-public-moysklad-token",
+    "NEXT_PUBLIC_MOYSKLAD_API_TOKEN": "@next-public-moysklad-api-token",
     "SUPABASE_ANON_KEY": "@supabase-anon-key",
     "TELEGRAM_BOT_TOKEN": "@telegram-bot-token",
     "TELEGRAM_BOT_USERNAME": "@telegram-bot-username",
-    "NEXT_PUBLIC_API_URL": "@next-public-api-url",
+    "TELEGRAM_SECRET_KEY": "@telegram-secret-key",
     "NEXT_PUBLIC_WEBAPP_URL": "@next-public-webapp-url",
     "NODE_ENV": "production"
   },
