@@ -34,11 +34,5 @@
     "NEXT_PUBLIC_WEBAPP_URL": "@next-public-webapp-url",
     "NODE_ENV": "production"
   },
-  "regions": ["fra1"],
-  "functions": {
-    "server/src/index.ts": {
-      "memory": 1024,
-      "maxDuration": 10
-    }
-  }
+  "regions": ["fra1"]
 } 
