@@ -1,0 +1,402 @@
+.card {
+  background: var(--app-background);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: transform 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+}
+
+.imageWrapper {
+  position: relative;
+  width: 100%;
+  padding-bottom: 100%;
+  background: var(--app-secondary);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.productImage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background-color: var(--app-secondary);
+}
+
+.hidden {
+  opacity: 0;
+}
+
+.info {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-grow: 1;
+  min-height: 120px;
+}
+
+.titleWrapper {
+  display: flex;
+  align-items: flex-start;
+  min-height: 40px;
+}
+
+.name {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex-grow: 1;
+}
+
+.priceWrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.price {
+  font-size: 16px;
+  font-weight: 600;
+  color: #000;
+}
+
+.oldPrice {
+  font-size: 14px;
+  color: #999;
+  text-decoration: line-through;
+}
+
+.addButton {
+  background: var(--button-primary);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  width: 100%;
+  height: 40px;
+}
+
+.addButton:hover {
+  background: var(--button-primary-hover);
+}
+
+.addButton.disabled {
+  background: #f5f5f5;
+  color: #666;
+  cursor: not-allowed;
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: var(--app-background);
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  width: 400px;
+}
+
+.closeButton {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #f5f5f5;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
+
+.closeButton:hover {
+  background: #e0e0e0;
+}
+
+.modalImageWrapper {
+  position: relative;
+  width: 100%;
+  padding-top: 100%;
+  background: #f5f5f5;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modalImage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background-color: #f5f5f5;
+}
+
+.modalContent {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modalTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: #000;
+  margin: 0;
+}
+
+.modalInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.modalPrice,
+.modalLabel {
+  font-size: 16px;
+  font-weight: 500;
+  color: #000;
+}
+
+.modalValue {
+  font-size: 14px;
+  color: #666;
+}
+
+.addToCartButton {
+  background: var(--button-primary);
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  width: 100%;
+}
+
+.addToCartButton:hover:not(.disabled) {
+  background: var(--button-primary-hover);
+}
+
+.addToCartButton.disabled {
+  background: #f5f5f5;
+  color: #666;
+  cursor: not-allowed;
+}
+
+.outOfStock {
+  color: #FF3B30;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.stockInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 14px;
+}
+
+.stockAvailable {
+  color: #4CAF50;
+  font-weight: 500;
+}
+
+.stockUnavailable {
+  color: #f44336;
+  font-weight: 500;
+}
+
+.stockLoading {
+  color: #9e9e9e;
+  font-style: italic;
+}
+
+.stockCount {
+  color: #757575;
+  font-size: 13px;
+}
+
+.disabled {
+  background-color: #e0e0e0;
+  color: #757575;
+  cursor: pointer !important;
+}
+
+.disabled:hover {
+  background-color: #bdbdbd;
+}
+
+.loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #666;
+  font-size: 14px;
+}
+
+.infoButton {
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  color: #333;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 2;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.infoButton:hover {
+  background: #fff;
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.infoButton svg {
+  width: 18px;
+  height: 18px;
+}
+
+.skeletonName {
+  height: 20px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.skeletonPrice {
+  height: 24px;
+  width: 80px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
+
+.skeletonButton {
+  height: 40px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: 8px;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.error {
+  color: #dc3545;
+  font-size: 14px;
+  text-align: center;
+  padding: 16px;
+}
+
+.imagePlaceholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f5;
+  color: #999;
+}
+
+.placeholderText {
+  margin-top: 8px;
+  font-size: 14px;
+  color: #999;
+}
+
+.imagePlaceholder svg {
+  width: 48px;
+  height: 48px;
+  opacity: 0.5;
+}
+
+.category {
+  font-size: 12px;
+  color: #666;
+  text-decoration: none;
+  transition: color 0.2s ease;
+  padding: 0;
+}
+
+.category:hover {
+  color: var(--button-primary);
+}
+
+.modalCategory {
+  font-size: 14px;
+  color: #666;
+  margin-top: 4px;
+  margin-bottom: 8px;
+} 

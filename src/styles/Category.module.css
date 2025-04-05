@@ -1,0 +1,234 @@
+.main {
+  min-height: 100vh;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  background-color: #f5f5f5;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  width: 100%;
+  margin-top: 80px;
+}
+
+.header {
+  margin-bottom: 15px;
+  text-align: left;
+}
+
+.title {
+  font-size: 2rem;
+  color: #333;
+  margin: 0;
+  padding: 0;
+}
+
+.productsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+  padding: 20px 0;
+}
+
+.productCard {
+  background: var(--app-background);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.productCard:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+.productImageContainer {
+  position: relative;
+  width: 100%;
+  padding-bottom: 100%;
+  background: var(--app-background);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.productImage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain;
+}
+
+.productInfo {
+  padding: 8px;
+  background: var(--app-background);
+}
+
+.productInfo h3 {
+  font-size: 13px;
+  font-weight: 400;
+  margin: 0 0 4px;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.price {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 8px;
+}
+
+.addToCartButton {
+  width: 100%;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #ffffff;
+  background-color: var(--button-primary);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.addToCartButton:hover {
+  background-color: var(--button-primary-hover);
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  text-align: center;
+  margin-top: var(--header-height);
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 10px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  text-align: center;
+  color: #666;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 400px;
+  background: var(--app-background);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+
+.emptyState h2 {
+  margin-bottom: 10px;
+  color: var(--text-primary);
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.emptyState p {
+  color: var(--text-secondary);
+  font-size: 16px;
+  margin-bottom: 16px;
+}
+
+.error {
+  color: #e74c3c;
+  text-align: center;
+  padding: 20px;
+  margin: 20px 0;
+  background-color: #fde8e8;
+  border-radius: 4px;
+}
+
+.noResults {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  text-align: center;
+  color: var(--text-secondary);
+  gap: 1rem;
+  background: var(--app-background);
+  border-radius: 12px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 400px;
+  box-shadow: var(--shadow);
+}
+
+.noResults h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.noResults p {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 10px;
+  }
+
+  .productsGrid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .emptyState, .noResults {
+    padding: 24px 16px;
+    width: 95%;
+  }
+  
+  .emptyState h2, .noResults h2 {
+    font-size: 18px;
+  }
+  
+  .emptyState p, .noResults p {
+    font-size: 14px;
+  }
+} 
