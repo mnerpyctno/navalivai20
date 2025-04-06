@@ -33,7 +33,7 @@ app.use((req, res, next) => {
 });
 
 // Подключаем все API роуты через единый роутер
-app.use('/api', apiRouter);
+app.use('/', apiRouter);
 
 // Обработка ошибок
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
