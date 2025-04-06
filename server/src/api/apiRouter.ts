@@ -18,6 +18,11 @@ router.use((req, res, next) => {
   next();
 });
 
+// Проверка работоспособности сервера
+router.get('/health', (_req, res) => {
+  res.json({ status: 'ok' });
+});
+
 router.use('/products', productsRouter);
 router.use('/categories', categoriesRouter);
 router.use('/moysklad/image', imageRouter);
