@@ -29,7 +29,7 @@ model Order {
   id        String   @id @default(cuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id])
-  items     Json
+  items     Json     @default("[]")
   status    String   @default("pending")
   total     Float    @default(0)
   createdAt DateTime @default(now())

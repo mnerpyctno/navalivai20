@@ -9,16 +9,14 @@ export async function testDatabase() {
     // Создаем тестового пользователя
     const testUser = await prisma.user.create({
       data: {
-        telegramId: '123456789',
-        username: 'test_user',
-        firstName: 'Test',
-        lastName: 'User'
+        name: 'Test User',
+        email: 'test@example.com'
       }
     });
 
     // Читаем тестового пользователя
     const user = await prisma.user.findUnique({
-      where: { telegramId: '123456789' }
+      where: { id: testUser.id }
     });
 
     // Создаем тестовую корзину
@@ -43,7 +41,7 @@ export async function testDatabase() {
       data: {
         userId: user!.id,
         status: 'pending',
-        total: 1000
+        items: []
       }
     });
 
