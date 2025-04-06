@@ -9,7 +9,7 @@ import Link from 'next/link';
 import ErrorPopup from '@/components/ErrorPopup';
 import ImagePlaceholder from '@/components/ImagePlaceholder';
 import { env } from '@/config/env';
-import { CartItem } from '@/types/product';
+import { CartItem } from '@/types/cart';
 
 export default function Cart() {
   const { items: cartItems, updateQuantity, removeFromCart, isLoading, createOrder } = useCart();
