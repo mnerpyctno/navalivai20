@@ -17,6 +17,11 @@ app.use(cors({
 // Middleware
 app.use(express.json());
 
+// Проверка работоспособности сервера
+app.get('/api/health', (_req, res) => {
+  res.json({ status: 'ok' });
+});
+
 app.use((req, res, next) => {
   console.log('Incoming request:', {
     method: req.method,
