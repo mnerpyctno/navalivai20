@@ -22,10 +22,12 @@ export default function ProductCard({ product, categoryName }: ProductCardProps)
   const [stockInfo, setStockInfo] = useState<{ stock: number; available: boolean } | null>(null);
 
   useEffect(() => {
-    setStockInfo({
-      stock: product.stock,
-      available: product.available
-    });
+    if (product.stock !== undefined) {
+      setStockInfo({
+        stock: product.stock,
+        available: product.available
+      });
+    }
   }, [product.stock, product.available]);
 
   const handleImageError = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
