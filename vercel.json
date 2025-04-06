@@ -13,11 +13,11 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "server/dist/index.js"
+      "dest": "/server/dist/index.js"
     },
     {
       "src": "/(.*)",
-      "dest": "dist/$1"
+      "dest": "/$1"
     }
   ],
   "env": {
