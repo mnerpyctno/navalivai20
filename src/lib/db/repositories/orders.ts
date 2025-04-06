@@ -6,7 +6,7 @@ export const ordersRepository = {
     return prisma.order.findUnique({
       where: { id },
       include: {
-        items: true
+        orderItems: true
       }
     });
   },
@@ -15,7 +15,7 @@ export const ordersRepository = {
     return prisma.order.findMany({
       where: { userId },
       include: {
-        items: true
+        orderItems: true
       },
       orderBy: {
         createdAt: 'desc'
@@ -27,7 +27,7 @@ export const ordersRepository = {
     return prisma.order.create({
       data,
       include: {
-        items: true
+        orderItems: true
       }
     });
   },
