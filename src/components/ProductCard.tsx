@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
-import { Product, CartItem } from '@/types/product';
+import { Product } from '@/types/product';
+import { CartItem } from '@/types/cart';
 import styles from './ProductCard.module.css';
 import ImagePlaceholder from './ImagePlaceholder';
 import Link from 'next/link';
