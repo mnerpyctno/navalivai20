@@ -12,12 +12,13 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@/types/*": ["./src/types/*"]
+      "@/types/*": ["./src/types/*"],
+      "@/shared/*": ["../shared/*"]
     },
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "noImplicitAny": false
   },
-  "include": ["./src/**/*.ts"],
+  "include": ["./src/**/*.ts", "../shared/**/*.ts"],
   "exclude": ["node_modules"]
 } 

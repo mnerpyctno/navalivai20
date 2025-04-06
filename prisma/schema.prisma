@@ -14,6 +14,11 @@ model User {
   emailVerified DateTime?
   image         String?
   telegramId    String?   @unique
+  firstName     String?
+  lastName      String?
+  username      String?
+  photoUrl      String?
+  authDate      DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   orders        Order[]

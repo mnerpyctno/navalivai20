@@ -16,6 +16,10 @@
       "dest": "server/dist/index.js"
     },
     {
+      "src": "/auth/(.*)",
+      "dest": "server/dist/index.js"
+    },
+    {
       "src": "/(.*)",
       "dest": "dist/$1"
     }
@@ -43,7 +47,8 @@
     "NEXT_PUBLIC_CACHE_TTL_PRODUCTS": "3600",
     "NEXT_PUBLIC_CACHE_TTL_CATEGORIES": "86400",
     "NEXT_PUBLIC_CACHE_TTL_STOCK": "300",
-    "NEXT_PUBLIC_CACHE_TTL_IMAGES": "86400"
+    "NEXT_PUBLIC_CACHE_TTL_IMAGES": "86400",
+    "NEXT_PUBLIC_API_URL": "https://navalivai20.vercel.app"
   },
   "regions": ["fra1"],
   "buildCommand": "npm run build:all",

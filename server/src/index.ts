@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { env } from './config/env';
 import apiRouter from './api/apiRouter';
+import authRouter from './routes/auth';
 import { setupWebhook, handleWebhook } from './routes/telegram/webhook';
 import { validateTelegramData } from './routes/telegram/validate';
 
@@ -36,6 +37,9 @@ app.use((req, res, next) => {
 
 // Подключаем все API роуты через единый роутер
 app.use('/api', apiRouter);
+
+// Auth routes
+app.use('/auth', authRouter);
 
 // Telegram routes
 app.get('/api/telegram/webhook', setupWebhook);
