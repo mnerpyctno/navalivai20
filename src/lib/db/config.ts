@@ -2,9 +2,8 @@ import { env } from '@/config/env';
 
 export const DATABASE_CONFIG = {
   url: env.databaseUrl,
-  directUrl: env.directUrl,
   supabaseUrl: env.supabaseUrl,
-  supabaseAnonKey: env.supabaseAnonKey
+  supabaseKey: env.supabaseKey
 } as const;
 
 // Типы для основных сущностей
