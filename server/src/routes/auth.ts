@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { PrismaClient } from '@prisma/client';
-import { MoySkladAPI } from '@/lib/moysklad';
+import { MoySkladAPI } from '../lib/moysklad';
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -15,7 +15,9 @@ router.post('/telegram/register', async (req, res) => {
 
     // Проверяем, существует ли пользователь
     const existingUser = await prisma.user.findFirst({
-      where: { telegramId },
+      where: {
+        telegramId: telegramId as string
+      },
     });
 
     if (existingUser) {
@@ -26,7 +28,7 @@ router.post('/telegram/register', async (req, res) => {
     const user = await prisma.user.create({
       data: {
         name: firstName,
-        telegramId,
+        telegramId: telegramId as string,
         firstName,
         lastName,
         username,
