@@ -2,9 +2,9 @@
   "name": "navaliva-server",
   "version": "1.0.0",
   "description": "Server for Navaliva shop",
-  "main": "dist/index.js",
+  "main": "server/dist/index.js",
   "scripts": {
-    "start": "node dist/index.js",
+    "start": "node server/dist/index.js",
     "dev": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts",
     "build": "npm install && tsc && cp -r ../shared/types/* src/types/ && cp -r src/types/* ../shared/types/",
     "test": "jest"
