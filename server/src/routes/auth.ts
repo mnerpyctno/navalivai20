@@ -14,7 +14,7 @@ router.post('/telegram/register', async (req, res) => {
     }
 
     // Проверяем, существует ли пользователь
-    const existingUser = await prisma.user.findUnique({
+    const existingUser = await prisma.user.findFirst({
       where: { telegramId },
     });
 
@@ -25,6 +25,7 @@ router.post('/telegram/register', async (req, res) => {
     // Создаем пользователя
     const user = await prisma.user.create({
       data: {
+        name: firstName,
         telegramId,
         firstName,
         lastName,
