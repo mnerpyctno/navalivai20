@@ -9,9 +9,15 @@ export const api = axios.create({
   },
 });
 
-export const getProducts = async (query: string = '', page: number = 1) => {
+export const getProducts = async (query: string = '', page: number = 1, limit: number = 24) => {
   try {
-    const response = await api.get(`/products?q=${encodeURIComponent(query)}&page=${page}`);
+    const response = await api.get('/api/products', {
+      params: {
+        q: query,
+        limit,
+        offset: (page - 1) * limit
+      }
+    });
     return response.data;
   } catch (error) {
     console.error('Error fetching products:', error);
@@ -21,7 +27,7 @@ export const getProducts = async (query: string = '', page: number = 1) => {
 
 export const getProductById = async (id: string) => {
   try {
-    const response = await api.get(`/products/${id}`);
+    const response = await api.get(`/api/products/${id}`);
     return response.data;
   } catch (error) {
     console.error('Error fetching product:', error);
@@ -31,7 +37,9 @@ export const getProductById = async (id: string) => {
 
 export const searchProducts = async (query: string) => {
   try {
-    const response = await api.get(`/search?q=${encodeURIComponent(query)}`);
+    const response = await api.get('/api/search', {
+      params: { q: query }
+    });
     return response.data;
   } catch (error) {
     console.error('Error searching products:', error);
@@ -41,10 +49,21 @@ export const searchProducts = async (query: string) => {
 
 export const getCategories = async () => {
   try {
-    const response = await api.get('/categories');
+    const response = await api.get('/api/categories');
     return response.data;
   } catch (error) {
     console.error('Error fetching categories:', error);
+    throw error;
+  }
+};
+
+export const getStock = async (productId?: string) => {
+  try {
+    const url = productId ? `/api/stock/${productId}` : '/api/stock';
+    const response = await api.get(url);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching stock:', error);
     throw error;
   }
 }; 

@@ -39,14 +39,14 @@ router.get('/', async (req: Request, res: Response) => {
     if (stockResponse.data.rows) {
       stockResponse.data.rows.forEach((item: any) => {
         if (item.meta && item.meta.href) {
-          // Извлекаем ID продукта из URL, убирая параметры запроса
-          const productId = item.meta.href.split('?')[0].split('/').pop();
+          const productId = item.meta.href.split('/').pop();
           const stockByStore = item.stockByStore?.[0] || {};
-          const available = (stockByStore.stock || 0) - (stockByStore.reserve || 0) > 0;
+          const stock = stockByStore.stock || 0;
+          const reserve = stockByStore.reserve || 0;
           
           stockMap.set(productId, {
-            stock: stockByStore.stock || 0,
-            available: available
+            stock,
+            available: stock - reserve > 0
           });
         }
       });

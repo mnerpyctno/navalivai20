@@ -18,6 +18,39 @@ const transformImageUrl = (url: string | null) => {
   return `https://miniature-prod.moysklad.ru/miniature/${orgId}/documentminiature/${imageId}`;
 };
 
+// Получение остатков для продукта
+async function getProductStock(productId: string): Promise<StockInfo> {
+  try {
+    const stockResponse = await moySkladClient.get('/report/stock/bystore', {
+      params: {
+        filter: `product=https://api.moysklad.ru/api/remap/1.2/entity/product/${productId}`
+      }
+    });
+
+    if (!stockResponse.data.rows || !stockResponse.data.rows.length) {
+      return {
+        stock: 0,
+        reserve: 0,
+        inTransit: 0,
+        available: false
+      };
+    }
+
+    const stockItem = stockResponse.data.rows[0];
+    const stockByStore = stockItem.stockByStore?.[0] || {};
+    
+    return {
+      stock: stockByStore.stock || 0,
+      reserve: stockByStore.reserve || 0,
+      inTransit: stockByStore.inTransit || 0,
+      available: (stockByStore.stock || 0) - (stockByStore.reserve || 0) > 0
+    };
+  } catch (error) {
+    console.error('Error fetching product stock:', error);
+    throw error;
+  }
+}
+
 // Получение списка продуктов
 router.get('/', async (req, res) => {
   try {
@@ -57,20 +90,19 @@ router.get('/', async (req, res) => {
     const stockResponse = await moySkladClient.get('/report/stock/bystore');
 
     // Создаем карту остатков по ID продукта
-    const stockMap = new Map<string, StockInfo>();
+    const stockMap = new Map<string, { stock: number; available: boolean }>();
     
     if (stockResponse.data.rows) {
       stockResponse.data.rows.forEach((item: any) => {
         if (item.meta && item.meta.href) {
-          // Извлекаем ID продукта из URL, убирая параметры запроса
-          const productId = item.meta.href.split('?')[0].split('/').pop();
+          const productId = item.meta.href.split('/').pop();
           const stockByStore = item.stockByStore?.[0] || {};
+          const stock = stockByStore.stock || 0;
+          const reserve = stockByStore.reserve || 0;
           
           stockMap.set(productId, {
-            stock: stockByStore.stock || 0,
-            reserve: stockByStore.reserve || 0,
-            inTransit: stockByStore.inTransit || 0,
-            available: (stockByStore.stock || 0) - (stockByStore.reserve || 0)
+            stock,
+            available: stock - reserve > 0
           });
         }
       });
@@ -96,12 +128,9 @@ router.get('/', async (req, res) => {
       
       const finalImageUrl = transformImageUrl(imageUrl);
 
-      // Получаем информацию о наличии
       const stockInfo = stockMap.get(product.id) || {
         stock: 0,
-        reserve: 0,
-        inTransit: 0,
-        available: 0
+        available: false
       };
 
       return {
@@ -112,13 +141,8 @@ router.get('/', async (req, res) => {
         imageUrl: finalImageUrl,
         categoryId: product.productFolder?.id || '',
         categoryName: product.productFolder?.name || '',
-        available: !product.archived && stockInfo.available > 0,
-        stock: stockInfo.stock,
-        article: product.article,
-        weight: product.weight,
-        volume: product.volume,
-        isArchived: product.archived,
-        hasImage: !!finalImageUrl
+        available: !product.archived && stockInfo.available,
+        stock: stockInfo.stock
       };
     });
 
@@ -208,9 +232,8 @@ router.get('/:id', async (req, res) => {
     // Если цена существует, делим на 100, иначе 0
     const price = retailPrice?.value ? retailPrice.value / 100 : 0;
 
-    // Получаем остатки для продукта через наш API
-    const stockResponse = await fetch(`${env.API_URL}/api/stock/${id}`);
-    const stockData = await stockResponse.json() as StockInfo & { productId: string };
+    // Получаем остатки для продукта
+    const stockData = await getProductStock(id);
 
     const result = {
       id: product.id,
@@ -224,15 +247,10 @@ router.get('/:id', async (req, res) => {
       weight: product.weight || 0,
       volume: product.volume || 0,
       isArchived: product.archived || false,
-      available: !product.archived && stockData.available > 0,
+      available: !product.archived && stockData.available,
       stock: stockData.stock || 0,
       hasImage: !!finalImageUrl
     };
-
-    console.log('✅ Modal window response:', {
-      ...result,
-      timestamp: new Date().toISOString()
-    });
 
     res.json(result);
   } catch (error) {

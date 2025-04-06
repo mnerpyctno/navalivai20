@@ -7,6 +7,7 @@ import Link from 'next/link';
 import ProductCard from '@/components/ProductCard';
 import { Product } from '@/types/product';
 import { getApiUrl } from '@/config/env';
+import { getProducts, getCategories } from '@/lib/api';
 
 interface Category {
   id: string;
@@ -40,9 +41,7 @@ export default function HomeContent() {
   const loadProducts = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${getApiUrl()}/api/products?limit=24&offset=${(page - 1) * 24}`);
-      if (!response.ok) throw new Error('Failed to load products');
-      const data = await response.json();
+      const data = await getProducts('', page);
       
       const newProducts = data.rows.map((product: any) => ({
         id: product.id,
@@ -69,9 +68,7 @@ export default function HomeContent() {
 
   const loadCategories = useCallback(async () => {
     try {
-      const response = await fetch(`${getApiUrl()}/api/categories`);
-      if (!response.ok) throw new Error('Failed to load categories');
-      const data = await response.json();
+      const data = await getCategories();
       
       // Обрабатываем оба формата ответа: с rows и без
       const categoriesData = Array.isArray(data) ? data : (data.rows || []);
