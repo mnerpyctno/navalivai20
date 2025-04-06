@@ -50,8 +50,8 @@ export interface MoySkladResponse<T> {
   };
 }
 
-// Импортируем типы из api/products.ts
-export type { MoySkladProduct, MoySkladProductImage } from '@/api/products';
+// Импортируем типы из product.ts
+export type { MoySkladProduct } from '@/types/product';
 
 export interface MoySkladCategory {
   id: string;
