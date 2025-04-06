@@ -26,7 +26,7 @@ for (const envVar of requiredEnvVars) {
 
 const envSchema = z.object({
   // API URL
-  API_URL: z.string().default('http://localhost:3002'),
+  API_URL: z.string().default('https://navalivai20.vercel.app'),
   
   // Database
   databaseUrl: z.string().url().optional(),
@@ -75,5 +75,5 @@ export const isBrowser = typeof window !== 'undefined';
 
 // Получаем базовый URL для API
 export const getApiUrl = () => {
-  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
+  return process.env.NEXT_PUBLIC_API_URL || 'https://navalivai20.vercel.app';
 }; 
