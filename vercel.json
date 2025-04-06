@@ -10,14 +10,10 @@
       "use": "@vercel/node"
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/api/(.*)",
-      "dest": "/server/dist/index.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
+      "source": "/api/:path*",
+      "destination": "/server/dist/index.js"
     }
   ],
   "env": {
@@ -45,11 +41,5 @@
   "regions": ["fra1"],
   "buildCommand": "npm run build:all",
   "installCommand": "npm install",
-  "framework": "nextjs",
-  "rewrites": [
-    {
-      "source": "/api/:path*",
-      "destination": "/server/dist/index.js"
-    }
-  ]
+  "framework": "nextjs"
 } 
