@@ -1,12 +1,12 @@
 import { Router } from 'express';
-import { moySkladClient } from '../../index';
+import { moySkladClient } from '@/config/moysklad';
 import imageRouter from './image';
 import ordersRouter from './orders';
 import categoriesRouter from './categories';
 
 const router = Router();
 
-// Подключаем маршруты
+// Подключаем все роуты МойСклад
 router.use('/image', imageRouter);
 router.use('/orders', ordersRouter);
 router.use('/categories', categoriesRouter);
