@@ -18,7 +18,7 @@ app.use(cors({
 app.use(express.json());
 
 // Проверка работоспособности сервера
-app.get('/health', (_req: express.Request, res: express.Response) => {
+app.get('/api/health', (_req: express.Request, res: express.Response) => {
   res.json({ status: 'ok' });
 });
 
@@ -33,7 +33,7 @@ app.use((req, res, next) => {
 });
 
 // Подключаем все API роуты через единый роутер
-app.use('/', apiRouter);
+app.use('/api', apiRouter);
 
 // Обработка ошибок
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
