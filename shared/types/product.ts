@@ -15,8 +15,11 @@ export interface MoySkladCategory {
 }
 
 export interface StockInfo {
-  quantity: number;
-  store: {
+  stock: number;
+  reserve: number;
+  inTransit: number;
+  available: number;
+  store?: {
     id: string;
     name: string;
   };
