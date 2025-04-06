@@ -24,13 +24,15 @@ router.get('/', async (req, res) => {
         if (item.meta && item.meta.href) {
           const productId = item.meta.href.split('/').pop();
           const stockByStore = item.stockByStore?.[0] || {};
+          const stock = stockByStore.stock || 0;
+          const reserve = stockByStore.reserve || 0;
           
           stockData.push({
             productId,
-            stock: stockByStore.stock || 0,
-            reserve: stockByStore.reserve || 0,
+            stock,
+            reserve,
             inTransit: stockByStore.inTransit || 0,
-            available: (stockByStore.stock || 0) - (stockByStore.reserve || 0)
+            available: stock - reserve > 0
           });
         }
       });
@@ -70,13 +72,15 @@ router.get('/:productId', async (req, res) => {
 
     const stockItem = stockResponse.data.rows[0];
     const stockByStore = stockItem.stockByStore?.[0] || {};
+    const stock = stockByStore.stock || 0;
+    const reserve = stockByStore.reserve || 0;
     
     const stockData: StockInfo & { productId: string } = {
       productId,
-      stock: stockByStore.stock || 0,
-      reserve: stockByStore.reserve || 0,
+      stock,
+      reserve,
       inTransit: stockByStore.inTransit || 0,
-      available: (stockByStore.stock || 0) - (stockByStore.reserve || 0)
+      available: stock - reserve > 0
     };
 
     res.json(stockData);
