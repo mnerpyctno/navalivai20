@@ -30,11 +30,12 @@ export interface Product {
   name: string;
   description?: string;
   price: number;
+  oldPrice?: number;
   imageUrl?: string;
   categoryId?: string;
   categoryName?: string;
   available: boolean;
-  stock?: number;
+  stock: number;
 }
 
 export interface CartItem extends Product {
