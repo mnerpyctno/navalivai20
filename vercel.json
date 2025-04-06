@@ -45,5 +45,11 @@
   "regions": ["fra1"],
   "buildCommand": "npm run build:all",
   "installCommand": "npm install",
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/server/dist/index.js"
+    }
+  ]
 } 
