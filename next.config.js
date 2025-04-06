@@ -62,7 +62,7 @@ const nextConfig = {
   },
   experimental: {
     optimizeCss: true,
-    optimizePackageImports: ['@prisma/client', 'next-auth'],
+    optimizePackageImports: ['@prisma/client'],
   },
   webpack: (config, { isServer }) => {
     if (isServer) {
