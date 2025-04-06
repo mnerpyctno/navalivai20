@@ -18,7 +18,7 @@ export interface StockInfo {
   stock: number;
   reserve: number;
   inTransit: number;
-  available: number;
+  available: boolean;
   store?: {
     id: string;
     name: string;

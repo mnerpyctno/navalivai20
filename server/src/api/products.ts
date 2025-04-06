@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { moySkladClient } from '../config/moysklad';
 import { handleMoySkladError } from '../utils/errorHandler';
-import { Product, MoySkladProduct, StockInfo } from '@/types/product';
+import { Product, MoySkladProduct, StockInfo } from '../types/product';
 import { env } from '../config/env';
 
 const router = Router();
