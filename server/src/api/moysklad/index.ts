@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { moySkladClient } from '@/config/moysklad';
+import { moySkladClient } from '../../config/moysklad';
 import imageRouter from './image';
 import ordersRouter from './orders';
 import categoriesRouter from './categories';

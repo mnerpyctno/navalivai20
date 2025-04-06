@@ -12,32 +12,12 @@
   ],
   "routes": [
     {
-      "src": "/api/moysklad/(.*)",
-      "dest": "server/dist/index.js"
-    },
-    {
-      "src": "/api/categories",
-      "dest": "server/dist/index.js"
-    },
-    {
-      "src": "/api/products",
-      "dest": "server/dist/index.js"
-    },
-    {
-      "src": "/api/search",
-      "dest": "server/dist/index.js"
-    },
-    {
-      "src": "/api/images/(.*)",
-      "dest": "server/dist/index.js"
-    },
-    {
       "src": "/api/(.*)",
-      "dest": "package.json"
+      "dest": "server/dist/index.js"
     },
     {
       "src": "/(.*)",
-      "dest": "package.json"
+      "dest": "dist/$1"
     }
   ],
   "env": {
