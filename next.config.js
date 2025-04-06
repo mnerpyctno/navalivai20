@@ -18,13 +18,9 @@ const nextConfig = {
   async rewrites() {
     return [
       {
-        source: '/api/moysklad/image/:path*',
-        destination: '/api/moysklad/image/:path*',
-      },
-      {
-        source: '/api/products/:path*',
-        destination: '/api/products/:path*',
-      },
+        source: '/api/:path*',
+        destination: 'https://navalivai20.vercel.app/api/:path*',
+      }
     ];
   },
   async headers() {

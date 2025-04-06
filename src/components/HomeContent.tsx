@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import ProductCard from '@/components/ProductCard';
 import { Product } from '@/types/product';
+import { getApiUrl } from '@/config/env';
 
 interface Category {
   id: string;
@@ -39,7 +40,7 @@ export default function HomeContent() {
   const loadProducts = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products?limit=24&offset=${(page - 1) * 24}`);
+      const response = await fetch(`${getApiUrl()}/api/products?limit=24&offset=${(page - 1) * 24}`);
       if (!response.ok) throw new Error('Failed to load products');
       const data = await response.json();
       
@@ -68,7 +69,7 @@ export default function HomeContent() {
 
   const loadCategories = useCallback(async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/categories`);
+      const response = await fetch(`${getApiUrl()}/api/categories`);
       if (!response.ok) throw new Error('Failed to load categories');
       const data = await response.json();
       
