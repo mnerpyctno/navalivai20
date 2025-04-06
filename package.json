@@ -9,8 +9,7 @@
     "lint": "next lint",
     "watch": "node watch.js",
     "build:server": "cd server && npm run build",
-    "build:all": "concurrently \"npm run build:server\" \"npm run build\"",
-    "vercel-build": "npm run build:all"
+    "vercel-build": "npm run build"
   },
   "dependencies": {
     "@fortawesome/free-solid-svg-icons": "^6.5.2",
