@@ -31,19 +31,5 @@
   },
   "engines": {
     "node": ">=18.0.0"
-  },
-  "vercel": {
-    "builds": [
-      {
-        "src": "package.json",
-        "use": "@vercel/node"
-      }
-    ],
-    "routes": [
-      {
-        "src": "/(.*)",
-        "dest": "dist/index.js"
-      }
-    ]
   }
 }

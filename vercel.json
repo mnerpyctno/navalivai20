@@ -36,7 +36,11 @@
     "NEXT_PUBLIC_CACHE_TTL_CATEGORIES": "86400",
     "NEXT_PUBLIC_CACHE_TTL_STOCK": "300",
     "NEXT_PUBLIC_CACHE_TTL_IMAGES": "86400",
-    "NEXT_PUBLIC_API_URL": "https://navalivai20.vercel.app"
+    "NEXT_PUBLIC_API_URL": "https://navalivai20.vercel.app/api",
+    "NEXT_PUBLIC_WS_URL": "wss://navalivai20.vercel.app/api/ws",
+    "NEXT_PUBLIC_1C_URL": "https://navaliva.1c-bitrix.ru/rest/1/",
+    "NEXT_PUBLIC_1C_USER": "navaliva",
+    "NEXT_PUBLIC_1C_PASSWORD": "navaliva"
   },
   "regions": ["fra1"],
   "buildCommand": "npm run build:all",
