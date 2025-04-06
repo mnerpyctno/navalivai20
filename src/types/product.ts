@@ -37,6 +37,10 @@ export interface Product {
   stock?: number;
 }
 
+export interface CartItem extends Product {
+  quantity: number;
+}
+
 export interface MoySkladProduct {
   id: string;
   name: string;
