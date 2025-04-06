@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "watch": "node watch.js",
-    "build:server": "cd server && npm run build",
+    "build:server": "cd server && npm install && npm run build",
     "build:all": "npm run copy:types && concurrently \"npm run build:server\" \"npm run build\"",
     "copy:types": "mkdir -p server/shared/types && cp -r shared/types/* server/shared/types/",
     "vercel-build": "npm run build:all"

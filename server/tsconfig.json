@@ -11,11 +11,13 @@
     "rootDir": ".",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@/shared/*": ["../shared/*"]
     },
     "moduleResolution": "node",
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "noImplicitAny": false
   },
-  "include": ["./src/**/*.ts"],
+  "include": ["./src/**/*.ts", "../shared/**/*.ts"],
   "exclude": ["node_modules"]
 } 
