@@ -73,11 +73,7 @@ export async function GET(request: Request) {
     const user = await prismaClient.user.findUnique({
       where: { telegramId },
       include: {
-        cart: {
-          include: {
-            items: true
-          }
-        },
+        cart: true,
         orders: true
       }
     });
