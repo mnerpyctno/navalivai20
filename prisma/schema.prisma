@@ -9,6 +9,12 @@ datasource db {
 
 model User {
   id            String    @id @default(cuid())
+  telegramId    String?   @unique
+  firstName     String?
+  lastName      String?
+  username      String?
+  photoUrl      String?
+  authDate      DateTime?
   name          String?
   email         String?   @unique
   emailVerified DateTime?
@@ -16,6 +22,7 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   orders        Order[]
+  cart          Cart?
 }
 
 model Order {
@@ -24,6 +31,15 @@ model Order {
   user      User     @relation(fields: [userId], references: [id])
   items     Json
   status    String   @default("pending")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Cart {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  items     Json     @default("[]")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 } 
