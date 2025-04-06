@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://navalivai20.vercel.app';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://navalivai20.vercel.app/api';
 
 export const api = axios.create({
   baseURL: API_URL,
@@ -11,7 +11,7 @@ export const api = axios.create({
 
 export const getProducts = async (query: string = '', page: number = 1, limit: number = 24) => {
   try {
-    const response = await api.get('/api/products', {
+    const response = await api.get('/products', {
       params: {
         q: query,
         limit,
@@ -27,7 +27,7 @@ export const getProducts = async (query: string = '', page: number = 1, limit: n
 
 export const getProductById = async (id: string) => {
   try {
-    const response = await api.get(`/api/products/${id}`);
+    const response = await api.get(`/products/${id}`);
     return response.data;
   } catch (error) {
     console.error('Error fetching product:', error);
@@ -37,7 +37,7 @@ export const getProductById = async (id: string) => {
 
 export const searchProducts = async (query: string) => {
   try {
-    const response = await api.get('/api/search', {
+    const response = await api.get('/search', {
       params: { q: query }
     });
     return response.data;
@@ -49,7 +49,7 @@ export const searchProducts = async (query: string) => {
 
 export const getCategories = async () => {
   try {
-    const response = await api.get('/api/categories');
+    const response = await api.get('/categories');
     return response.data;
   } catch (error) {
     console.error('Error fetching categories:', error);
@@ -59,7 +59,7 @@ export const getCategories = async () => {
 
 export const getStock = async (productId?: string) => {
   try {
-    const url = productId ? `/api/stock/${productId}` : '/api/stock';
+    const url = productId ? `/stock/${productId}` : '/stock';
     const response = await api.get(url);
     return response.data;
   } catch (error) {
