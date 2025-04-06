@@ -13,7 +13,7 @@
     "paths": {
       "@/*": ["./src/*"],
       "@/types/*": ["./src/types/*"],
-      "@/shared/*": ["../shared/*"]
+      "@/shared/*": ["./src/types/*"]
     },
     "moduleResolution": "node",
     "resolveJsonModule": true,
