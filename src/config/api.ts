@@ -3,7 +3,7 @@ import { env } from './env';
 // Базовые настройки API
 export const API_CONFIG = {
   // Базовый URL API
-  baseUrl: env.API_URL || 'http://localhost:3002/api',
+  baseUrl: env.NEXT_PUBLIC_API_URL || 'https://navalivai20.vercel.app/api',
   
   // Таймауты
   timeout: 30000,
@@ -12,14 +12,6 @@ export const API_CONFIG = {
   defaultHeaders: {
     'Content-Type': 'application/json;charset=utf-8',
     'Accept': 'application/json;charset=utf-8'
-  },
-  
-  // Настройки кэширования
-  cache: {
-    products: env.cacheTtl.products,
-    categories: env.cacheTtl.categories,
-    stock: env.cacheTtl.stock,
-    images: env.cacheTtl.images
   },
   
   // Настройки пагинации
