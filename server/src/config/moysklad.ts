@@ -128,6 +128,29 @@ moySkladClient.interceptors.response.use(
   }
 );
 
+moySkladClient.interceptors.response.use(
+  (response) => {
+    console.log('MoySklad успешный ответ:', {
+      url: response.config.url,
+      status: response.status,
+      data: response.data,
+      timestamp: new Date().toISOString()
+    });
+    return response;
+  },
+  (error) => {
+    console.error('Ошибка MoySklad:', {
+      url: error.config?.url,
+      method: error.config?.method,
+      status: error.response?.status,
+      data: error.response?.data,
+      stack: error.stack,
+      timestamp: new Date().toISOString()
+    });
+    return Promise.reject(error);
+  }
+);
+
 export const moySkladImageClient = axios.create({
   baseURL: '',
   headers: {
