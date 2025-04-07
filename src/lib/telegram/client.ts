@@ -33,16 +33,25 @@ class TelegramClient {
       .map(([key, value]) => `${key}=${value}`)
       .join('\n');
 
-    const secretKey = createHash('sha256')
-      .update(TELEGRAM_CONFIG.botToken)
-      .digest();
+    try {
+      if (!TELEGRAM_CONFIG.botToken) {
+        throw new Error('Telegram bot token is not configured');
+      }
 
-    const expectedHash = createHmac('sha256', secretKey)
-      .update(dataCheckString)
-      .digest('hex');
+      const secretKey = createHash('sha256')
+        .update(TELEGRAM_CONFIG.botToken)
+        .digest();
 
-    return hash === expectedHash;
+      const expectedHash = createHmac('sha256', secretKey)
+        .update(dataCheckString)
+        .digest('hex');
+
+      return hash === expectedHash;
+    } catch (error) {
+      console.error('Error verifying Telegram WebApp data:', error);
+      return false;
+    }
   }
 }
 
-export const telegramClient = TelegramClient.getInstance(); 
+export const telegramClient = TelegramClient.getInstance();
