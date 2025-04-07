@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
-import { TELEGRAM_CONFIG } from './config';
+import { TELEGRAM_CONFIG } from '../../../server/src/config/telegram'; // Обновлен импорт
 import { createHash, createHmac } from 'crypto';
-import { TelegramWebAppData, SendMessageParams } from './config';
+import { TelegramWebAppData, SendMessageParams } from '../../../server/src/config/telegram'; // Обновлен импорт
 
 class TelegramClient {
   private static instance: TelegramClient;

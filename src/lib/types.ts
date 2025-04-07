@@ -58,30 +58,3 @@ export interface MoySkladResponse<T> {
 
 // Импортируем типы из product.ts
 export type { MoySkladProduct } from '@/types/product';
-
-export interface MoySkladCategory {
-  id: string;
-  name: string;
-  code?: string;
-  description?: string;
-  externalCode?: string;
-  meta: {
-    href: string;
-    type: string;
-    mediaType: string;
-  };
-}
-
-export interface MoySkladWebhook {
-  id: string;
-  url: string;
-  action: 'CREATE' | 'UPDATE' | 'DELETE';
-  entityType: string;
-  method: 'POST' | 'GET';
-  enabled: boolean;
-  meta: {
-    href: string;
-    type: string;
-    mediaType: string;
-  };
-}

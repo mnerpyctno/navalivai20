@@ -25,28 +25,6 @@ export const getProducts = async (query: string = '', page: number = 1, limit: n
   }
 };
 
-export const getProductById = async (id: string) => {
-  try {
-    const response = await api.get(`/products/${id}`);
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching product:', error);
-    throw error;
-  }
-};
-
-export const searchProducts = async (query: string) => {
-  try {
-    const response = await api.get('/search', {
-      params: { q: query }
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error searching products:', error);
-    throw error;
-  }
-};
-
 export const getCategories = async () => {
   try {
     const response = await api.get('/categories'); // Убедитесь, что путь совпадает с серверным маршрутом

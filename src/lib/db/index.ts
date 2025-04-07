@@ -1,4 +1,2 @@
 export * from './client';
-export * from './config';
-export * from './repositories/users';
-export * from './repositories/orders'; 
+// Удалены экспорты из удаленных файлов config, repositories/users, repositories/orders

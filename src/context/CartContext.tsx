@@ -1,7 +1,7 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Product, Order, Customer } from '@/lib/types';
+import { createContext, useContext, useState, ReactNode } from 'react';
+import { Product } from '@/types/product'; // Добавлены недостающие импорты
 
 interface CartItem extends Product {
   quantity: number;
@@ -14,7 +14,6 @@ interface CartContextType {
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
   isLoading: boolean;
-  createOrder: (customer: Customer) => Promise<Order>;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -57,37 +56,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems([]);
   };
 
-  const createOrder = async (customer: Customer): Promise<Order> => {
-    try {
-      // Создаем заказ через серверный эндпоинт
-      const orderResponse = await fetch('/api/orders', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          customer,
-          items: items.map(item => ({
-            productId: item.id,
-            quantity: item.quantity,
-            price: item.price,
-          })),
-        }),
-      });
-
-      if (!orderResponse.ok) {
-        throw new Error('Ошибка при создании заказа');
-      }
-
-      const orderData = await orderResponse.json();
-      clearCart();
-      return orderData;
-    } catch (error) {
-      console.error('Ошибка при создании заказа:', error);
-      throw error;
-    }
-  };
-
   return (
     <CartContext.Provider
       value={{
@@ -96,8 +64,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         removeFromCart,
         updateQuantity,
         clearCart,
-        isLoading,
-        createOrder,
+        isLoading
       }}
     >
       {children}

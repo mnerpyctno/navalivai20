@@ -1,6 +1,6 @@
 
-import { TELEGRAM_CONFIG } from './config';
-import { TelegramWebAppData } from './config';
+import { TELEGRAM_CONFIG } from '../../../server/src/config/telegram'; // Обновлен импорт
+import { TelegramWebAppData, SendMessageParams } from '../../../server/src/config/telegram'; // Обновлен импорт
 
 let crypto: typeof import('crypto');
 

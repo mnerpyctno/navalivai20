@@ -8,11 +8,9 @@ import Header from '@/components/Header';
 import Link from 'next/link';
 import ErrorPopup from '@/components/ErrorPopup';
 import ImagePlaceholder from '@/components/ImagePlaceholder';
-import { env } from '@/config/env';
-import { CartItem } from '@/types/cart';
 
 export default function Cart() {
-  const { items: cartItems, updateQuantity, removeFromCart, isLoading, createOrder } = useCart();
+  const { items: cartItems, updateQuantity, removeFromCart, isLoading } = useCart();
   const [error, setError] = useState<string | null>(null);
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
   const [showInfoModal, setShowInfoModal] = useState(false);
@@ -106,23 +104,6 @@ export default function Cart() {
 
   const handleImageLoad = (id: string) => {
     setImageErrors(prev => ({ ...prev, [id]: false }));
-  };
-
-  const handleCheckout = async () => {
-    try {
-      await createOrder({
-        name: 'Новый заказ',  // Добавляем обязательное поле
-        phone: '',            // Добавляем обязательное поле
-        email: '',
-        address: ''
-      });
-    } catch (error) {
-      if (error instanceof Error) {
-        setError(error.message);
-      } else {
-        setError('Произошла ошибка при оформлении заказа');
-      }
-    }
   };
 
   return (
@@ -277,7 +258,9 @@ export default function Cart() {
               </div>
 
               <button
-                onClick={handleCheckout}
+                onClick={() => {
+                  console.log('Оформить заказ');
+                }}
                 className={styles.checkoutButton}
                 disabled={isLoading}
               >
