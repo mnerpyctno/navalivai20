@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
 import { TELEGRAM_CONFIG } from './config';
 import { createHash, createHmac } from 'crypto';
-import { TelegramWebAppData, SendMessageParams, WebAppData } from './config';
+import { TelegramWebAppData, SendMessageParams } from './config';
 
 class TelegramClient {
   private static instance: TelegramClient;
@@ -28,7 +28,7 @@ class TelegramClient {
 
 export const telegramClient = TelegramClient.getInstance();
 
-export const verifyTelegramWebAppData = (data: WebAppData): boolean => {
+export const verifyTelegramWebAppData = (data: TelegramWebAppData): boolean => {
   try {
     if (!TELEGRAM_CONFIG.botToken) {
       throw new Error('Telegram bot token is not configured');
@@ -40,7 +40,7 @@ export const verifyTelegramWebAppData = (data: WebAppData): boolean => {
 
     const dataCheckString = Object.keys(data)
       .filter(key => key !== 'hash')
-      .map(key => `${key}=${data[key]}`)
+      .map((key) => `${key}=${data[key as keyof TelegramWebAppData]}`)
       .sort()
       .join('\n');
 

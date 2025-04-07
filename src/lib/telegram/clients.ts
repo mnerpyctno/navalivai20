@@ -1,5 +1,6 @@
-import type { WebAppData } from '@/types/telegram';
-import { TELEGRAM_CONFIG } from '@/config/telegram';
+
+import { TELEGRAM_CONFIG } from './config';
+import { TelegramWebAppData } from './config';
 
 let crypto: typeof import('crypto');
 
@@ -10,7 +11,7 @@ if (typeof window === 'undefined') {
   console.warn('Crypto operations are only available on the server side');
 }
 
-export const verifyTelegramWebAppData = (data: WebAppData): boolean => {
+export const verifyTelegramWebAppData = (data: TelegramWebAppData): boolean => {
   try {
     if (typeof window !== 'undefined') {
       console.warn('WebApp data verification is only available on the server side');

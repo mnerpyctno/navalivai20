@@ -17,7 +17,12 @@ export interface TelegramUser {
 }
 
 export interface TelegramWebAppData {
-  user?: TelegramUser;
+  user?: {
+    id: number;
+    first_name: string;
+    last_name?: string;
+    username?: string;
+  };
   auth_date: number;
   hash: string;
   query_id?: string;
@@ -28,4 +33,4 @@ export interface SendMessageParams {
   text: string;
   parse_mode?: 'HTML' | 'Markdown' | 'MarkdownV2';
   reply_markup?: any;
-} 
+}
