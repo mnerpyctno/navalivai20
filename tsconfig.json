@@ -19,18 +19,11 @@
       }
     ],
     "paths": {
-<<<<<<< HEAD
       "@/*": ["./src/*"],
       "@/shared/*": ["./shared/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "shared/**/*.ts"],
-=======
-      "@/*": ["./src/*"]
-    }
-  },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
->>>>>>> 403f6ea (Last version)
   "exclude": ["node_modules"],
   "ts-node": {
     "compilerOptions": {
