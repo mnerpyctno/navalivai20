@@ -1,5 +1,9 @@
 import axios, { AxiosInstance } from 'axios';
 import { env } from './env';
+import FormData from 'form-data';
+
+// Устанавливаем FormData в глобальную область
+global.FormData = FormData as unknown as typeof globalThis.FormData;
 
 if (!env.MOYSKLAD_TOKEN) {
   console.error('Ошибка: MOYSKLAD_TOKEN не установлен.');
