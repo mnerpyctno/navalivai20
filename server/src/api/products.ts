@@ -55,24 +55,14 @@ router.get('/', async (req, res) => {
   try {
     const { q = '', limit = 24, offset = 0 } = req.query;
 
-    console.log('Запрос продуктов:', {
-      query: { q, limit, offset },
-      timestamp: new Date().toISOString()
-    });
-
-    const params: any = {
+    const params = {
       filter: `archived=false;name~=${q}`,
       limit: parseInt(limit as string),
       offset: parseInt(offset as string),
-      expand: 'images,salePrices,productFolder'
+      expand: 'images,salePrices,productFolder',
     };
 
     const response = await moySkladClient.get('/entity/product', { params });
-
-    if (!response.data || !response.data.rows) {
-      console.error('Ошибка: Пустой ответ от API МойСклад для продуктов.');
-      return res.status(500).json({ error: 'Ошибка сервера при получении продуктов' });
-    }
 
     const products = response.data.rows.map((product: any) => ({
       id: product.id,
@@ -81,22 +71,12 @@ router.get('/', async (req, res) => {
       price: product.salePrices?.[0]?.value / 100 || 0,
       imageUrl: product.images?.rows?.[0]?.miniature?.href || null,
       categoryId: product.productFolder?.id || '',
-      available: !product.archived
     }));
 
-    res.json({
-      rows: products,
-      meta: response.data.meta
-    });
+    res.json({ rows: products, meta: response.data.meta });
   } catch (error) {
-    const err = error as any; // Приведение типа
-    console.error('Ошибка при получении продуктов:', {
-      message: err instanceof Error ? err.message : 'Unknown error',
-      stack: err instanceof Error ? err.stack : undefined,
-      response: err.response?.data,
-      status: err.response?.status
-    });
-    res.status(500).json({ error: 'Ошибка сервера при получении продуктов' });
+    console.error('Error fetching products:', error);
+    res.status(500).json({ error: 'Failed to fetch products' });
   }
 });
 

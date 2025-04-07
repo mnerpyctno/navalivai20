@@ -1,6 +1,24 @@
+import axios from 'axios';
 import { apiClient } from '../api/client';
 import { MOYSKLAD_CONFIG } from './config';
 import { handleMoySkladError } from './errors';
+
+const MOYSKLAD_API_URL = process.env.MOYSKLAD_API_URL || 'https://api.moysklad.ru/api/remap/1.2';
+const MOYSKLAD_TOKEN = process.env.MOYSKLAD_TOKEN;
+
+if (!MOYSKLAD_TOKEN) {
+  throw new Error('MOYSKLAD_TOKEN is not defined');
+}
+
+export const moySkladClient = axios.create({
+  baseURL: MOYSKLAD_API_URL,
+  headers: {
+    'Authorization': `Bearer ${MOYSKLAD_TOKEN}`,
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
+  },
+  timeout: 30000
+});
 
 class MoySkladClient {
   private static instance: MoySkladClient;
@@ -42,5 +60,3 @@ class MoySkladClient {
     return apiClient.delete<T>(url);
   }
 }
-
-export const moySkladClient = MoySkladClient.getInstance(); 
