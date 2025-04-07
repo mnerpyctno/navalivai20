@@ -133,11 +133,11 @@ export default function SearchPage() {
     if (query) {
       loadProducts(1);
     }
-  }, [query, loadProducts]);
+  }, [query, loadProducts]); // Added loadProducts to dependency array
 
   useEffect(() => {
     loadProducts(1);
-  }, [loadProducts]);
+  }, [loadProducts]); // This is correctly defined now
 
   if (loading) {
     return <LoadingScreen />;
@@ -190,4 +190,4 @@ export default function SearchPage() {
       )}
     </main>
   );
-} 
+}

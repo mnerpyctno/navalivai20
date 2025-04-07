@@ -1,15 +1,5 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/next"
-    },
-    {
-      "src": "server/src/index.ts",
-      "use": "@vercel/node"
-    }
-  ],
   "rewrites": [
     {
       "source": "/api/:path*",
@@ -25,9 +15,7 @@
     "NEXTAUTH_SECRET": "NEXTAUTH_SECRET",
     "TELEGRAM_BOT_TOKEN": "TELEGRAM_BOT_TOKEN",
     "TELEGRAM_BOT_USERNAME": "TELEGRAM_BOT_USERNAME",
-    "TELEGRAM_SECRET_KEY": "TELEGRAM_SECRET_KEY",
-    "NEXT_PUBLIC_WEBAPP_URL": "https://navalivai20.vercel.app",
-    "NODE_ENV": "production"
+    "TELEGRAM_SECRET_KEY": "TELEGRAM_SECRET_KEY"
   },
   "regions": ["fra1"],
   "buildCommand": "npm run build:all",

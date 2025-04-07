@@ -47,7 +47,7 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
 
   const loadProducts = useCallback(async (pageNumber: number) => {
     try {
-      const response = await fetch(`${env.API_URL}/api/products?categoryId=${params.id}&limit=${ITEMS_PER_PAGE}&offset=${(pageNumber - 1) * ITEMS_PER_PAGE}`);
+      const response = await fetch(`${env.NEXT_PUBLIC_API_URL}/api/products?categoryId=${params.id}&limit=${ITEMS_PER_PAGE}&offset=${(pageNumber - 1) * ITEMS_PER_PAGE}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }

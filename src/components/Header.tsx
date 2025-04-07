@@ -29,7 +29,7 @@ export default function Header() {
     if (currentQuery !== searchQuery) {
       setSearchQuery(currentQuery);
     }
-  }, [searchParams]);
+  }, [searchParams, searchQuery]); // Добавлен searchQuery в массив зависимостей
 
   // Обработка изменений поискового запроса
   useEffect(() => {
