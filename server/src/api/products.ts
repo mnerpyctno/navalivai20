@@ -55,6 +55,8 @@ router.get('/', async (req, res) => {
   try {
     const { q = '', limit = 24, offset = 0 } = req.query;
 
+    console.log('Запрос продуктов:', { query: q, limit, offset, timestamp: new Date().toISOString() });
+
     const params = {
       filter: `archived=false;name~=${q}`,
       limit: parseInt(limit as string),
@@ -63,6 +65,11 @@ router.get('/', async (req, res) => {
     };
 
     const response = await moySkladClient.get('/entity/product', { params });
+
+    if (!response.data || !response.data.rows) {
+      console.error('Ошибка: Пустой ответ от API МойСклад для продуктов.');
+      return res.status(500).json({ error: 'Ошибка сервера при получении продуктов' });
+    }
 
     const products = response.data.rows.map((product: any) => ({
       id: product.id,
@@ -75,8 +82,11 @@ router.get('/', async (req, res) => {
 
     res.json({ rows: products, meta: response.data.meta });
   } catch (error) {
-    console.error('Error fetching products:', error);
-    res.status(500).json({ error: 'Failed to fetch products' });
+    console.error('Ошибка при получении продуктов:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+    handleMoySkladError(error, res);
   }
 });
 
