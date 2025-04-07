@@ -23,4 +23,20 @@ export interface Order {
   total: number;
   status: string;
   created: string;
-} 
+}
+
+export interface MoySkladProduct {
+  id: string;
+  name: string;
+  description?: string;
+  price: number;
+  stock: number;
+  available: boolean;
+}
+
+export interface MoySkladCategory {
+  id: string;
+  name: string;
+  description?: string;
+  parentId?: string;
+}
