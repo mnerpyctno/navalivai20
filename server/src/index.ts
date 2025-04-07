@@ -1,18 +1,17 @@
 import express from 'express';
 import cors from 'cors';
 import { env } from './config/env';
-import apiRouter from './api/apiRouter';
 import productsRouter from './api/products';
+import categoriesRouter from './api/categories';
 
 const app = express();
 const port = process.env.PORT || 3002;
 
 // Настройка CORS
 app.use(cors({
-  origin: '*', // Разрешаем все источники
+  origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // Middleware
@@ -33,9 +32,9 @@ app.use((req, res, next) => {
   next();
 });
 
-// Подключаем все API роуты через единый роутер
-app.use('/api', apiRouter);
+// Подключение маршрутов
 app.use('/api/products', productsRouter);
+app.use('/api/categories', categoriesRouter);
 
 // Обработка ошибок
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -43,6 +42,11 @@ app.use((err: Error, req: express.Request, res: express.Response, next: express.
   res.status(500).json({ error: 'Internal Server Error' });
 });
 
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+// Запуск сервера
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(port, () => {
+    console.log(`Сервер запущен на http://localhost:${port}`);
+  });
+}
+
+export default app;

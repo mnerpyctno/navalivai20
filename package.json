@@ -8,8 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "watch": "node watch.js",
-    "build:server": "cd server && npm install && npm run build",
-    "build:all": "npm run copy:types && npm run build:server && npm run build",
+    "build:server": "tsc --project server/tsconfig.json",
+    "start:server": "node server/dist/index.js",
+    "build:all": "npm run build && npm run build:server",
     "copy:types": "mkdir -p server/src/types && cp -r shared/types/* server/src/types/ && cp -r server/src/types/* shared/types/ && cp -r shared/types/* src/types/",
     "vercel-build": "npm run build:all"
   },

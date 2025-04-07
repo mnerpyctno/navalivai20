@@ -5,11 +5,20 @@ import { handleMoySkladError } from '../utils/errorHandler';
 const router = Router();
 
 // Получение списка категорий
-router.get('/', async (req, res) => {
+router.get('/', async (_req, res) => {
   try {
     const response = await moySkladClient.get('/entity/productfolder');
-    res.json(response.data);
+
+    const categories = response.data.rows.map((category: any) => ({
+      id: category.id,
+      name: category.name,
+      description: category.description || '',
+      parentId: category.pathName || null
+    }));
+
+    res.json(categories);
   } catch (error) {
+    console.error('Ошибка при получении категорий:', error);
     handleMoySkladError(error, res);
   }
 });
