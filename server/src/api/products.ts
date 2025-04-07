@@ -80,7 +80,12 @@ router.get('/', async (req, res) => {
 
     res.json({ rows: products, meta: response.data.meta });
   } catch (error) {
-    console.error('Error fetching products:', error);
+    console.error('Error fetching products:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      response: (error as any).response?.data,
+      status: (error as any).response?.status,
+    });
     handleMoySkladError(error, res);
   }
 });

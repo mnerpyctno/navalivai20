@@ -24,7 +24,12 @@ router.get('/', async (_req, res) => {
 
     res.json(categories);
   } catch (error) {
-    console.error('Error fetching categories:', error);
+    console.error('Error fetching categories:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      response: error instanceof Error && 'response' in error ? (error.response as any)?.data : undefined,
+      status: error instanceof Error && 'response' in error ? (error.response as any)?.status : undefined,
+    });
     handleMoySkladError(error, res);
   }
 });

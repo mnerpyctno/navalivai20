@@ -2,11 +2,10 @@ import { Response } from 'express';
 import logger from './logger';
 
 export const handleMoySkladError = (error: any, res: Response) => {
-  logger.error('MoySklad API Error:', {
-    error: error.message,
+  console.error('MoySklad API Error:', {
+    message: error.message,
     response: error.response?.data,
     status: error.response?.status,
-    stack: error.stack
   });
 
   if (error.response) {
