@@ -3,8 +3,12 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Product, Order, Customer } from '@/lib/types';
 
+interface CartItem extends Product {
+  quantity: number;
+}
+
 interface CartContextType {
-  items: (Product & { quantity: number })[];
+  items: CartItem[];
   addToCart: (product: Product) => void;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;

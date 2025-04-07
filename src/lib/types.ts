@@ -8,6 +8,7 @@ export interface Product {
   categoryId: string;
   available: boolean;
   stock: number;
+  imageUrl?: string;  // Добавляем это поле
 }
 
 export interface Category {
