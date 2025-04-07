@@ -9,6 +9,7 @@ interface CartContextType {
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
+  isLoading: boolean;
   createOrder: (customer: Customer) => Promise<Order>;
 }
 
@@ -16,6 +17,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<(Product & { quantity: number })[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const addToCart = (product: Product) => {
     setItems(prev => {
@@ -90,6 +92,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         removeFromCart,
         updateQuantity,
         clearCart,
+        isLoading,
         createOrder,
       }}
     >
@@ -104,4 +107,4 @@ export function useCart() {
     throw new Error('useCart must be used within a CartProvider');
   }
   return context;
-} 
+}
