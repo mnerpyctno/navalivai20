@@ -32,7 +32,7 @@ export interface OrderPosition {
 }
 
 export interface Customer {
-  id: string;
+  id?: string;  // Делаем id опциональным
   name: string;
   phone: string;
   email?: string;

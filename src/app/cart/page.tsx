@@ -111,8 +111,8 @@ export default function Cart() {
   const handleCheckout = async () => {
     try {
       await createOrder({
-        name: '',
-        phone: '',
+        name: 'Новый заказ',  // Добавляем обязательное поле
+        phone: '',            // Добавляем обязательное поле
         email: '',
         address: ''
       });
@@ -309,4 +309,4 @@ export default function Cart() {
       )}
     </>
   );
-} 
+}
