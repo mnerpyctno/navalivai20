@@ -1,11 +1,11 @@
 import { env } from '@/config/env';
 
 export const TELEGRAM_CONFIG = {
-  botToken: env.telegramBotToken,
-  botUsername: env.telegramBotUsername,
-  secretKey: env.telegramSecretKey,
-  webAppUrl: env.webappUrl,
-  webhookUrl: `${env.webappUrl}/api/telegram/webhook`
+  botToken: env.NEXT_PUBLIC_TELEGRAM_BOT_TOKEN,
+  botUsername: env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME,
+  secretKey: env.NEXT_PUBLIC_TELEGRAM_SECRET_KEY,
+  webAppUrl: env.NEXT_PUBLIC_WEBAPP_URL,
+  webhookUrl: `${env.NEXT_PUBLIC_WEBAPP_URL}/api/telegram/webhook`
 } as const;
 
 export interface TelegramUser {

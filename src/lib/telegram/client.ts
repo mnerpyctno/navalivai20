@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
 import { TELEGRAM_CONFIG } from './config';
 import { createHash, createHmac } from 'crypto';
-import { TelegramWebAppData, SendMessageParams } from './config';
+import { TelegramWebAppData, SendMessageParams, WebAppData } from './config';
 
 class TelegramClient {
   private static instance: TelegramClient;
@@ -24,34 +24,33 @@ class TelegramClient {
   public async sendMessage(params: SendMessageParams) {
     return this.client.post('/sendMessage', params);
   }
-
-  public validateWebAppData(data: TelegramWebAppData): boolean {
-    const { hash, ...dataWithoutHash } = data;
-    
-    const dataCheckString = Object.entries(dataWithoutHash)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([key, value]) => `${key}=${value}`)
-      .join('\n');
-
-    try {
-      if (!TELEGRAM_CONFIG.botToken) {
-        throw new Error('Telegram bot token is not configured');
-      }
-
-      const secretKey = createHash('sha256')
-        .update(TELEGRAM_CONFIG.botToken)
-        .digest();
-
-      const expectedHash = createHmac('sha256', secretKey)
-        .update(dataCheckString)
-        .digest('hex');
-
-      return hash === expectedHash;
-    } catch (error) {
-      console.error('Error verifying Telegram WebApp data:', error);
-      return false;
-    }
-  }
 }
 
 export const telegramClient = TelegramClient.getInstance();
+
+export const verifyTelegramWebAppData = (data: WebAppData): boolean => {
+  try {
+    if (!TELEGRAM_CONFIG.botToken) {
+      throw new Error('Telegram bot token is not configured');
+    }
+
+    const secretKey = createHash('sha256')
+      .update(TELEGRAM_CONFIG.botToken)
+      .digest();
+
+    const dataCheckString = Object.keys(data)
+      .filter(key => key !== 'hash')
+      .map(key => `${key}=${data[key]}`)
+      .sort()
+      .join('\n');
+
+    const hash = createHmac('sha256', secretKey)
+      .update(dataCheckString)
+      .digest('hex');
+
+    return hash === data.hash;
+  } catch (error) {
+    console.error('Error verifying Telegram WebApp data:', error);
+    return false;
+  }
+};

@@ -11,6 +11,10 @@ export interface Product {
   imageUrl?: string;  // Добавляем это поле
 }
 
+export interface CartItem extends Product {
+  quantity: number;
+}
+
 export interface Category {
   id: string;
   name: string;
@@ -19,11 +23,11 @@ export interface Category {
 
 export interface Order {
   id: string;
-  customerId: string;
-  positions: OrderPosition[];
-  description?: string;
+  customer: Customer;
+  items: CartItem[];
+  total: number;
   status: string;
-  createdAt: string;
+  createdAt: Date;
 }
 
 export interface OrderPosition {

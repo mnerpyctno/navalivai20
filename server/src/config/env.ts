@@ -25,10 +25,10 @@ for (const envVar of requiredEnvVars) {
 const envSchema = z.object({
   // API Tokens
   MOYSKLAD_TOKEN: z.string().nonempty('MOYSKLAD_TOKEN is required'),
-  MOYSKLAD_API_URL: z.string().url().default('https://api.moysklad.ru/api/remap/1.2'),
+  MOYSKLAD_API_URL: z.string().default('https://api.moysklad.ru/api/remap/1.2'),
   
   // Database
-  databaseUrl: z.string().url().default('postgresql://user:password@localhost:5432/dbname'),
+  databaseUrl: z.string(),
   
   // Supabase
   supabaseUrl: z.string().url().optional(),
