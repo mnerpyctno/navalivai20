@@ -36,6 +36,7 @@ export interface Customer {
   name: string;
   phone: string;
   email?: string;
+  address?: string;
 }
 
 export interface MoySkladResponse<T> {
@@ -78,4 +79,4 @@ export interface MoySkladWebhook {
     type: string;
     mediaType: string;
   };
-} 
+}
