@@ -193,10 +193,29 @@ router.get('/:id', async (req, res) => {
 // Получение категорий
 router.get('/categories', async (req, res) => {
   try {
+    console.log('Запрос категорий:', {
+      timestamp: new Date().toISOString()
+    });
+
     const response = await moySkladClient.get('/entity/productfolder');
-    res.json(response.data);
+
+    const categories = response.data.rows.map((category: any) => ({
+      id: category.id,
+      name: category.name,
+      description: category.description || '',
+      parentId: category.pathName || null
+    }));
+
+    res.json(categories);
   } catch (error) {
-    handleMoySkladError(error, res);
+    const err = error as any; // Приведение типа
+    console.error('Ошибка при получении категорий:', {
+      message: err instanceof Error ? err.message : 'Unknown error',
+      stack: err instanceof Error ? err.stack : undefined,
+      response: err.response?.data,
+      status: err.response?.status
+    });
+    res.status(500).json({ error: 'Ошибка сервера при получении категорий' });
   }
 });
 
