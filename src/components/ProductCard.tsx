@@ -61,7 +61,11 @@ export default function ProductCard({ product, categoryName }: ProductCardProps)
       return;
     }
 
-    addToCart(product, 1);
+    addToCart({ 
+      ...product, 
+      description: product.description || '', 
+      categoryId: product.categoryId || '' // Ensure categoryId is a string
+    }); // Ensure description and categoryId are strings
   };
 
   const existingItem = items.find(item => item.id === product.id);

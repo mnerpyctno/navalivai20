@@ -3,7 +3,7 @@
 import { useCart } from '@/context/CartContext';
 import styles from '@/styles/Cart.module.css';
 import Image from 'next/image';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Link from 'next/link';
 import ErrorPopup from '@/components/ErrorPopup';
@@ -11,15 +11,10 @@ import ImagePlaceholder from '@/components/ImagePlaceholder';
 import { env } from '@/config/env';
 import { CartItem } from '@/types/cart';
 
-// Добавляем интерфейсы
-interface ImageErrors {
-  [key: string]: boolean;
-}
-
 export default function Cart() {
   const { items: cartItems, updateQuantity, removeFromCart, isLoading, createOrder } = useCart();
   const [error, setError] = useState<string | null>(null);
-  const [imageErrors, setImageErrors] = useState<ImageErrors>({});
+  const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [isBonusSectionOpen, setIsBonusSectionOpen] = useState(false);
 
@@ -30,27 +25,22 @@ export default function Cart() {
 
   const totalItemsCount = cartItems.reduce((total, item) => total + item.quantity, 0);
 
-  // Оптимизируем getImageUrl с помощью useCallback
-  const getImageUrl = useCallback((imageUrl: string | null): string | null => {
+  const getImageUrl = (imageUrl: string | null) => {
     if (!imageUrl) return null;
     
-    try {
-      const url = new URL(imageUrl);
-      
-      if (url.hostname.includes('storage.files.mow1.cloud.servers.ru')) {
-        return `/api/images/${encodeURIComponent(imageUrl)}`;
-      }
-      
-      if (url.hostname.includes('api.moysklad.ru')) {
-        return `/api/moysklad/image?url=${encodeURIComponent(imageUrl)}`;
-      }
-      
-      return imageUrl;
-    } catch {
-      console.error('Invalid URL:', imageUrl);
-      return null;
+    // Если URL содержит storage.files.mow1.cloud.servers.ru, используем прокси
+    if (imageUrl.includes('storage.files.mow1.cloud.servers.ru')) {
+      return `/api/images/${encodeURIComponent(imageUrl)}`;
     }
-  }, []);
+    
+    // Если URL содержит api.moysklad.ru, используем прокси МойСклад
+    if (imageUrl.includes('api.moysklad.ru')) {
+      return `/api/moysklad/image?url=${encodeURIComponent(imageUrl)}`;
+    }
+    
+    // Для остальных случаев возвращаем оригинальный URL
+    return imageUrl;
+  };
 
   const totalAmount = cartItems.reduce((total, item) => {
     return total + item.price * item.quantity;
@@ -66,15 +56,19 @@ export default function Cart() {
   const discount = getDiscount(totalItemsCount);
   const finalAmount = totalAmount - discount;
 
-  // Оптимизируем handleQuantityChange
   const handleQuantityChange = async (itemId: string, newQuantity: number) => {
-    if (newQuantity < 1) return;
+    if (newQuantity < 1) {
+      return;
+    }
     
     try {
       await updateQuantity(itemId, newQuantity);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Произошла ошибка при обновлении количества';
-      setError(errorMessage);
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError('Произошла ошибка при обновлении количества');
+      }
     }
   };
 
@@ -101,29 +95,21 @@ export default function Cart() {
     }
   };
 
-  // Оптимизируем handleImageError
-  const handleImageError = useCallback((id: string) => {
+  const handleImageError = (id: string) => {
     console.error('Image loading error for item:', id);
     setImageErrors(prev => ({ ...prev, [id]: true }));
-    
-    const timer = setTimeout(() => {
+    // Попытка перезагрузки изображения через 1 секунду
+    setTimeout(() => {
       setImageErrors(prev => ({ ...prev, [id]: false }));
     }, 1000);
-
-    return () => clearTimeout(timer);
-  }, []);
+  };
 
   const handleImageLoad = (id: string) => {
     setImageErrors(prev => ({ ...prev, [id]: false }));
   };
 
-  // Оптимизируем handleCheckout
   const handleCheckout = async () => {
     try {
-      if (cartItems.length === 0) {
-        throw new Error('Корзина пуста');
-      }
-
       await createOrder({
         name: '',
         phone: '',
@@ -131,8 +117,11 @@ export default function Cart() {
         address: ''
       });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Произошла ошибка при оформлении заказа';
-      setError(errorMessage);
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError('Произошла ошибка при оформлении заказа');
+      }
     }
   };
 
@@ -147,7 +136,7 @@ export default function Cart() {
                 {cartItems.map((item) => (
                   <div key={item.id} className={styles.cartItem}>
                     <div className={styles.imageContainer}>
-                      {item.imageUrl && !imageErrors[item.id] ? (
+                      {!imageErrors[item.id] && item.imageUrl ? (
                         <Image
                           src={getImageUrl(item.imageUrl) || ''}
                           alt={item.name}
@@ -320,4 +309,4 @@ export default function Cart() {
       )}
     </>
   );
-}
+} 
