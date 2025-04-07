@@ -80,11 +80,12 @@ router.get('/', async (req, res) => {
       meta: response.data.meta
     });
   } catch (error) {
+    const err = error as any; // Приведение типа
     console.error('Ошибка при получении продуктов:', {
-      message: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined,
-      response: error.response?.data,
-      status: error.response?.status
+      message: err instanceof Error ? err.message : 'Unknown error',
+      stack: err instanceof Error ? err.stack : undefined,
+      response: err.response?.data,
+      status: err.response?.status
     });
     res.status(500).json({ error: 'Ошибка сервера при получении продуктов' });
   }
