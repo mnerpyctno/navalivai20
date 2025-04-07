@@ -7,8 +7,8 @@
     }
   ],
   "env": {
-    "DATABASE_URL": "@database_url",
-    "MOYSKLAD_TOKEN": "@moysklad_token",
+    "DATABASE_URL": "DATABASE_URL",
+    "MOYSKLAD_TOKEN": "MOYSKLAD_TOKEN",
     "MOYSKLAD_API_URL": "https://api.moysklad.ru/api/remap/1.2",
     "NEXT_PUBLIC_API_URL": "https://navalivai20.vercel.app/api",
     "NEXTAUTH_URL": "https://navalivai20.vercel.app",
