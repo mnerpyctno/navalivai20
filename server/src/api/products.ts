@@ -54,9 +54,7 @@ async function getProductStock(productId: string): Promise<StockInfo> {
 router.get('/', async (req, res) => {
   try {
     const { q = '', limit = 24, offset = 0 } = req.query;
-
-    console.log('Запрос продуктов:', { query: q, limit, offset, timestamp: new Date().toISOString() });
-
+    console.log('Fetching products with query:', { q, limit, offset });
     const params = {
       filter: `archived=false;name~=${q}`,
       limit: parseInt(limit as string),
@@ -82,10 +80,7 @@ router.get('/', async (req, res) => {
 
     res.json({ rows: products, meta: response.data.meta });
   } catch (error) {
-    console.error('Ошибка при получении продуктов:', {
-      message: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined,
-    });
+    console.error('Error fetching products:', error);
     handleMoySkladError(error, res);
   }
 });

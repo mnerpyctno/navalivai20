@@ -7,8 +7,7 @@ const router = Router();
 // Получение списка категорий
 router.get('/', async (_req, res) => {
   try {
-    console.log('Запрос категорий:', { timestamp: new Date().toISOString() });
-
+    console.log('Fetching categories...');
     const response = await moySkladClient.get('/entity/productfolder');
 
     if (!response.data || !response.data.rows) {
@@ -25,10 +24,7 @@ router.get('/', async (_req, res) => {
 
     res.json(categories);
   } catch (error) {
-    console.error('Ошибка при получении категорий:', {
-      message: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined,
-    });
+    console.error('Error fetching categories:', error);
     handleMoySkladError(error, res);
   }
 });
