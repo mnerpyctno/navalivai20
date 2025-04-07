@@ -1,34 +1,30 @@
 import { moySkladClient } from '../client';
 import { MOYSKLAD_CONFIG } from '../config';
 import { MoySkladProduct, MoySkladResponse } from '../types';
-import { AxiosResponse } from 'axios';
 
 export interface GetProductsParams {
   categoryId?: string;
   searchQuery?: string;
   limit?: number;
   offset?: number;
+  filter?: string; // Added the missing filter property
 }
 
 export const productsApi = {
   async getProducts(params: GetProductsParams): Promise<MoySkladResponse<MoySkladProduct>> {
-    const filters = ['archived=false'];
-    
-    if (params.categoryId) {
-      filters.push(`productFolder=${params.categoryId}`);
-    }
-    
-    if (params.searchQuery) {
-      filters.push(`name~=${params.searchQuery}`);
-    }
-
     const queryParams = {
-      ...MOYSKLAD_CONFIG.defaultProductParams,
-      ...params,
-      filter: filters.join(';')
+      filter: params.filter || '',
+      categoryId: params.categoryId,
+      searchQuery: params.searchQuery,
+      limit: params.limit,
+      offset: params.offset,
+      expand: 'images,salePrices,productFolder,images.rows',
+      order: 'name,asc',
     };
 
-    const response = await moySkladClient.get<MoySkladResponse<MoySkladProduct>>('/entity/product', queryParams);
+    const response = await moySkladClient.get<MoySkladResponse<MoySkladProduct>>('/entity/product', {
+      params: queryParams, // Передаем параметры в свойство `params`
+    });
     return response.data;
   },
 
@@ -37,7 +33,9 @@ export const productsApi = {
       ...MOYSKLAD_CONFIG.defaultProductParams
     };
 
-    const response = await moySkladClient.get<MoySkladProduct>(`/entity/product/${id}`, queryParams);
+    const response = await moySkladClient.get<MoySkladProduct>(`/entity/product/${id}`, {
+      params: queryParams, // Передаем параметры в свойство `params`
+    });
     return response.data;
   }
-}; 
+};
