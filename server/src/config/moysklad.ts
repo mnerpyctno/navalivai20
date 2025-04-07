@@ -22,7 +22,7 @@ export const moySkladClient: AxiosInstance = axios.create({
   timeout: 30000 // Увеличиваем таймаут для стабильности
 });
 
-// Добавляем перехватчик для логирования запросов
+// Перехватчик для логирования запросов
 moySkladClient.interceptors.request.use((config) => {
   console.log('MoySklad запрос:', {
     url: config.url,
@@ -35,103 +35,7 @@ moySkladClient.interceptors.request.use((config) => {
   return config;
 });
 
-// Добавляем перехватчик для логирования ответов
-moySkladClient.interceptors.response.use(
-  (response) => {
-    console.log('MoySklad ответ:', {
-      url: response.config.url,
-      status: response.status,
-      data: response.data,
-      timestamp: new Date().toISOString()
-    });
-    return response;
-  },
-  (error) => {
-    console.error('Ошибка MoySklad:', {
-      url: error.config?.url,
-      method: error.config?.method,
-      status: error.response?.status,
-      data: error.response?.data,
-      timestamp: new Date().toISOString()
-    });
-    return Promise.reject(error);
-  }
-);
-
-// Добавляем перехватчик для логирования запросов
-moySkladClient.interceptors.request.use((config) => {
-  console.log('MoySklad request details:', {
-    url: config.url,
-    method: config.method,
-    params: config.params,
-    headers: config.headers,
-    baseURL: config.baseURL,
-    timestamp: new Date().toISOString()
-  });
-  return config;
-});
-
-// Добавляем перехватчик для логирования ответов
-moySkladClient.interceptors.response.use(
-  (response) => {
-    // Проверяем, что это запрос продуктов и находим нужный продукт
-    if (response.config.url?.includes('/entity/product') && !response.config.url.includes('/images')) {
-      const targetProduct = response.data.rows?.find((row: any) => row.id === '43916c6f-0ce2-11f0-0a80-0c4900510119');
-      
-      if (targetProduct) {
-        console.log('🔍 Target product API response:', {
-          url: response.config.url,
-          method: response.config.method,
-          status: response.status,
-          statusText: response.statusText,
-          product: {
-            id: targetProduct.id,
-            name: targetProduct.name,
-            images: {
-              meta: targetProduct.images?.meta,
-              rows: targetProduct.images?.rows?.map((img: any) => ({
-                id: img.id,
-                title: img.title,
-                filename: img.filename,
-                miniature: img.miniature,
-                tiny: img.tiny,
-                meta: img.meta
-              }))
-            }
-          },
-          timestamp: new Date().toISOString()
-        });
-      }
-    }
-    return response;
-  },
-  (error) => {
-    console.error('MoySklad error details:', {
-      url: error.config?.url,
-      method: error.config?.method,
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      data: error.response?.data,
-      timestamp: new Date().toISOString()
-    });
-    return Promise.reject(error);
-  }
-);
-
-// Добавляем перехватчик для логирования ошибок
-moySkladClient.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    console.error('Ошибка при запросе к МойСклад API:', {
-      url: error.config?.url,
-      method: error.config?.method,
-      data: error.response?.data,
-      status: error.response?.status
-    });
-    return Promise.reject(error);
-  }
-);
-
+// Перехватчик для логирования ответов
 moySkladClient.interceptors.response.use(
   (response) => {
     console.log('MoySklad успешный ответ:', {
