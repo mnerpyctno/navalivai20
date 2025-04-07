@@ -47,7 +47,7 @@ export default function Header() {
           isNavigating.current = true;
           const newPath = `/search?q=${encodeURIComponent(trimmedQuery)}`;
           if (pathname !== '/search' || searchParams.get('q') !== trimmedQuery) {
-            router.push(newPath, { scroll: false });
+            router.push(newPath);
           }
           setIsSearching(false);
           isNavigating.current = false;
@@ -58,7 +58,7 @@ export default function Header() {
       searchTimeoutRef.current = setTimeout(() => {
         if (!isNavigating.current) {
           isNavigating.current = true;
-          router.push('/', { scroll: false });
+          router.push('/');
           isNavigating.current = false;
         }
       }, 1000);
@@ -87,7 +87,7 @@ export default function Header() {
           isNavigating.current = true;
           const newPath = `/search?q=${encodeURIComponent(trimmedQuery)}`;
           if (pathname !== '/search' || searchParams.get('q') !== trimmedQuery) {
-            router.push(newPath, { scroll: false });
+            router.push(newPath);
           }
           setIsSearching(false);
           isNavigating.current = false;
@@ -110,7 +110,7 @@ export default function Header() {
       searchTimeoutRef.current = setTimeout(() => {
         if (!isNavigating.current) {
           isNavigating.current = true;
-          router.push('/', { scroll: false });
+          router.push('/');
           isNavigating.current = false;
         }
       }, 1000);
@@ -120,11 +120,7 @@ export default function Header() {
   const handleBack = () => {
     if (!isNavigating.current) {
       isNavigating.current = true;
-<<<<<<< HEAD
       router.push('/');
-=======
-      router.back();
->>>>>>> 403f6ea (Last version)
       isNavigating.current = false;
     }
   };
@@ -182,4 +178,4 @@ export default function Header() {
       </div>
     </header>
   );
-} 
+}
