@@ -20,6 +20,42 @@ export const moySkladClient: AxiosInstance = axios.create({
 
 // Добавляем перехватчик для логирования запросов
 moySkladClient.interceptors.request.use((config) => {
+  console.log('MoySklad request:', {
+    url: config.url,
+    method: config.method,
+    params: config.params,
+    headers: config.headers,
+    baseURL: config.baseURL,
+    timestamp: new Date().toISOString()
+  });
+  return config;
+});
+
+// Добавляем перехватчик для логирования ответов
+moySkladClient.interceptors.response.use(
+  (response) => {
+    console.log('MoySklad response:', {
+      url: response.config.url,
+      status: response.status,
+      data: response.data,
+      timestamp: new Date().toISOString()
+    });
+    return response;
+  },
+  (error) => {
+    console.error('MoySklad error:', {
+      url: error.config?.url,
+      method: error.config?.method,
+      status: error.response?.status,
+      data: error.response?.data,
+      timestamp: new Date().toISOString()
+    });
+    return Promise.reject(error);
+  }
+);
+
+// Добавляем перехватчик для логирования запросов
+moySkladClient.interceptors.request.use((config) => {
   console.log('MoySklad request details:', {
     url: config.url,
     method: config.method,

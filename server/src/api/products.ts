@@ -80,8 +80,13 @@ router.get('/', async (req, res) => {
       meta: response.data.meta
     });
   } catch (error) {
-    console.error('Ошибка при получении продуктов:', error);
-    handleMoySkladError(error, res);
+    console.error('Ошибка при получении продуктов:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      response: error.response?.data,
+      status: error.response?.status
+    });
+    res.status(500).json({ error: 'Ошибка сервера при получении продуктов' });
   }
 });
 
