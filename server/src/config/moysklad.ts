@@ -1,8 +1,13 @@
 import axios, { AxiosInstance } from 'axios';
 import { env } from './env';
 
+if (!env.MOYSKLAD_TOKEN) {
+  console.error('Ошибка: MOYSKLAD_TOKEN не установлен.');
+  throw new Error('MOYSKLAD_TOKEN отсутствует в переменных окружения.');
+}
+
 export const moySkladClient: AxiosInstance = axios.create({
-  baseURL: 'https://api.moysklad.ru/api/remap/1.2',
+  baseURL: env.MOYSKLAD_API_URL || 'https://api.moysklad.ru/api/remap/1.2',
   headers: {
     'Authorization': `Bearer ${env.MOYSKLAD_TOKEN}`,
     'Content-Type': 'application/json;charset=utf-8',
@@ -10,7 +15,7 @@ export const moySkladClient: AxiosInstance = axios.create({
     'Cache-Control': 'no-cache',
     'Pragma': 'no-cache'
   },
-  timeout: 30000
+  timeout: 30000 // Увеличиваем таймаут для стабильности
 });
 
 // Добавляем перехватчик для логирования запросов
@@ -73,6 +78,20 @@ moySkladClient.interceptors.response.use(
   }
 );
 
+// Добавляем перехватчик для логирования ошибок
+moySkladClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error('Ошибка при запросе к МойСклад API:', {
+      url: error.config?.url,
+      method: error.config?.method,
+      data: error.response?.data,
+      status: error.response?.status
+    });
+    return Promise.reject(error);
+  }
+);
+
 export const moySkladImageClient = axios.create({
   baseURL: '',
   headers: {
@@ -114,4 +133,4 @@ moySkladImageClient.interceptors.response.use(
     });
     return Promise.reject(error);
   }
-); 
+);

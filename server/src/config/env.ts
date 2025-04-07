@@ -25,6 +25,7 @@ for (const envVar of requiredEnvVars) {
 const envSchema = z.object({
   // API Tokens
   MOYSKLAD_TOKEN: z.string(),
+  MOYSKLAD_API_URL: z.string().url().default('https://api.moysklad.ru/api/remap/1.2'),
   
   // Database
   databaseUrl: z.string().url().optional(),
@@ -61,6 +62,7 @@ const envSchema = z.object({
 // Парсим переменные окружения
 export const env = envSchema.parse({
   MOYSKLAD_TOKEN: process.env.MOYSKLAD_TOKEN,
+  MOYSKLAD_API_URL: process.env.MOYSKLAD_API_URL,
   CLIENT_URL: process.env.CORS_ORIGIN || 'http://localhost:3000',
   API_URL: process.env.API_URL || 'http://localhost:3002',
   SERVER_URL: process.env.SERVER_URL || 'http://localhost:3002',
@@ -78,4 +80,4 @@ export const env = envSchema.parse({
     stock: Number(process.env.CACHE_TTL_STOCK) || 300,
     images: Number(process.env.CACHE_TTL_IMAGES) || 86400
   }
-}); 
+});
