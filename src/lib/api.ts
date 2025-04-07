@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import axios from 'axios';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://navalivai20.vercel.app/api';
@@ -68,24 +67,3 @@ export const getStock = async (productId?: string) => {
     throw error;
   }
 };
-=======
-  async getProductById(id: string): Promise<MoySkladProduct> {
-    const response = await moySkladApi.get('', {
-      params: {
-        method: 'get',
-        url: `/entity/product/${id}`
-      }
-    });
-    return response.data;
-  }
-
-  async getCategories(): Promise<MoySkladResponse<MoySkladCategory>> {
-    const response = await moySkladApi.get('', {
-      params: {
-        method: 'get',
-        url: '/entity/productfolder'
-      }
-    });
-    return response.data;
-  } 
->>>>>>> 403f6ea (Last version)

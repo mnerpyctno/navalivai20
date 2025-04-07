@@ -3,11 +3,7 @@ import { env } from './env';
 // Базовые настройки API
 export const API_CONFIG = {
   // Базовый URL API
-<<<<<<< HEAD
   baseUrl: env.API_URL || 'http://localhost:3002/api',
-=======
-  baseUrl: env.API_URL || 'http://localhost:3002',
->>>>>>> 403f6ea (Last version)
   
   // Таймауты
   timeout: 30000,
@@ -70,8 +66,4 @@ export interface ApiResponse<T> {
     offset: number;
   };
   rows: T[];
-<<<<<<< HEAD
 }
-=======
-} 
->>>>>>> 403f6ea (Last version)

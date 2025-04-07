@@ -6,11 +6,7 @@ export const ordersRepository = {
     return prisma.order.findUnique({
       where: { id },
       include: {
-<<<<<<< HEAD
         orderItems: true
-=======
-        items: true
->>>>>>> 403f6ea (Last version)
       }
     });
   },
@@ -19,11 +15,7 @@ export const ordersRepository = {
     return prisma.order.findMany({
       where: { userId },
       include: {
-<<<<<<< HEAD
         orderItems: true
-=======
-        items: true
->>>>>>> 403f6ea (Last version)
       },
       orderBy: {
         createdAt: 'desc'
@@ -35,11 +27,7 @@ export const ordersRepository = {
     return prisma.order.create({
       data,
       include: {
-<<<<<<< HEAD
         orderItems: true
-=======
-        items: true
->>>>>>> 403f6ea (Last version)
       }
     });
   },

@@ -1,3 +1,5 @@
+export {};
+
 interface TelegramWebApp {
   ready: () => void;
   close: () => void;
