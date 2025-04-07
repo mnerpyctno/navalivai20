@@ -6,16 +6,6 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-<<<<<<< HEAD
-        hostname: 'online.moysklad.ru',
-        pathname: '/static/**',
-      },
-    ],
-    formats: ['image/avif', 'image/webp'],
-    minimumCacheTTL: 60,
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-=======
         hostname: 'miniature-prod.moysklad.ru',
         pathname: '/miniature/**',
       },
@@ -75,7 +65,6 @@ const nextConfig = {
         destination: 'http://localhost:3002/api/search/:path*',
       }
     ];
->>>>>>> 403f6ea (Last version)
   },
   async headers() {
     return [
@@ -84,42 +73,6 @@ const nextConfig = {
         headers: [
           {
             key: 'Content-Security-Policy',
-<<<<<<< HEAD
-            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://telegram.org; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https:;",
-          },
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
-          },
-          {
-            key: 'X-Frame-Options',
-            value: 'DENY',
-          },
-          {
-            key: 'X-XSS-Protection',
-            value: '1; mode=block',
-          },
-          {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin',
-          },
-          {
-            key: 'Access-Control-Allow-Origin',
-            value: '*',
-          },
-        ],
-      },
-    ];
-  },
-  experimental: {
-    optimizeCss: true,
-    optimizePackageImports: ['@prisma/client'],
-  },
-  webpack: (config, { isServer }) => {
-    if (isServer) {
-      config.externals.push('@prisma/client');
-    }
-=======
             value: "default-src 'self'; connect-src 'self' http://localhost:3000 http://localhost:3002 https://api.moysklad.ru https://telegram.org https://*.telegram.org; img-src 'self' https://miniature-prod.moysklad.ru https://api.moysklad.ru https://storage.files.mow1.cloud.servers.ru:8080 https://tinyimage-prod.moysklad.ru data:; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://telegram.org https://*.telegram.org; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;"
           },
           {
@@ -136,7 +89,7 @@ const nextConfig = {
           }
         ]
       }
-    ]
+    ];
   },
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
@@ -184,9 +137,8 @@ const nextConfig = {
     config.infrastructureLogging = {
       level: 'verbose',
     };
->>>>>>> 403f6ea (Last version)
     return config;
   },
 };
 
-module.exports = nextConfig; 
+module.exports = nextConfig;
