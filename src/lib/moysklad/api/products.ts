@@ -1,5 +1,5 @@
 import { moySkladClient } from '../client';
-import { MOYSKLAD_CONFIG } from '../config';
+import { MOYSKLAD_CONFIG } from '../../../server/src/config/moysklad';
 import { MoySkladProduct, MoySkladResponse } from '../types';
 
 export interface GetProductsParams {
