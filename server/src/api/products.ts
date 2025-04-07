@@ -2,7 +2,6 @@ import { Router } from 'express';
 import { moySkladClient } from '../config/moysklad';
 import { handleMoySkladError } from '../utils/errorHandler';
 import { Product, MoySkladProduct, StockInfo } from '../types/product';
-import { env } from '../config/env';
 
 const router = Router();
 
@@ -177,15 +176,24 @@ router.get('/:id', async (req, res) => {
     // Получаем остатки для продукта
     const stockData = await getProductStock(id);
 
-    const result = {
+    const result: {
+      id: string;
+      name: string;
+      description: string;
+      price: number;
+      imageUrl: string | null;
+      categoryId: string;
+      categoryName: string;
+    } = {
       id: product.id,
       name: product.name,
       description: product.description || '',
       price: price,
       imageUrl: finalImageUrl,
       categoryId: product.productFolder?.id || '',
-      categoryName: product.productFolder?.name || '',
-    
+      categoryName: product.productFolder?.name || ''
+    };
+
     console.log('🎯 Modal window product data:', {
       productId: product.id,
       productName: product.name,

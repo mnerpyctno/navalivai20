@@ -59,29 +59,40 @@ const envSchema = z.object({
   SERVER_URL: z.string().default('https://navalivai20.vercel.app/api')
 });
 
+let env: ReturnType<typeof envSchema.parse> & {
+  MOYSKLAD_LOGIN: string;
+  MOYSKLAD_PASSWORD: string;
+  PORT: number | string;
+};
+
 try {
-  export const env = envSchema.parse({
-    MOYSKLAD_TOKEN: process.env.MOYSKLAD_TOKEN,
-    MOYSKLAD_API_URL: process.env.MOYSKLAD_API_URL,
-    CLIENT_URL: process.env.CORS_ORIGIN || 'https://navalivai20.vercel.app',
-    CORS_ORIGIN: process.env.CORS_ORIGIN || 'https://navalivai20.vercel.app',
-    API_URL: process.env.API_URL || 'https://navalivai20.vercel.app/api',
-    SERVER_URL: process.env.SERVER_URL || 'https://navalivai20.vercel.app/api',
-    databaseUrl: process.env.DATABASE_URL,
-    supabaseUrl: process.env.SUPABASE_URL,
-    supabaseKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
-    supabaseServiceKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
-    TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN,
-    TELEGRAM_BOT_USERNAME: process.env.TELEGRAM_BOT_USERNAME,
-    TELEGRAM_SECRET_KEY: process.env.TELEGRAM_SECRET_KEY,
-    NEXT_PUBLIC_WEBAPP_URL: process.env.NEXT_PUBLIC_WEBAPP_URL,
-    cacheTtl: {
-      products: Number(process.env.CACHE_TTL_PRODUCTS) || 3600,
-      categories: Number(process.env.CACHE_TTL_CATEGORIES) || 86400,
-      stock: Number(process.env.CACHE_TTL_STOCK) || 300,
-      images: Number(process.env.CACHE_TTL_IMAGES) || 86400
-    }
-  });
+  env = {
+    ...envSchema.parse({
+      MOYSKLAD_TOKEN: process.env.MOYSKLAD_TOKEN,
+      MOYSKLAD_API_URL: process.env.MOYSKLAD_API_URL,
+      CLIENT_URL: process.env.CORS_ORIGIN || 'https://navalivai20.vercel.app',
+      CORS_ORIGIN: process.env.CORS_ORIGIN || 'https://navalivai20.vercel.app',
+      API_URL: process.env.API_URL || 'https://navalivai20.vercel.app/api',
+      SERVER_URL: process.env.SERVER_URL || 'https://navalivai20.vercel.app/api',
+      databaseUrl: process.env.DATABASE_URL,
+      supabaseUrl: process.env.SUPABASE_URL,
+      supabaseKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+      supabaseServiceKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+      TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN,
+      TELEGRAM_BOT_USERNAME: process.env.TELEGRAM_BOT_USERNAME,
+      TELEGRAM_SECRET_KEY: process.env.TELEGRAM_SECRET_KEY,
+      NEXT_PUBLIC_WEBAPP_URL: process.env.NEXT_PUBLIC_WEBAPP_URL,
+      cacheTtl: {
+        products: Number(process.env.CACHE_TTL_PRODUCTS) || 3600,
+        categories: Number(process.env.CACHE_TTL_CATEGORIES) || 86400,
+        stock: Number(process.env.CACHE_TTL_STOCK) || 300,
+        images: Number(process.env.CACHE_TTL_IMAGES) || 86400
+      }
+    }),
+    MOYSKLAD_LOGIN: process.env.MOYSKLAD_LOGIN || '',
+    MOYSKLAD_PASSWORD: process.env.MOYSKLAD_PASSWORD || '',
+    PORT: process.env.PORT || 3000
+  };
 } catch (error) {
   if (error instanceof z.ZodError) {
     console.error('Ошибка валидации переменных окружения:', error.errors);
@@ -90,3 +101,5 @@ try {
     throw error;
   }
 }
+
+export { env };
