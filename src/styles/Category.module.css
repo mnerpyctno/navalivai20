@@ -1,4 +1,5 @@
 .main {
+<<<<<<< HEAD
   min-height: 100vh;
   padding: 0;
   margin: 0;
@@ -25,13 +26,55 @@
   color: #333;
   margin: 0;
   padding: 0;
+=======
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+  margin-right: 12px;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+>>>>>>> 403f6ea (Last version)
 }
 
 .productsGrid {
   display: grid;
+<<<<<<< HEAD
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 20px;
   padding: 20px 0;
+=======
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+>>>>>>> 403f6ea (Last version)
 }
 
 .productCard {
@@ -108,6 +151,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+<<<<<<< HEAD
   padding: 40px;
   text-align: center;
   margin-top: var(--header-height);
@@ -121,6 +165,19 @@
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 10px;
+=======
+  min-height: 60vh;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border-color);
+  border-top: 3px solid var(--button-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 12px;
+>>>>>>> 403f6ea (Last version)
 }
 
 @keyframes spin {
@@ -128,11 +185,16 @@
   100% { transform: rotate(360deg); }
 }
 
+<<<<<<< HEAD
 .emptyState {
+=======
+.empty {
+>>>>>>> 403f6ea (Last version)
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+<<<<<<< HEAD
   padding: 40px;
   text-align: center;
   color: #666;
@@ -231,4 +293,9 @@
   .emptyState p, .noResults p {
     font-size: 14px;
   }
+=======
+  min-height: 60vh;
+  text-align: center;
+  color: var(--text-secondary);
+>>>>>>> 403f6ea (Last version)
 } 

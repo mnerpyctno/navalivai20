@@ -237,6 +237,7 @@
 }
 
 .stockInfo {
+<<<<<<< HEAD
   display: flex;
   align-items: center;
   gap: 8px;
@@ -246,10 +247,24 @@
 
 .stockAvailable {
   color: #4CAF50;
+=======
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+.stockLoading {
+  color: #666;
+  font-style: italic;
+}
+
+.stockAvailable {
+  color: #2ecc71;
+>>>>>>> 403f6ea (Last version)
   font-weight: 500;
 }
 
 .stockUnavailable {
+<<<<<<< HEAD
   color: #f44336;
   font-weight: 500;
 }
@@ -274,6 +289,12 @@
   background-color: #bdbdbd;
 }
 
+=======
+  color: #FF3B30;
+  font-weight: 500;
+}
+
+>>>>>>> 403f6ea (Last version)
 .loading {
   position: absolute;
   top: 50%;

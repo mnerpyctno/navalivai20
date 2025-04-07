@@ -2,11 +2,15 @@ import { z } from 'zod';
 
 // Проверяем наличие обязательных переменных окружения
 const requiredEnvVars = [
+<<<<<<< HEAD
   'NEXT_PUBLIC_API_URL',
   'NEXT_PUBLIC_TELEGRAM_BOT_TOKEN',
   'NEXT_PUBLIC_TELEGRAM_BOT_USERNAME',
   'NEXT_PUBLIC_TELEGRAM_SECRET_KEY',
   'NEXT_PUBLIC_WEBAPP_URL'
+=======
+  'NEXT_PUBLIC_API_URL'
+>>>>>>> 403f6ea (Last version)
 ] as const;
 
 // Логируем значения переменных окружения только на сервере
@@ -26,7 +30,11 @@ for (const envVar of requiredEnvVars) {
 
 const envSchema = z.object({
   // API URL
+<<<<<<< HEAD
   API_URL: z.string().default('https://navalivai20.vercel.app'),
+=======
+  API_URL: z.string().default('http://localhost:3002'),
+>>>>>>> 403f6ea (Last version)
   
   // Database
   databaseUrl: z.string().url().optional(),
@@ -38,9 +46,12 @@ const envSchema = z.object({
   
   // Telegram
   telegramBotToken: z.string().optional(),
+<<<<<<< HEAD
   telegramBotUsername: z.string().optional(),
   telegramSecretKey: z.string().optional(),
   webappUrl: z.string().optional(),
+=======
+>>>>>>> 403f6ea (Last version)
   
   // Cache TTL
   cacheTtl: z.object({
@@ -58,10 +69,14 @@ export const env = envSchema.parse({
   supabaseUrl: process.env.SUPABASE_URL,
   supabaseKey: process.env.SUPABASE_KEY,
   supabaseServiceKey: process.env.SUPABASE_SERVICE_KEY,
+<<<<<<< HEAD
   telegramBotToken: process.env.NEXT_PUBLIC_TELEGRAM_BOT_TOKEN,
   telegramBotUsername: process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME,
   telegramSecretKey: process.env.NEXT_PUBLIC_TELEGRAM_SECRET_KEY,
   webappUrl: process.env.NEXT_PUBLIC_WEBAPP_URL,
+=======
+  telegramBotToken: process.env.TELEGRAM_BOT_TOKEN,
+>>>>>>> 403f6ea (Last version)
   cacheTtl: {
     products: Number(process.env.NEXT_PUBLIC_CACHE_TTL_PRODUCTS) || 0,
     categories: Number(process.env.NEXT_PUBLIC_CACHE_TTL_CATEGORIES) || 0,
@@ -75,5 +90,9 @@ export const isBrowser = typeof window !== 'undefined';
 
 // Получаем базовый URL для API
 export const getApiUrl = () => {
+<<<<<<< HEAD
   return process.env.NEXT_PUBLIC_API_URL || 'https://navalivai20.vercel.app';
+=======
+  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
+>>>>>>> 403f6ea (Last version)
 }; 

@@ -4,7 +4,10 @@ import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
 import { Product } from '@/types/product';
+<<<<<<< HEAD
 import { CartItem } from '@/types/cart';
+=======
+>>>>>>> 403f6ea (Last version)
 import styles from './ProductCard.module.css';
 import ImagePlaceholder from './ImagePlaceholder';
 import Link from 'next/link';
@@ -14,11 +17,19 @@ interface ProductCardProps {
   categoryName?: string;
 }
 
+<<<<<<< HEAD
+=======
+interface CartProduct extends Product {
+  quantity: number;
+}
+
+>>>>>>> 403f6ea (Last version)
 export default function ProductCard({ product, categoryName }: ProductCardProps) {
   const { addToCart, items } = useCart();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+<<<<<<< HEAD
   const [stockInfo, setStockInfo] = useState<{ stock: number; available: boolean } | null>(null);
 
   useEffect(() => {
@@ -29,6 +40,8 @@ export default function ProductCard({ product, categoryName }: ProductCardProps)
       });
     }
   }, [product.stock, product.available]);
+=======
+>>>>>>> 403f6ea (Last version)
 
   const handleImageError = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
     const target = e.target as HTMLImageElement;
@@ -57,6 +70,7 @@ export default function ProductCard({ product, categoryName }: ProductCardProps)
   }, [product.imageUrl]);
 
   const handleAddToCart = () => {
+<<<<<<< HEAD
     if (!stockInfo?.available) {
       return;
     }
@@ -66,6 +80,22 @@ export default function ProductCard({ product, categoryName }: ProductCardProps)
 
   const existingItem = items.find(item => item.id === product.id);
   const isAvailableForCart = stockInfo?.available && (!existingItem || existingItem.quantity < stockInfo.stock);
+=======
+    if (!product.available) {
+      return;
+    }
+
+    const cartProduct: CartProduct = {
+      ...product,
+      quantity: 1
+    };
+
+    addToCart(cartProduct);
+  };
+
+  const existingItem = items.find(item => item.id === product.id);
+  const isAvailableForCart = product.available && (!existingItem || existingItem.quantity < 1);
+>>>>>>> 403f6ea (Last version)
 
   const renderImage = () => {
     const imageUrl = getImageUrl();
@@ -145,7 +175,11 @@ export default function ProductCard({ product, categoryName }: ProductCardProps)
             onClick={handleAddToCart}
             disabled={!isAvailableForCart}
           >
+<<<<<<< HEAD
             {isAvailableForCart ? 'В корзину' : 'Сделать заказ'}
+=======
+            {isAvailableForCart ? 'В корзину' : 'Нет в наличии'}
+>>>>>>> 403f6ea (Last version)
           </button>
         </div>
       </div>
@@ -178,6 +212,7 @@ export default function ProductCard({ product, categoryName }: ProductCardProps)
                 </div>
                 
                 <div className={styles.stockInfo}>
+<<<<<<< HEAD
                   {stockInfo ? (
                     stockInfo.available ? (
                       <>
@@ -189,6 +224,12 @@ export default function ProductCard({ product, categoryName }: ProductCardProps)
                     )
                   ) : (
                     <span className={styles.stockLoading}>Проверка наличия...</span>
+=======
+                  {product.available ? (
+                    <span className={styles.stockAvailable}>В наличии</span>
+                  ) : (
+                    <span className={styles.stockUnavailable}>Нет в наличии</span>
+>>>>>>> 403f6ea (Last version)
                   )}
                 </div>
               </div>
@@ -198,7 +239,11 @@ export default function ProductCard({ product, categoryName }: ProductCardProps)
                 onClick={handleAddToCart}
                 disabled={!isAvailableForCart}
               >
+<<<<<<< HEAD
                 {isAvailableForCart ? 'Добавить в корзину' : 'Сделать заказ'}
+=======
+                {isAvailableForCart ? 'Добавить в корзину' : 'Нет в наличии'}
+>>>>>>> 403f6ea (Last version)
               </button>
             </div>
           </div>

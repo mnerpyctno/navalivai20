@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 export const TELEGRAM_BOT_TOKEN = process.env.NEXT_PUBLIC_TELEGRAM_BOT_TOKEN || '';
 export const TELEGRAM_BOT_USERNAME = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME || '';
 export const TELEGRAM_SECRET_KEY = process.env.NEXT_PUBLIC_TELEGRAM_SECRET_KEY || '';
@@ -18,3 +19,11 @@ if (typeof window !== 'undefined') {
     console.error('Missing NEXT_PUBLIC_WEBAPP_URL');
   }
 } 
+=======
+export const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
+export const TELEGRAM_BOT_USERNAME = process.env.TELEGRAM_BOT_USERNAME || '';
+export const WEBAPP_URL = process.env.NEXT_PUBLIC_WEBAPP_URL || '';
+
+// Секретный ключ для проверки данных от Telegram
+export const TELEGRAM_SECRET_KEY = process.env.TELEGRAM_SECRET_KEY || ''; 
+>>>>>>> 403f6ea (Last version)

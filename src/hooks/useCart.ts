@@ -20,7 +20,10 @@ interface Product {
 
 export function useCart() {
   const [items, setItems] = useState<CartItem[]>([]);
+<<<<<<< HEAD
   const [isLoading, setIsLoading] = useState(false);
+=======
+>>>>>>> 403f6ea (Last version)
 
   useEffect(() => {
     const savedCart = localStorage.getItem('cart');
@@ -33,7 +36,11 @@ export function useCart() {
     localStorage.setItem('cart', JSON.stringify(items));
   }, [items]);
 
+<<<<<<< HEAD
   const addToCart = async (product: Product) => {
+=======
+  const addToCart = (product: Product) => {
+>>>>>>> 403f6ea (Last version)
     setItems(currentItems => {
       const existingItem = currentItems.find(item => item.id === product.id);
       if (existingItem) {
@@ -45,6 +52,7 @@ export function useCart() {
       }
       return [...currentItems, { ...product, quantity: 1 }];
     });
+<<<<<<< HEAD
 
     // Проверяем наличие товара на сервере
     try {
@@ -71,13 +79,19 @@ export function useCart() {
     } catch (error) {
       console.error('Error checking product availability:', error);
     }
+=======
+>>>>>>> 403f6ea (Last version)
   };
 
   const removeFromCart = (productId: string) => {
     setItems(currentItems => currentItems.filter(item => item.id !== productId));
   };
 
+<<<<<<< HEAD
   const updateQuantity = async (productId: string, quantity: number) => {
+=======
+  const updateQuantity = (productId: string, quantity: number) => {
+>>>>>>> 403f6ea (Last version)
     if (quantity < 1) return;
     
     setItems(currentItems =>
@@ -85,6 +99,7 @@ export function useCart() {
         item.id === productId ? { ...item, quantity } : item
       )
     );
+<<<<<<< HEAD
 
     // Проверяем наличие товара на сервере
     try {
@@ -111,6 +126,8 @@ export function useCart() {
     } catch (error) {
       console.error('Error checking product availability:', error);
     }
+=======
+>>>>>>> 403f6ea (Last version)
   };
 
   const clearCart = () => {
@@ -128,7 +145,11 @@ export function useCart() {
     removeFromCart,
     updateQuantity,
     clearCart,
+<<<<<<< HEAD
     totalAmount,
     isLoading
+=======
+    totalAmount
+>>>>>>> 403f6ea (Last version)
   };
 } 

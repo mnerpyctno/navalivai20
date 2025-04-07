@@ -1,12 +1,20 @@
 'use client';
 
 import { useEffect, useState, useRef, useCallback } from 'react';
+<<<<<<< HEAD
+=======
+import Image from 'next/image';
+>>>>>>> 403f6ea (Last version)
 import styles from '@/styles/Category.module.css';
 import { Product } from '@/types/product';
 import Header from '@/components/Header';
 import { useCart } from '@/context/CartContext';
 import { ITEMS_PER_PAGE } from '@/config/constants';
+<<<<<<< HEAD
 import ProductCard from '@/components/ProductCard';
+=======
+import ImagePlaceholder from '@/components/ImagePlaceholder';
+>>>>>>> 403f6ea (Last version)
 import { env } from '@/config/env';
 
 export default function CategoryPage({ params }: { params: { id: string } }) {
@@ -15,8 +23,13 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+<<<<<<< HEAD
   const [categoryName, setCategoryName] = useState<string>('');
   const [totalProducts, setTotalProducts] = useState(0);
+=======
+  const [productImages, setProductImages] = useState<Record<string, string>>({});
+  const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
+>>>>>>> 403f6ea (Last version)
   const observer = useRef<IntersectionObserver | null>(null);
   const loadingRef = useRef<HTMLDivElement | null>(null);
   const [initialLoad, setInitialLoad] = useState(true);
@@ -24,12 +37,17 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
 
   const loadProducts = useCallback(async (pageNumber: number) => {
     try {
+<<<<<<< HEAD
       const response = await fetch(`${env.API_URL}/api/products?categoryId=${params.id}&limit=${ITEMS_PER_PAGE}&offset=${(pageNumber - 1) * ITEMS_PER_PAGE}`);
+=======
+      const response = await fetch(`/api/products?categoryId=${params.id}&limit=${ITEMS_PER_PAGE}&offset=${(pageNumber - 1) * ITEMS_PER_PAGE}`);
+>>>>>>> 403f6ea (Last version)
       if (!response.ok) {
         throw new Error('Ошибка при загрузке товаров');
       }
       const data = await response.json();
       
+<<<<<<< HEAD
       const newProducts = data.rows.map((product: any) => ({
         id: product.id,
         name: product.name,
@@ -61,6 +79,42 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
       setInitialLoad(false);
     }
   }, [params.id, categoryName]);
+=======
+      const newProducts = data.rows.map((product: any) => {
+        // Находим цену продажи в массиве salePrices
+        const retailPrice = product.salePrices?.find((price: any) => 
+          price.priceType?.name === 'Цена продажи' || 
+          price.priceType?.name === 'Розничная цена' ||
+          price.priceType?.name === 'Цена'
+        ) || product.salePrices?.[0];
+        
+        // Получаем значение цены и делим на 100 (копейки в рубли)
+        const price = retailPrice?.value ? retailPrice.value / 100 : 0;
+        
+        return {
+          id: product.id,
+          name: product.name,
+          description: product.description || '',
+          price: price,
+          imageUrl: product.imageUrl,
+          categoryId: product.categoryId,
+          categoryName: product.categoryName,
+          available: true,
+          stock: 0,
+          article: product.article || '',
+          weight: product.weight || 0,
+          volume: product.volume || 0,
+          isArchived: product.isArchived || false
+        };
+      });
+      
+      setProducts(prev => pageNumber === 1 ? newProducts : [...prev, ...newProducts]);
+      setHasMore((data.meta?.size || 0) > pageNumber * ITEMS_PER_PAGE);
+    } catch (error) {
+      console.error('Ошибка при загрузке товаров:', error);
+    }
+  }, [params.id]);
+>>>>>>> 403f6ea (Last version)
 
   useEffect(() => {
     setInitialLoad(true);
@@ -99,6 +153,46 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
     }
   }, [page, loadProducts, initialLoad]);
 
+<<<<<<< HEAD
+=======
+  useEffect(() => {
+    const fetchImages = async () => {
+      const imagePromises = products.map(async (product) => {
+        try {
+          const response = await fetch(`/api/products/${product.id}/images`);
+          if (!response.ok) {
+            throw new Error('Ошибка при загрузке изображений');
+          }
+          const images = await response.json();
+          if (images.length > 0) {
+            setProductImages(prev => ({
+              ...prev,
+              [product.id]: images[0].miniature
+            }));
+          }
+        } catch (error) {
+          console.error('Error fetching images for product:', product.id, error);
+        }
+      });
+
+      await Promise.all(imagePromises);
+    };
+
+    if (products.length > 0) {
+      fetchImages();
+    }
+  }, [products]);
+
+  const handleImageError = (productId: string) => {
+    console.error('Image loading error for product:', productId);
+    setImageErrors(prev => ({ ...prev, [productId]: true }));
+  };
+
+  const handleImageLoad = (productId: string) => {
+    setImageErrors(prev => ({ ...prev, [productId]: false }));
+  };
+
+>>>>>>> 403f6ea (Last version)
   if (initialLoad) {
     return (
       <main className={styles.main}>
@@ -127,7 +221,11 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
     return (
       <main className={styles.main}>
         <Header />
+<<<<<<< HEAD
         <div className={styles.noResults}>
+=======
+        <div className={styles.emptyState}>
+>>>>>>> 403f6ea (Last version)
           <h2>Товары не найдены</h2>
           <p>В данной категории пока нет товаров</p>
         </div>
@@ -139,6 +237,7 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
     <main className={styles.main}>
       <Header />
       <div className={styles.container}>
+<<<<<<< HEAD
         <div className={styles.header}>
           <h1 className={styles.title}>{categoryName} ({totalProducts})</h1>
         </div>
@@ -149,6 +248,40 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
               product={product}
               categoryName={categoryName}
             />
+=======
+        <div className={styles.productsGrid}>
+          {products.map((product) => (
+            <div key={product.id} className={styles.productCard}>
+              <div className={styles.productImageContainer}>
+                {product.imageUrl ? (
+                  <Image
+                    src={product.imageUrl}
+                    alt={product.name}
+                    fill
+                    loading="lazy"
+                    className={styles.productImage}
+                    onError={() => handleImageError(product.id)}
+                    onLoad={() => handleImageLoad(product.id)}
+                  />
+                ) : (
+                  <ImagePlaceholder className={styles.productImage} />
+                )}
+              </div>
+              <div className={styles.productInfo}>
+                <h3>{product.name}</h3>
+                <p className={styles.price}>{product.price} BYN</p>
+                <button
+                  className={styles.addToCartButton}
+                  onClick={() => addToCart({
+                    ...product,
+                    id: product.id
+                  })}
+                >
+                  В корзину
+                </button>
+              </div>
+            </div>
+>>>>>>> 403f6ea (Last version)
           ))}
         </div>
         {(loading || hasMore) && !error && (

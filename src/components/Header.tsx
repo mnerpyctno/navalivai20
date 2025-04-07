@@ -120,7 +120,11 @@ export default function Header() {
   const handleBack = () => {
     if (!isNavigating.current) {
       isNavigating.current = true;
+<<<<<<< HEAD
       router.push('/');
+=======
+      router.back();
+>>>>>>> 403f6ea (Last version)
       isNavigating.current = false;
     }
   };

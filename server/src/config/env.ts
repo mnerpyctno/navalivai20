@@ -7,6 +7,7 @@ const envPath = path.resolve(__dirname, '../../.env');
 config({ path: envPath });
 
 // Проверяем наличие обязательных переменных
+<<<<<<< HEAD
 const requiredEnvVars = [
   'MOYSKLAD_TOKEN',
   'TELEGRAM_BOT_TOKEN',
@@ -20,15 +21,27 @@ for (const envVar of requiredEnvVars) {
     console.error(`Ошибка: ${envVar} не установлен в .env файле`);
     process.exit(1);
   }
+=======
+if (!process.env.MOYSKLAD_TOKEN) {
+  console.error('Ошибка: MOYSKLAD_TOKEN не установлен в .env файле');
+  process.exit(1);
+>>>>>>> 403f6ea (Last version)
 }
 
 const envSchema = z.object({
   // API Tokens
+<<<<<<< HEAD
   MOYSKLAD_TOKEN: z.string().nonempty('MOYSKLAD_TOKEN is required'),
   MOYSKLAD_API_URL: z.string().url().default('https://api.moysklad.ru/api/remap/1.2'),
   
   // Database
   databaseUrl: z.string().url().default('postgresql://user:password@localhost:5432/dbname'),
+=======
+  MOYSKLAD_TOKEN: z.string(),
+  
+  // Database
+  databaseUrl: z.string().url().optional(),
+>>>>>>> 403f6ea (Last version)
   
   // Supabase
   supabaseUrl: z.string().url().optional(),
@@ -36,10 +49,14 @@ const envSchema = z.object({
   supabaseServiceKey: z.string().optional(),
   
   // Telegram
+<<<<<<< HEAD
   TELEGRAM_BOT_TOKEN: z.string(),
   TELEGRAM_BOT_USERNAME: z.string(),
   TELEGRAM_SECRET_KEY: z.string(),
   NEXT_PUBLIC_WEBAPP_URL: z.string(),
+=======
+  telegramBotToken: z.string().optional(),
+>>>>>>> 403f6ea (Last version)
   
   // Cache TTL
   cacheTtl: z.object({
@@ -50,6 +67,7 @@ const envSchema = z.object({
   }),
 
   // CORS
+<<<<<<< HEAD
   CLIENT_URL: z.string().default('https://navalivai20.vercel.app'),
 
   // API URL
@@ -90,3 +108,32 @@ try {
     throw error;
   }
 }
+=======
+  CLIENT_URL: z.string().default('http://localhost:3000'),
+
+  // API URL
+  API_URL: z.string().default('http://localhost:3002'),
+
+  // Server URL
+  SERVER_URL: z.string().default('http://localhost:3002')
+});
+
+// Парсим переменные окружения
+export const env = envSchema.parse({
+  MOYSKLAD_TOKEN: process.env.MOYSKLAD_TOKEN,
+  CLIENT_URL: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  API_URL: process.env.API_URL || 'http://localhost:3002',
+  SERVER_URL: process.env.SERVER_URL || 'http://localhost:3002',
+  databaseUrl: process.env.DATABASE_URL,
+  supabaseUrl: process.env.SUPABASE_URL,
+  supabaseKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+  supabaseServiceKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+  telegramBotToken: process.env.TELEGRAM_BOT_TOKEN,
+  cacheTtl: {
+    products: Number(process.env.CACHE_TTL_PRODUCTS) || 3600,
+    categories: Number(process.env.CACHE_TTL_CATEGORIES) || 86400,
+    stock: Number(process.env.CACHE_TTL_STOCK) || 300,
+    images: Number(process.env.CACHE_TTL_IMAGES) || 86400
+  }
+}); 
+>>>>>>> 403f6ea (Last version)

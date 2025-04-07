@@ -22,7 +22,11 @@ router.get('/:imageId', async (req, res) => {
       return res.status(400).json({ error: 'Image ID is required' });
     }
 
+<<<<<<< HEAD
     const imageUrl = `https://api.moysklad.ru/api/remap/1.2/download/${imageId}`;
+=======
+    const imageUrl = `https://api.moysklad.ru/api/remap/1.2/download/${imageId}?miniature=true`;
+>>>>>>> 403f6ea (Last version)
     
     console.log('Image request details:', {
       imageId,
@@ -76,7 +80,11 @@ router.get('/:imageId', async (req, res) => {
   }
 });
 
+<<<<<<< HEAD
 // Маршрут для обработки изображений по URL
+=======
+// Старый маршрут для обратной совместимости
+>>>>>>> 403f6ea (Last version)
 router.get('/', async (req, res) => {
   try {
     const { url } = req.query;
@@ -109,6 +117,7 @@ router.get('/', async (req, res) => {
       return res.send(cachedImage.data);
     }
 
+<<<<<<< HEAD
     // Если URL уже содержит miniature=true, удаляем его
     const cleanUrl = decodedUrl.replace(/\?miniature=true$/, '');
 
@@ -118,6 +127,20 @@ router.get('/', async (req, res) => {
     });
 
     const response = await moySkladImageClient.get(cleanUrl, {
+=======
+    // Добавляем базовый URL, если его нет
+    const fullUrl = decodedUrl.startsWith('http') ? decodedUrl : `https://api.moysklad.ru/api/remap/1.2${decodedUrl}`;
+
+    console.log('Fetching image from:', {
+      fullUrl,
+      timestamp: new Date().toISOString()
+    });
+
+    // Если URL уже содержит miniature=true, используем его напрямую
+    const imageUrl = fullUrl.includes('miniature=true') ? fullUrl : `${fullUrl}`;
+
+    const response = await moySkladImageClient.get(imageUrl, {
+>>>>>>> 403f6ea (Last version)
       responseType: 'arraybuffer',
       headers: {
         'Accept': 'image/*'

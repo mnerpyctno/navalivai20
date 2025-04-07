@@ -3,8 +3,11 @@ import productsRouter from './products';
 import categoriesRouter from './categories';
 import imageRouter from './moysklad/image';
 import searchRouter from './search';
+<<<<<<< HEAD
 import stockRouter from './stock';
 import cartRouter from './cart';
+=======
+>>>>>>> 403f6ea (Last version)
 
 const router = Router();
 
@@ -18,6 +21,7 @@ router.use((req, res, next) => {
   next();
 });
 
+<<<<<<< HEAD
 // Проверка работоспособности сервера
 router.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
@@ -37,11 +41,18 @@ router.get('/categories', async (_req, res) => {
   }
 });
 
+=======
+>>>>>>> 403f6ea (Last version)
 router.use('/products', productsRouter);
 router.use('/categories', categoriesRouter);
 router.use('/moysklad/image', imageRouter);
 router.use('/search', searchRouter);
+<<<<<<< HEAD
 router.use('/stock', stockRouter);
 router.use('/cart', cartRouter);
 
 export default router;
+=======
+
+export default router; 
+>>>>>>> 403f6ea (Last version)
