@@ -1,6 +1,5 @@
 import axios, { AxiosInstance } from 'axios';
 import { env } from './env';
-<<<<<<< HEAD
 import FormData from 'form-data';
 
 // Устанавливаем FormData в глобальную область
@@ -13,11 +12,6 @@ if (!env.MOYSKLAD_TOKEN) {
 
 export const moySkladClient: AxiosInstance = axios.create({
   baseURL: env.MOYSKLAD_API_URL || 'https://api.moysklad.ru/api/remap/1.2',
-=======
-
-export const moySkladClient: AxiosInstance = axios.create({
-  baseURL: 'https://api.moysklad.ru/api/remap/1.2',
->>>>>>> 403f6ea (Last version)
   headers: {
     'Authorization': `Bearer ${env.MOYSKLAD_TOKEN}`,
     'Content-Type': 'application/json;charset=utf-8',
@@ -25,21 +19,12 @@ export const moySkladClient: AxiosInstance = axios.create({
     'Cache-Control': 'no-cache',
     'Pragma': 'no-cache'
   },
-<<<<<<< HEAD
   timeout: 30000 // Увеличиваем таймаут для стабильности
 });
 
 // Перехватчик для логирования запросов
 moySkladClient.interceptors.request.use((config) => {
   console.log('MoySklad запрос:', {
-=======
-  timeout: 30000
-});
-
-// Добавляем перехватчик для логирования запросов
-moySkladClient.interceptors.request.use((config) => {
-  console.log('MoySklad request details:', {
->>>>>>> 403f6ea (Last version)
     url: config.url,
     method: config.method,
     params: config.params,
@@ -50,7 +35,6 @@ moySkladClient.interceptors.request.use((config) => {
   return config;
 });
 
-<<<<<<< HEAD
 // Перехватчик для логирования ответов
 moySkladClient.interceptors.response.use(
   (response) => {
@@ -69,49 +53,6 @@ moySkladClient.interceptors.response.use(
       status: error.response?.status,
       data: error.response?.data,
       stack: error.stack,
-=======
-// Добавляем перехватчик для логирования ответов
-moySkladClient.interceptors.response.use(
-  (response) => {
-    // Проверяем, что это запрос продуктов и находим нужный продукт
-    if (response.config.url?.includes('/entity/product') && !response.config.url.includes('/images')) {
-      const targetProduct = response.data.rows?.find((row: any) => row.id === '43916c6f-0ce2-11f0-0a80-0c4900510119');
-      
-      if (targetProduct) {
-        console.log('🔍 Target product API response:', {
-          url: response.config.url,
-          method: response.config.method,
-          status: response.status,
-          statusText: response.statusText,
-          product: {
-            id: targetProduct.id,
-            name: targetProduct.name,
-            images: {
-              meta: targetProduct.images?.meta,
-              rows: targetProduct.images?.rows?.map((img: any) => ({
-                id: img.id,
-                title: img.title,
-                filename: img.filename,
-                miniature: img.miniature,
-                tiny: img.tiny,
-                meta: img.meta
-              }))
-            }
-          },
-          timestamp: new Date().toISOString()
-        });
-      }
-    }
-    return response;
-  },
-  (error) => {
-    console.error('MoySklad error details:', {
-      url: error.config?.url,
-      method: error.config?.method,
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      data: error.response?.data,
->>>>>>> 403f6ea (Last version)
       timestamp: new Date().toISOString()
     });
     return Promise.reject(error);
@@ -159,8 +100,4 @@ moySkladImageClient.interceptors.response.use(
     });
     return Promise.reject(error);
   }
-<<<<<<< HEAD
 );
-=======
-); 
->>>>>>> 403f6ea (Last version)
