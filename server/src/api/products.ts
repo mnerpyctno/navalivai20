@@ -54,107 +54,33 @@ async function getProductStock(productId: string): Promise<StockInfo> {
 // Получение списка продуктов
 router.get('/', async (req, res) => {
   try {
-    const { limit = 24, offset = 0, categoryId } = req.query;
+    const { q = '', limit = 24, offset = 0 } = req.query;
 
-    // Формируем параметры запроса
     const params: any = {
-      expand: 'images,salePrices,productFolder,images.rows,images.rows.miniature,images.rows.tiny,images.rows.meta,images.rows.title,images.rows.type,images.rows.mediaType',
-      filter: 'archived=false',
-      limit: categoryId ? 100 : limit,
-      offset: categoryId ? 0 : offset,
-      order: 'name,asc'
+      filter: `archived=false;name~=${q}`,
+      limit: parseInt(limit as string),
+      offset: parseInt(offset as string),
+      expand: 'images,salePrices,productFolder'
     };
 
-    // Получаем продукты
-    const response = await moySkladClient.get('/entity/product', {
-      params
-    });
+    const response = await moySkladClient.get('/entity/product', { params });
 
-    let filteredProducts = response.data.rows;
-    let totalSize = response.data.meta.size;
-    
-    // Если указан categoryId, фильтруем товары на сервере
-    if (categoryId) {
-      filteredProducts = filteredProducts.filter((product: any) => 
-        product.productFolder?.id === categoryId
-      );
-      totalSize = filteredProducts.length;
+    const products = response.data.rows.map((product: any) => ({
+      id: product.id,
+      name: product.name,
+      description: product.description || '',
+      price: product.salePrices?.[0]?.value / 100 || 0,
+      imageUrl: product.images?.rows?.[0]?.miniature?.href || null,
+      categoryId: product.productFolder?.id || '',
+      available: !product.archived
+    }));
 
-      // Применяем пагинацию после фильтрации
-      const startIndex = parseInt(offset as string);
-      const endIndex = startIndex + parseInt(limit as string);
-      filteredProducts = filteredProducts.slice(startIndex, endIndex);
-    }
-
-    // Получаем остатки для всех продуктов
-    const stockResponse = await moySkladClient.get('/report/stock/bystore');
-
-    // Создаем карту остатков по ID продукта
-    const stockMap = new Map<string, { stock: number; available: boolean }>();
-    
-    if (stockResponse.data.rows) {
-      stockResponse.data.rows.forEach((item: any) => {
-        if (item.meta && item.meta.href) {
-          const productId = item.meta.href.split('/').pop();
-          const stockByStore = item.stockByStore?.[0] || {};
-          const stock = stockByStore.stock || 0;
-          const reserve = stockByStore.reserve || 0;
-          
-          stockMap.set(productId, {
-            stock,
-            available: stock - reserve > 0
-          });
-        }
-      });
-    }
-
-    const products = filteredProducts.map((product: any) => {
-      // Пробуем найти цену в следующем порядке:
-      // 1. Цена продажи
-      // 2. Розничная цена
-      // 3. Цена
-      // 4. Первая доступная цена
-      const retailPrice = product.salePrices?.find((price: { priceType?: { name: string } }) => 
-        price.priceType?.name === 'Цена продажи' || 
-        price.priceType?.name === 'Розничная цена' ||
-        price.priceType?.name === 'Цена'
-      ) || product.salePrices?.[0];
-
-      // Если цена существует, делим на 100, иначе 0
-      const price = retailPrice?.value ? retailPrice.value / 100 : 0;
-      
-      // Получаем URL изображения
-      const imageUrl = product.images?.rows?.[0]?.miniature?.href || null;
-      
-      const finalImageUrl = transformImageUrl(imageUrl);
-
-      const stockInfo = stockMap.get(product.id) || {
-        stock: 0,
-        available: false
-      };
-
-      return {
-        id: product.id,
-        name: product.name,
-        description: product.description || '',
-        price: price,
-        imageUrl: finalImageUrl,
-        categoryId: product.productFolder?.id || '',
-        categoryName: product.productFolder?.name || '',
-        available: !product.archived && stockInfo.available,
-        stock: stockInfo.stock
-      };
-    });
-
-    res.json({ 
+    res.json({
       rows: products,
-      meta: {
-        size: totalSize,
-        limit: parseInt(limit as string),
-        offset: parseInt(offset as string)
-      }
+      meta: response.data.meta
     });
   } catch (error) {
+    console.error('Ошибка при получении продуктов:', error);
     handleMoySkladError(error, res);
   }
 });

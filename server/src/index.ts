@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { env } from './config/env';
 import apiRouter from './api/apiRouter';
+import productsRouter from './api/products';
 
 const app = express();
 const port = process.env.PORT || 3002;
@@ -34,6 +35,7 @@ app.use((req, res, next) => {
 
 // Подключаем все API роуты через единый роутер
 app.use('/api', apiRouter);
+app.use('/api/products', productsRouter);
 
 // Обработка ошибок
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {

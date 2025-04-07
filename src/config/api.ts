@@ -3,7 +3,7 @@ import { env } from './env';
 // Базовые настройки API
 export const API_CONFIG = {
   // Базовый URL API
-  baseUrl: env.API_URL || 'https://navalivai20.vercel.app/api',
+  baseUrl: env.API_URL || 'http://localhost:3002/api',
   
   // Таймауты
   timeout: 30000,
@@ -66,4 +66,4 @@ export interface ApiResponse<T> {
     offset: number;
   };
   rows: T[];
-} 
+}
