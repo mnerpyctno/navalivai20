@@ -1,9 +1,9 @@
 import { env } from '@/config/env';
 
 export const DATABASE_CONFIG = {
-  url: env.databaseUrl,
-  supabaseUrl: env.supabaseUrl,
-  supabaseKey: env.supabaseKey
+  url: env.databaseUrl || process.env.DATABASE_URL,
+  supabaseUrl: env.supabaseUrl || process.env.NEXT_PUBLIC_SUPABASE_URL,
+  supabaseKey: env.supabaseKey || process.env.SUPABASE_SERVICE_ROLE_KEY
 } as const;
 
 // Типы для основных сущностей
@@ -33,4 +33,4 @@ export interface OrderItem {
   productId: string;
   quantity: number;
   price: number;
-} 
+}

@@ -30,6 +30,11 @@ const envSchema = z.object({
   NEXT_PUBLIC_TELEGRAM_BOT_USERNAME: z.string().min(1),
   NEXT_PUBLIC_TELEGRAM_SECRET_KEY: z.string().min(1),
   NEXT_PUBLIC_WEBAPP_URL: z.string().url(),
+  
+  // Database
+  databaseUrl: z.string().optional(),
+  supabaseUrl: z.string().url().optional(),
+  supabaseKey: z.string().optional(),
 });
 
 const validateEnv = () => {
