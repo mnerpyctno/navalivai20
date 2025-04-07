@@ -31,6 +31,9 @@ moySkladClient.interceptors.request.use((config) => {
     timestamp: new Date().toISOString()
   });
   return config;
+}, (error) => {
+  console.error('Ошибка при отправке запроса MoySklad:', error.message);
+  return Promise.reject(error);
 });
 
 // Перехватчик для логирования ответов

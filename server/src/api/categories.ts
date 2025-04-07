@@ -23,14 +23,19 @@ router.get('/', async (_req, res) => {
     }));
 
     res.json(categories);
-  } catch (error) {
-    console.error('Error fetching categories:', {
-      message: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined,
-      response: error instanceof Error && 'response' in error ? (error.response as any)?.data : undefined,
-      status: error instanceof Error && 'response' in error ? (error.response as any)?.status : undefined,
-    });
-    handleMoySkladError(error, res);
+  } catch (err) {
+    if (err instanceof Error) {
+      console.error('Error fetching categories:', {
+        message: err.message,
+        stack: err.stack,
+        response: (err as any).response?.data,
+        status: (err as any).response?.status,
+      });
+      handleMoySkladError(err, res);
+    } else {
+      console.error('Unknown error fetching categories:', err);
+      res.status(500).json({ error: 'Unknown error occurred' });
+    }
   }
 });
 
