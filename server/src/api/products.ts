@@ -56,6 +56,11 @@ router.get('/', async (req, res) => {
   try {
     const { q = '', limit = 24, offset = 0 } = req.query;
 
+    console.log('Запрос продуктов:', {
+      query: { q, limit, offset },
+      timestamp: new Date().toISOString()
+    });
+
     const params: any = {
       filter: `archived=false;name~=${q}`,
       limit: parseInt(limit as string),
@@ -64,6 +69,11 @@ router.get('/', async (req, res) => {
     };
 
     const response = await moySkladClient.get('/entity/product', { params });
+
+    if (!response.data || !response.data.rows) {
+      console.error('Ошибка: Пустой ответ от API МойСклад для продуктов.');
+      return res.status(500).json({ error: 'Ошибка сервера при получении продуктов' });
+    }
 
     const products = response.data.rows.map((product: any) => ({
       id: product.id,
@@ -198,6 +208,11 @@ router.get('/categories', async (req, res) => {
     });
 
     const response = await moySkladClient.get('/entity/productfolder');
+
+    if (!response.data || !response.data.rows) {
+      console.error('Ошибка: Пустой ответ от API МойСклад для категорий.');
+      return res.status(500).json({ error: 'Ошибка сервера при получении категорий' });
+    }
 
     const categories = response.data.rows.map((category: any) => ({
       id: category.id,
