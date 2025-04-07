@@ -40,20 +40,23 @@ export class MoySkladServerError extends MoySkladError {
 export function handleMoySkladError(error: any): never {
   if (error.response) {
     const { status, data } = error.response;
+    const errorMessage = data?.error?.message || data?.error || 'Неизвестная ошибка';
     
     switch (status) {
       case 401:
-        throw new MoySkladAuthError(data?.error || 'Ошибка авторизации');
+        throw new MoySkladAuthError(errorMessage);
       case 400:
-        throw new MoySkladValidationError(data?.error || 'Ошибка валидации', data);
+        throw new MoySkladValidationError(errorMessage, data);
       case 404:
-        throw new MoySkladNotFoundError(data?.error || 'Ресурс не найден');
+        throw new MoySkladNotFoundError(errorMessage);
+      case 429:
+        throw new MoySkladError('Превышен лимит запросов', status);
       default:
-        throw new MoySkladServerError(data?.error || 'Ошибка сервера');
+        throw new MoySkladServerError(errorMessage);
     }
   } else if (error.request) {
-    throw new MoySkladError('Нет ответа от сервера');
+    throw new MoySkladError('Нет ответа от сервера. Проверьте подключение к интернету.');
   } else {
-    throw new MoySkladError(error.message || 'Неизвестная ошибка');
+    throw new MoySkladError(error.message || 'Произошла неизвестная ошибка');
   }
-} 
+}

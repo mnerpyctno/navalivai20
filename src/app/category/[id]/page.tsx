@@ -1,35 +1,45 @@
 'use client';
 
 import { useEffect, useState, useRef, useCallback } from 'react';
-<<<<<<< HEAD
-=======
 import Image from 'next/image';
->>>>>>> 403f6ea (Last version)
 import styles from '@/styles/Category.module.css';
 import { Product } from '@/types/product';
 import Header from '@/components/Header';
 import { useCart } from '@/context/CartContext';
 import { ITEMS_PER_PAGE } from '@/config/constants';
-<<<<<<< HEAD
-import ProductCard from '@/components/ProductCard';
-=======
 import ImagePlaceholder from '@/components/ImagePlaceholder';
->>>>>>> 403f6ea (Last version)
 import { env } from '@/config/env';
 
+interface LocalProduct {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  imageUrl: string;
+  categoryId: string;
+  categoryName: string;
+  available: boolean;
+  stock: number;
+  article: string;
+  weight: number;
+  volume: number;
+  isArchived: boolean;
+  salePrices?: {
+    priceType?: {
+      name: string;
+    };
+    value: number;
+  }[];
+}
+
 export default function CategoryPage({ params }: { params: { id: string } }) {
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<LocalProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-<<<<<<< HEAD
-  const [categoryName, setCategoryName] = useState<string>('');
-  const [totalProducts, setTotalProducts] = useState(0);
-=======
   const [productImages, setProductImages] = useState<Record<string, string>>({});
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
->>>>>>> 403f6ea (Last version)
   const observer = useRef<IntersectionObserver | null>(null);
   const loadingRef = useRef<HTMLDivElement | null>(null);
   const [initialLoad, setInitialLoad] = useState(true);
@@ -37,50 +47,13 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
 
   const loadProducts = useCallback(async (pageNumber: number) => {
     try {
-<<<<<<< HEAD
       const response = await fetch(`${env.API_URL}/api/products?categoryId=${params.id}&limit=${ITEMS_PER_PAGE}&offset=${(pageNumber - 1) * ITEMS_PER_PAGE}`);
-=======
-      const response = await fetch(`/api/products?categoryId=${params.id}&limit=${ITEMS_PER_PAGE}&offset=${(pageNumber - 1) * ITEMS_PER_PAGE}`);
->>>>>>> 403f6ea (Last version)
       if (!response.ok) {
-        throw new Error('Ошибка при загрузке товаров');
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
       
-<<<<<<< HEAD
-      const newProducts = data.rows.map((product: any) => ({
-        id: product.id,
-        name: product.name,
-        description: product.description || '',
-        price: product.price,
-        imageUrl: product.imageUrl,
-        categoryId: product.categoryId,
-        categoryName: product.categoryName,
-        available: product.available,
-        stock: product.stock,
-        article: product.article || '',
-        weight: product.weight || 0,
-        volume: product.volume || 0,
-        isArchived: product.isArchived || false
-      }));
-      
-      setProducts(prev => pageNumber === 1 ? newProducts : [...prev, ...newProducts]);
-      setHasMore((data.meta?.size || 0) > pageNumber * ITEMS_PER_PAGE);
-      setTotalProducts(data.meta?.size || 0);
-      
-      if (newProducts.length > 0 && !categoryName) {
-        setCategoryName(newProducts[0].categoryName);
-      }
-    } catch (error) {
-      console.error('Ошибка при загрузке товаров:', error);
-      setError('Ошибка при загрузке товаров');
-    } finally {
-      setLoading(false);
-      setInitialLoad(false);
-    }
-  }, [params.id, categoryName]);
-=======
-      const newProducts = data.rows.map((product: any) => {
+      const newProducts = data.rows.map((product: LocalProduct) => {
         // Находим цену продажи в массиве salePrices
         const retailPrice = product.salePrices?.find((price: any) => 
           price.priceType?.name === 'Цена продажи' || 
@@ -112,9 +85,12 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
       setHasMore((data.meta?.size || 0) > pageNumber * ITEMS_PER_PAGE);
     } catch (error) {
       console.error('Ошибка при загрузке товаров:', error);
+      setError('Ошибка при загрузке товаров');
+    } finally {
+      setLoading(false);
+      setInitialLoad(false);
     }
   }, [params.id]);
->>>>>>> 403f6ea (Last version)
 
   useEffect(() => {
     setInitialLoad(true);
@@ -153,8 +129,6 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
     }
   }, [page, loadProducts, initialLoad]);
 
-<<<<<<< HEAD
-=======
   useEffect(() => {
     const fetchImages = async () => {
       const imagePromises = products.map(async (product) => {
@@ -192,7 +166,6 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
     setImageErrors(prev => ({ ...prev, [productId]: false }));
   };
 
->>>>>>> 403f6ea (Last version)
   if (initialLoad) {
     return (
       <main className={styles.main}>
@@ -221,11 +194,7 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
     return (
       <main className={styles.main}>
         <Header />
-<<<<<<< HEAD
-        <div className={styles.noResults}>
-=======
         <div className={styles.emptyState}>
->>>>>>> 403f6ea (Last version)
           <h2>Товары не найдены</h2>
           <p>В данной категории пока нет товаров</p>
         </div>
@@ -237,18 +206,6 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
     <main className={styles.main}>
       <Header />
       <div className={styles.container}>
-<<<<<<< HEAD
-        <div className={styles.header}>
-          <h1 className={styles.title}>{categoryName} ({totalProducts})</h1>
-        </div>
-        <div className={styles.productsGrid}>
-          {products.map((product) => (
-            <ProductCard 
-              key={product.id} 
-              product={product}
-              categoryName={categoryName}
-            />
-=======
         <div className={styles.productsGrid}>
           {products.map((product) => (
             <div key={product.id} className={styles.productCard}>
@@ -281,7 +238,6 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
                 </button>
               </div>
             </div>
->>>>>>> 403f6ea (Last version)
           ))}
         </div>
         {(loading || hasMore) && !error && (
@@ -293,4 +249,4 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
       </div>
     </main>
   );
-} 
+}

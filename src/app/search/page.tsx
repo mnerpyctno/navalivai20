@@ -8,10 +8,7 @@ import ProductCard from '@/components/ProductCard';
 import { Product } from '@/types/product';
 import { ITEMS_PER_PAGE } from '@/config/constants';
 import { env } from '@/config/env';
-<<<<<<< HEAD
 import LoadingScreen from '@/components/LoadingScreen';
-=======
->>>>>>> 403f6ea (Last version)
 
 export default function SearchPage() {
   const searchParams = useSearchParams();
@@ -24,10 +21,7 @@ export default function SearchPage() {
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
   const observer = useRef<IntersectionObserver | null>(null);
-<<<<<<< HEAD
   const loadingRef = useRef<HTMLDivElement>(null);
-=======
->>>>>>> 403f6ea (Last version)
   const isMounted = useRef(false);
   const searchInProgress = useRef(false);
 
@@ -59,7 +53,6 @@ export default function SearchPage() {
     }
   }, [query]);
 
-<<<<<<< HEAD
   useEffect(() => {
     const options = {
       root: null,
@@ -82,19 +75,6 @@ export default function SearchPage() {
         observer.current.disconnect();
       }
     };
-=======
-  const loadingRef = useCallback((node: HTMLDivElement | null) => {
-    if (observer.current) observer.current.disconnect();
-    observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && !loading && hasMore && !searchInProgress.current) {
-        setPage(prev => prev + 1);
-      }
-    }, {
-      threshold: 0.1,
-      rootMargin: '100px'
-    });
-    if (node) observer.current.observe(node);
->>>>>>> 403f6ea (Last version)
   }, [loading, hasMore]);
 
   const loadProducts = useCallback(async (pageNumber: number) => {
@@ -116,7 +96,6 @@ export default function SearchPage() {
       
       if (!isMounted.current) return;
       
-<<<<<<< HEAD
       const newProducts = data.rows.map((product: any) => ({
         id: product.id,
         name: product.name,
@@ -128,30 +107,6 @@ export default function SearchPage() {
         available: product.available,
         stock: product.stock || 0
       }));
-=======
-      const newProducts = data.rows.map((product: any) => {
-        // Находим цену продажи в массиве salePrices
-        const retailPrice = product.salePrices?.find((price: any) => 
-          price.priceType?.name === 'Цена продажи' || 
-          price.priceType?.name === 'Розничная цена' ||
-          price.priceType?.name === 'Цена'
-        ) || product.salePrices?.[0];
-        
-        // Получаем значение цены и делим на 100 (копейки в рубли)
-        const price = retailPrice?.value ? retailPrice.value / 100 : 0;
-        
-        return {
-          id: product.id,
-          name: product.name,
-          description: product.description || '',
-          price: price,
-          imageUrl: product.image || null,
-          categoryId: product.categoryId || '',
-          available: true,
-          stock: 0
-        };
-      });
->>>>>>> 403f6ea (Last version)
       
       if (pageNumber === 1) {
         setProducts(newProducts);
@@ -175,7 +130,6 @@ export default function SearchPage() {
   }, [query]);
 
   useEffect(() => {
-<<<<<<< HEAD
     if (query) {
       loadProducts(1);
     }
@@ -188,12 +142,6 @@ export default function SearchPage() {
   if (loading) {
     return <LoadingScreen />;
   }
-=======
-    if (query && !searchInProgress.current) {
-      loadProducts(page);
-    }
-  }, [query, page, loadProducts]);
->>>>>>> 403f6ea (Last version)
 
   return (
     <main className={styles.main}>
@@ -206,7 +154,6 @@ export default function SearchPage() {
           </p>
         </div>
       )}
-<<<<<<< HEAD
       {loading && page === 1 ? (
         <div className={styles.loading}>
           <div className={styles.spinner} />
@@ -235,36 +182,6 @@ export default function SearchPage() {
           )}
         </div>
       )}
-=======
-      <div className={styles.productsGrid}>
-        {loading && page === 1 ? (
-          <div className={styles.loading}>
-            <div className={styles.spinner} />
-            <p>Поиск товаров...</p>
-          </div>
-        ) : error ? (
-          <div className={styles.error}>{error}</div>
-        ) : products.length > 0 ? (
-          products.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))
-        ) : (
-          <div className={styles.noResults}>
-            {query ? (
-              <>
-                <p>По вашему запросу &quot;{query}&quot; ничего не найдено</p>
-                <p>Попробуйте изменить поисковый запрос или использовать другие ключевые слова</p>
-              </>
-            ) : (
-              <>
-                <p>Введите поисковый запрос в строку поиска</p>
-                <p>Например: &quot;название товара&quot; или &quot;категория&quot;</p>
-              </>
-            )}
-          </div>
-        )}
-      </div>
->>>>>>> 403f6ea (Last version)
       {(loading || hasMore) && !error && page > 1 && (
         <div ref={loadingRef} className={styles.loading}>
           <div className={styles.spinner} />
