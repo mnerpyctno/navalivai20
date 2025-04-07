@@ -49,7 +49,7 @@ export const searchProducts = async (query: string) => {
 
 export const getCategories = async () => {
   try {
-    const response = await api.get('/categories');
+    const response = await api.get('/categories'); // Убедитесь, что путь совпадает с серверным маршрутом
     return response.data;
   } catch (error) {
     console.error('Error fetching categories:', error);
@@ -66,4 +66,4 @@ export const getStock = async (productId?: string) => {
     console.error('Error fetching stock:', error);
     throw error;
   }
-}; 
+};
