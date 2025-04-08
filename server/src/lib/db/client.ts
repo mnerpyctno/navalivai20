@@ -1,18 +1,11 @@
 import { PrismaClient } from '@prisma/client';
-import { DATABASE_CONFIG } from './config';
 
 class DatabaseClient {
   private static instance: DatabaseClient;
   private client: PrismaClient;
 
   private constructor() {
-    this.client = new PrismaClient({
-      datasources: {
-        db: {
-          url: DATABASE_CONFIG.url
-        }
-      }
-    });
+    this.client = new PrismaClient();
   }
 
   public static getInstance(): DatabaseClient {
@@ -36,4 +29,4 @@ class DatabaseClient {
 }
 
 export const dbClient = DatabaseClient.getInstance();
-export const prisma = dbClient.prisma; 
+export const prisma = dbClient.prisma;

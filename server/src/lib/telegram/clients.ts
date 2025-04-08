@@ -1,10 +1,8 @@
-
-import { TELEGRAM_CONFIG } from '../../../server/src/config/telegram'; // Обновлен импорт
-import { TelegramWebAppData, SendMessageParams } from '../../../server/src/config/telegram'; // Обновлен импорт
+import { TELEGRAM_CONFIG } from '../../config/telegram'; // Обновлен импорт
+import { TelegramWebAppData, SendMessageParams } from '../../config/telegram'; // Обновлен импорт
 
 let crypto: typeof import('crypto');
 
-// Проверяем, что мы находимся на сервере, так как crypto доступен только там
 if (typeof window === 'undefined') {
   crypto = require('crypto');
 } else {
@@ -28,7 +26,6 @@ export const verifyTelegramWebAppData = (data: TelegramWebAppData): boolean => {
 
     // ...existing code...
 
-    // Ensure a return value in all code paths
     return true;
   } catch (error) {
     console.error('Error verifying Telegram WebApp data:', error);

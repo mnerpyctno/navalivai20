@@ -2,6 +2,7 @@ import './globals.css';
 import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
 import dynamic from 'next/dynamic';
+import { initApp } from '../../server/src/lib/init'; // Исправлен путь импорта
 
 // Логирование загрузки стилей
 console.log('[Layout] Загрузка стилей:', {

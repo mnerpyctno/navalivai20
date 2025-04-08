@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://navalivai20.vercel.app/api';
+const API_URL = process.env.API_URL || 'https://navalivai20.vercel.app/api';
 
 export const api = axios.create({
   baseURL: API_URL,
@@ -27,7 +27,7 @@ export const getProducts = async (query: string = '', page: number = 1, limit: n
 
 export const getCategories = async () => {
   try {
-    const response = await api.get('/categories'); // Убедитесь, что путь совпадает с серверным маршрутом
+    const response = await api.get('/categories');
     return response.data;
   } catch (error) {
     console.error('Error fetching categories:', error);

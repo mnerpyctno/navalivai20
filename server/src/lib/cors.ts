@@ -40,4 +40,4 @@ export function corsPreflightResponse() {
     status: 204,
     headers: corsHeaders,
   });
-} 
+}

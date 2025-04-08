@@ -8,4 +8,4 @@ export async function initApp(): Promise<void> {
     console.error('Ошибка при инициализации приложения:', error);
     throw error;
   }
-} 
+}

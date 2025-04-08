@@ -5,9 +5,9 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import styles from '@/styles/Home.module.css';
 import Header from '@/components/Header';
 import ProductCard from '@/components/ProductCard';
-import { Product } from '@/types/product';
-import { ITEMS_PER_PAGE } from '@/config/constants';
-import { env } from '@/config/env';
+import { Product } from '@/types/product'; // Исправлен импорт
+import { ITEMS_PER_PAGE } from '../../../config/constants'; // Исправлен импорт
+import { env } from '../../../server/src/config/env'; // Исправлен импорт
 import LoadingScreen from '@/components/LoadingScreen';
 
 export default function SearchPage() {

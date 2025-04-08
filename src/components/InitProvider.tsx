@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { initApp } from '@/lib/init';
+import { initApp } from '../../server/src/lib/init'; // Исправлен путь импорта
 import { LoadingManager } from './LoadingManager';
 
 const MIN_LOADING_TIME = 6000; // 6 секунд (10 сообщений по 0.6 секунды)
@@ -82,4 +82,4 @@ export default function InitProvider({ children }: { children: React.ReactNode }
       {isInitialized && children}
     </>
   );
-} 
+}

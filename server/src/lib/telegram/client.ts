@@ -45,4 +45,23 @@ class TelegramClient {
   }
 }
 
-export const telegramClient = TelegramClient.getInstance(); 
+export const telegramClient = TelegramClient.getInstance();
+
+export const verifyTelegramWebAppData = (data: TelegramWebAppData): boolean => {
+  const { hash, ...dataWithoutHash } = data;
+    
+  const dataCheckString = Object.entries(dataWithoutHash)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, value]) => `${key}=${value}`)
+    .join('\n');
+
+  const secretKey = createHash('sha256')
+    .update(TELEGRAM_CONFIG.botToken)
+    .digest();
+
+  const expectedHash = createHmac('sha256', secretKey)
+    .update(dataCheckString)
+    .digest('hex');
+
+  return hash === expectedHash;
+};

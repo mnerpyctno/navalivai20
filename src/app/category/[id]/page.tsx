@@ -3,12 +3,12 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import styles from '@/styles/Category.module.css';
-import { Product } from '@/types/product';
+import { Product } from '@/types/product'; // Проверен импорт
 import Header from '@/components/Header';
-import { useCart } from '@/context/CartContext';
-import { ITEMS_PER_PAGE } from '@/config/constants';
+import { useCart } from '@/hooks/useCart'; // Исправлен импорт
+import { ITEMS_PER_PAGE } from '../../../../config/constants'; // Исправлен импорт
 import ImagePlaceholder from '@/components/ImagePlaceholder';
-import { env } from '@/config/env';
+import { env } from '../../../../server/src/config/env'; // Исправлен импорт
 
 interface LocalProduct {
   id: string;
@@ -47,7 +47,7 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
 
   const loadProducts = useCallback(async (pageNumber: number) => {
     try {
-      const response = await fetch(`${env.NEXT_PUBLIC_API_URL}/api/products?categoryId=${params.id}&limit=${ITEMS_PER_PAGE}&offset=${(pageNumber - 1) * ITEMS_PER_PAGE}`);
+      const response = await fetch(`${env.NEXT_PUBLIC_WEBAPP_URL}/api/products?categoryId=${params.id}&limit=${ITEMS_PER_PAGE}&offset=${(pageNumber - 1) * ITEMS_PER_PAGE}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -231,7 +231,8 @@ export default function CategoryPage({ params }: { params: { id: string } }) {
                   className={styles.addToCartButton}
                   onClick={() => addToCart({
                     ...product,
-                    id: product.id
+                    id: product.id,
+                    image: null
                   })}
                 >
                   В корзину

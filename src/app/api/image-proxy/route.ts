@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { env } from '@/config/env';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
