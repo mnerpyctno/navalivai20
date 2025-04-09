@@ -43,14 +43,14 @@ app.use((err: Error, req: express.Request, res: express.Response, next: express.
 });
 
 // Запуск сервера
-if (process.env.NODE_ENV === 'production') {
+if (env.NODE_ENV === 'production') {
   console.log(`Сервер запущен в production-режиме на http://localhost:${port}`);
 } else {
   console.log(`Сервер запущен на http://localhost:${port}`);
 }
 
 app.listen(port, () => {
-  console.log(`Сервер запущен на http://localhost:${port}`);
+  console.log(`Сервер успешно запущен на порту ${port}`);
 });
 
 export default app;

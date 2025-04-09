@@ -8,14 +8,22 @@ console.log('Загрузка .env файла из:', envPath);
 console.log('Текущая рабочая директория:', process.cwd());
 config({ path: envPath });
 
+// Отладочный вывод загруженных переменных
+console.log('Загруженные переменные окружения:');
+console.log('PORT:', process.env.PORT);
+console.log('MOYSKLAD_TOKEN:', process.env.MOYSKLAD_TOKEN ? 'установлен' : 'отсутствует');
+console.log('TELEGRAM_BOT_TOKEN:', process.env.TELEGRAM_BOT_TOKEN ? 'установлен' : 'отсутствует');
+console.log('TELEGRAM_BOT_USERNAME:', process.env.TELEGRAM_BOT_USERNAME ? 'установлен' : 'отсутствует');
+console.log('TELEGRAM_SECRET_KEY:', process.env.TELEGRAM_SECRET_KEY ? 'установлен' : 'отсутствует');
+console.log('NEXT_PUBLIC_WEBAPP_URL:', process.env.NEXT_PUBLIC_WEBAPP_URL ? 'установлен' : 'отсутствует');
+
 // Проверяем наличие обязательных переменных
 const requiredEnvVars = [
   'MOYSKLAD_TOKEN',
   'TELEGRAM_BOT_TOKEN',
   'TELEGRAM_BOT_USERNAME',
   'TELEGRAM_SECRET_KEY',
-  'NEXT_PUBLIC_WEBAPP_URL',
-  'PORT'
+  'NEXT_PUBLIC_WEBAPP_URL'
 ] as const;
 
 for (const envVar of requiredEnvVars) {
@@ -35,6 +43,9 @@ const envSchema = z.object({
   MOYSKLAD_TOKEN: z.string().nonempty('MOYSKLAD_TOKEN is required'),
   MOYSKLAD_API_URL: z.string().default('https://api.moysklad.ru/api/remap/1.2'),
   
+  // Environment
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  
   // Database
   databaseUrl: z.string(),
   
@@ -50,7 +61,14 @@ const envSchema = z.object({
   NEXT_PUBLIC_WEBAPP_URL: z.string(),
   
   // Server
-  PORT: z.string().transform(Number).default('3000'),
+  PORT: z.string().transform((val) => {
+    const num = Number(val);
+    if (isNaN(num)) {
+      console.error('PORT не является числом:', val);
+      return 3000;
+    }
+    return num;
+  }).default('3000'),
   
   // Cache TTL
   cacheTtl: z.object({
@@ -73,7 +91,8 @@ const envSchema = z.object({
 let env: ReturnType<typeof envSchema.parse>;
 
 try {
-  env = envSchema.parse({
+  const envData = {
+    NODE_ENV: process.env.NODE_ENV || 'development',
     MOYSKLAD_TOKEN: process.env.MOYSKLAD_TOKEN,
     MOYSKLAD_API_URL: process.env.MOYSKLAD_API_URL,
     CLIENT_URL: process.env.CORS_ORIGIN || 'https://navalivai20.vercel.app',
@@ -88,14 +107,15 @@ try {
     TELEGRAM_BOT_USERNAME: process.env.TELEGRAM_BOT_USERNAME,
     TELEGRAM_SECRET_KEY: process.env.TELEGRAM_SECRET_KEY,
     NEXT_PUBLIC_WEBAPP_URL: process.env.NEXT_PUBLIC_WEBAPP_URL,
-    PORT: process.env.PORT,
+    PORT: process.env.PORT || '3000',
     cacheTtl: {
       products: Number(process.env.CACHE_TTL_PRODUCTS) || 3600,
       categories: Number(process.env.CACHE_TTL_CATEGORIES) || 86400,
       stock: Number(process.env.CACHE_TTL_STOCK) || 300,
       images: Number(process.env.CACHE_TTL_IMAGES) || 86400
     }
-  });
+  };
+  env = envSchema.parse(envData);
 } catch (error) {
   if (error instanceof z.ZodError) {
     console.error('Ошибка валидации переменных окружения:', error.errors);

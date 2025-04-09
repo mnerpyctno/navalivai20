@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { initApp } from '../../server/src/lib/init'; // Исправлен путь импорта
+import { initClientApp } from '../lib/client-init';
 import { LoadingManager } from './LoadingManager';
 
 const MIN_LOADING_TIME = 6000; // 6 секунд (10 сообщений по 0.6 секунды)
@@ -19,8 +19,8 @@ export default function InitProvider({ children }: { children: React.ReactNode }
   useEffect(() => {
     const init = async () => {
       try {
-        // Запускаем инициализацию сразу
-        const initPromise = initApp();
+        // Запускаем инициализацию клиента
+        const initPromise = initClientApp();
         
         // Предварительно загружаем основные данные
         const preloadData = async () => {

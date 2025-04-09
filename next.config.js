@@ -73,7 +73,7 @@ const nextConfig = {
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; connect-src 'self' http://localhost:3000 http://localhost:3002 https://api.moysklad.ru https://telegram.org https://*.telegram.org; img-src 'self' https://miniature-prod.moysklad.ru https://api.moysklad.ru https://storage.files.mow1.cloud.servers.ru:8080 https://tinyimage-prod.moysklad.ru data:; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://telegram.org https://*.telegram.org; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;"
+            value: "default-src 'self'; connect-src 'self' https://navalivai20.vercel.app/ http://navalivai20.vercel.app/api/ https://api.moysklad.ru https://telegram.org https://*.telegram.org; img-src 'self' https://miniature-prod.moysklad.ru https://api.moysklad.ru https://storage.files.mow1.cloud.servers.ru:8080 https://tinyimage-prod.moysklad.ru data:; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://telegram.org https://*.telegram.org; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;"
           },
           {
             key: 'Access-Control-Allow-Origin',
