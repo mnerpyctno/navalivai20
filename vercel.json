@@ -4,6 +4,10 @@
     {
       "source": "/api/:path*",
       "destination": "/server/src/api/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "server/src/index.ts"
     }
   ],
   "env": {
@@ -25,12 +29,6 @@
     {
       "src": "server/src/index.ts",
       "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "server/src/index.ts"
     }
   ]
 }
