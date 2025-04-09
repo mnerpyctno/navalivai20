@@ -12,7 +12,7 @@ const envSchema = z.object({
   MOYSKLAD_API_URL: z.string().default('https://api.moysklad.ru/api/remap/1.2'),
   
   // Database
-  databaseUrl: z.string(),
+  SUPABASE_URL: z.string().nonempty('databaseUrl is required'),
   
   // Supabase
   supabaseUrl: z.string().url().optional(),
@@ -31,7 +31,7 @@ const envSchema = z.object({
     categories: z.number().default(86400),
     stock: z.number().default(300),
     images: z.number().default(86400)
-  }),
+  }).default({}),
 
   // CORS
   CLIENT_URL: z.string().default('https://navalivai20.vercel.app'),
@@ -42,7 +42,7 @@ const envSchema = z.object({
   // Server URL
   SERVER_URL: z.string().default('https://navalivai20.vercel.app/api'),
 
-  PORT: z.string().nonempty('PORT is required')
+  PORT: z.string().default('3000')
 });
 
 let env: ReturnType<typeof envSchema.parse>;
@@ -50,8 +50,12 @@ let env: ReturnType<typeof envSchema.parse>;
 try {
   env = envSchema.parse(process.env);
 } catch (error) {
-  console.error('Ошибка валидации переменных окружения:', error);
-  process.exit(1);
+  if (error instanceof z.ZodError) {
+    console.error('Ошибка валидации переменных окружения:', error.errors);
+    process.exit(1);
+  } else {
+    throw error;
+  }
 }
 
 export { env };
