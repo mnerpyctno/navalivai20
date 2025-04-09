@@ -22,11 +22,6 @@ for (const envVar of requiredEnvVars) {
   }
 }
 
-if (!process.env.MOYSKLAD_LOGIN || !process.env.MOYSKLAD_PASSWORD) {
-  console.error('Ошибка: MOYSKLAD_LOGIN и MOYSKLАД_PASSWORD должны быть заданы.');
-  process.exit(1);
-}
-
 if (!process.env.MOYSKLAD_TOKEN) {
   console.error('Ошибка: MOYSKLAD_TOKEN должна быть задана.');
   process.exit(1);
@@ -75,8 +70,7 @@ const envSchema = z.object({
 });
 
 let env: ReturnType<typeof envSchema.parse> & {
-  MOYSKLAD_LOGIN: string;
-  MOYSKLAD_PASSWORD: string;
+  MOYSKLAD_TOKEN: string;
   PORT: number | string;
 };
 
@@ -104,8 +98,7 @@ try {
         images: Number(process.env.CACHE_TTL_IMAGES) || 86400
       }
     }),
-    MOYSKLAD_LOGIN: process.env.MOYSKLAD_LOGIN || '',
-    MOYSKLAD_PASSWORD: process.env.MOYSKLAD_PASSWORD || '',
+    MOYSKLAD_TOKEN: process.env.MOYSKLAD_TOKEN || '',
     PORT: process.env.PORT || 3000
   };
 } catch (error) {

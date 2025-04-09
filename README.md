@@ -33,7 +33,7 @@ npm install
 DATABASE_URL="postgresql://user:password@localhost:5432/navalivaishop"
 NEXTAUTH_URL="http://localhost:3000"
 NEXTAUTH_SECRET="your-secret-key"
-MOYSKLAD_API_TOKEN="your-moysklad-token"
+MOYSKLAD_TOKEN="your-moysklad-token"
 MOYSKLAD_API_URL="https://api.moysklad.ru/api/remap/1.2"
 ```
 
@@ -54,8 +54,6 @@ npm run dev
 ### Проверка перед деплоем
 
 1. Убедитесь, что все переменные окружения заданы:
-   - `MOYSKLAD_LOGIN`
-   - `MOYSKLAD_PASSWORD`
    - `MOYSKLAD_TOKEN`
    - `PORT`
 2. Проверьте, что проект успешно собирается локально.
