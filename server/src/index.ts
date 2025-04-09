@@ -49,6 +49,8 @@ if (process.env.NODE_ENV === 'production') {
   console.log(`Сервер запущен на http://localhost:${port}`);
 }
 
-app.listen(port);
+app.listen(port, () => {
+  console.log(`Сервер запущен на http://localhost:${port}`);
+});
 
 export default app;

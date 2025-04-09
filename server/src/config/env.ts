@@ -22,18 +22,18 @@ for (const envVar of requiredEnvVars) {
   }
 }
 
+if (!process.env.MOYSKLAD_LOGIN || !process.env.MOYSKLAD_PASSWORD) {
+  console.error('Ошибка: MOYSKLAD_LOGIN и MOYSKLАД_PASSWORD должны быть заданы.');
+  process.exit(1);
+}
+
 if (!process.env.MOYSKLAD_TOKEN) {
-  console.error('Ошибка: Переменная окружения MOYSKLAD_TOKEN не задана.');
+  console.error('Ошибка: MOYSKLAD_TOKEN должна быть задана.');
   process.exit(1);
 }
 
 if (!process.env.PORT) {
-  console.error('Ошибка: Переменная окружения PORT не задана.');
-  process.exit(1);
-}
-
-if (!process.env.MOYSKLAD_LOGIN || !process.env.MOYSKLAD_PASSWORD) {
-  console.error('Ошибка: MOYSKLAD_LOGIN и MOYSKLAD_PASSWORD должны быть заданы.');
+  console.error('Ошибка: PORT должна быть задана.');
   process.exit(1);
 }
 
