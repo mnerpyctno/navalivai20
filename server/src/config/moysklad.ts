@@ -23,6 +23,11 @@ export const moySkladClient: AxiosInstance = axios.create({
     'X-Lognex-Pretty-Print': 'true',
     'X-Lognex-API-Version': '1.2'
   },
+  paramsSerializer: (params) => {
+    return Object.entries(params)
+      .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+      .join('&');
+  },
   timeout: 30000,
   maxRedirects: 5,
   validateStatus: (status) => status >= 200 && status < 500

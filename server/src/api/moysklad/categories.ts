@@ -7,23 +7,15 @@ const router = Router();
 // Получение списка категорий
 router.get('/', async (req, res) => {
   try {
-    // Формируем параметры запроса
-    const requestParams = new URLSearchParams();
-    requestParams.append('limit', '100');
-    requestParams.append('offset', '0');
-    requestParams.append('filter', 'archived=false');
-
-    console.log('Запрос категорий:', {
-      params: Object.fromEntries(requestParams),
-      timestamp: new Date().toISOString()
+    console.log('Fetching categories...');
+    
+    const response = await moySkladClient.get('/entity/productfolder', {
+      params: {
+        limit: 100,
+        offset: 0,
+        filter: 'archived=false'
+      }
     });
-
-    // Формируем URL с параметрами
-    const url = `/entity/productfolder?${requestParams.toString()}`;
-    console.log('Полный URL запроса:', url);
-
-    // Отправляем запрос
-    const response = await moySkladClient.get(url);
 
     console.log('Ответ от МойСклад:', {
       status: response.status,
