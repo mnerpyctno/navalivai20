@@ -20,7 +20,8 @@ export const moySkladClient: AxiosInstance = axios.create({
     'Cache-Control': 'no-cache',
     'Pragma': 'no-cache',
     'X-Lognex-Format': 'true',
-    'X-Lognex-Pretty-Print': 'true'
+    'X-Lognex-Pretty-Print': 'true',
+    'X-Lognex-API-Version': '1.2'
   },
   timeout: 30000,
   maxRedirects: 5,

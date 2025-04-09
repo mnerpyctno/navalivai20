@@ -11,7 +11,6 @@ router.get('/', async (req, res) => {
     const requestParams = new URLSearchParams();
     requestParams.append('limit', '100');
     requestParams.append('offset', '0');
-    requestParams.append('expand', 'productFolder');
     requestParams.append('filter', 'archived=false');
 
     console.log('Запрос категорий:', {
@@ -29,8 +28,21 @@ router.get('/', async (req, res) => {
     console.log('Ответ от МойСклад:', {
       status: response.status,
       data: response.data,
+      errors: response.data?.errors,
       timestamp: new Date().toISOString()
     });
+
+    if (response.status === 400) {
+      console.error('Ошибка API МойСклад:', {
+        errors: response.data?.errors,
+        status: response.status,
+        headers: response.headers
+      });
+      return res.status(400).json({ 
+        error: 'Ошибка запроса к API МойСклад',
+        details: response.data?.errors 
+      });
+    }
 
     if (!response.data || !response.data.rows) {
       console.error('Ошибка: Пустой ответ от API МойСклад для категорий:', {
