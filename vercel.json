@@ -1,10 +1,12 @@
 {
   "version": 2,
-  "rewrites": [
+  "builds": [
     {
-      "source": "/api/:path*",
-      "destination": "/server/src/api/:path*"
-    },
+      "src": "server/src/index.ts",
+      "use": "@vercel/node"
+    }
+  ],
+  "rewrites": [
     {
       "source": "/(.*)",
       "destination": "server/src/index.ts"
@@ -24,11 +26,5 @@
   "regions": ["fra1"],
   "buildCommand": "npm run build",
   "installCommand": "npm install",
-  "framework": "nextjs",
-  "builds": [
-    {
-      "src": "server/src/index.ts",
-      "use": "@vercel/node"
-    }
-  ]
+  "framework": "nextjs"
 }

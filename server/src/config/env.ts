@@ -32,6 +32,11 @@ if (!process.env.PORT) {
   process.exit(1);
 }
 
+if (!process.env.MOYSKLAD_LOGIN || !process.env.MOYSKLAD_PASSWORD) {
+  console.error('Ошибка: MOYSKLAD_LOGIN и MOYSKLAD_PASSWORD должны быть заданы.');
+  process.exit(1);
+}
+
 const envSchema = z.object({
   // API Tokens
   MOYSKLAD_TOKEN: z.string().nonempty('MOYSKLAD_TOKEN is required'),
