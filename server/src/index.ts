@@ -22,6 +22,16 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
+// Обработчик для корневого пути
+app.get('/', (_req, res) => {
+  res.json({
+    status: 'ok',
+    message: 'API сервер работает',
+    version: '1.0.0',
+    environment: env.NODE_ENV
+  });
+});
+
 app.use((req, res, next) => {
   console.log('Incoming request:', {
     method: req.method,
