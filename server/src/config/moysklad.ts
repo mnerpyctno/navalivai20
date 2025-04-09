@@ -14,13 +14,17 @@ export const moySkladClient: AxiosInstance = axios.create({
   baseURL: env.MOYSKLAD_API_URL || 'https://api.moysklad.ru/api/remap/1.2',
   headers: {
     'Authorization': `Bearer ${env.MOYSKLAD_TOKEN}`,
-    'Content-Type': 'application/json;charset=utf-8',
-    'Accept': 'application/json;charset=utf-8',
-    'Accept-Encoding': 'gzip, deflate, br',
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'Accept-Encoding': 'gzip, deflate',
     'Cache-Control': 'no-cache',
-    'Pragma': 'no-cache'
+    'Pragma': 'no-cache',
+    'X-Lognex-Format': 'true',
+    'X-Lognex-Pretty-Print': 'true'
   },
-  timeout: 30000 // Увеличиваем таймаут для стабильности
+  timeout: 30000,
+  maxRedirects: 5,
+  validateStatus: (status) => status >= 200 && status < 500
 });
 
 // Перехватчик для логирования запросов
