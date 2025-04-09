@@ -40,11 +40,6 @@ const envSchema = z.object({
   // Database
   databaseUrl: z.string(),
   
-  // Supabase
-  supabaseUrl: z.string().url().optional(),
-  supabaseKey: z.string().optional(),
-  supabaseServiceKey: z.string().optional(),
-  
   // Telegram
   TELEGRAM_BOT_TOKEN: z.string(),
   TELEGRAM_BOT_USERNAME: z.string(),
@@ -84,9 +79,6 @@ try {
       API_URL: process.env.API_URL || 'https://navalivai20.vercel.app/api',
       SERVER_URL: process.env.SERVER_URL || 'https://navalivai20.vercel.app/api',
       databaseUrl: process.env.DATABASE_URL,
-      supabaseUrl: process.env.SUPABASE_URL,
-      supabaseKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
-      supabaseServiceKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
       TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN,
       TELEGRAM_BOT_USERNAME: process.env.TELEGRAM_BOT_USERNAME,
       TELEGRAM_SECRET_KEY: process.env.TELEGRAM_SECRET_KEY,
