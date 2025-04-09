@@ -63,10 +63,10 @@ const envSchema = z.object({
     const num = Number(val);
     if (isNaN(num)) {
       console.error('PORT не является числом:', val);
-      return 3000;
+      return process.env.NODE_ENV === 'production' ? undefined : 3000;
     }
     return num;
-  }).default('3000'),
+  }).optional(),
   
   // Cache TTL
   cacheTtl: z.object({
@@ -105,7 +105,7 @@ try {
     TELEGRAM_BOT_USERNAME: process.env.TELEGRAM_BOT_USERNAME,
     TELEGRAM_SECRET_KEY: process.env.TELEGRAM_SECRET_KEY,
     NEXT_PUBLIC_WEBAPP_URL: process.env.NEXT_PUBLIC_WEBAPP_URL,
-    PORT: process.env.PORT || '3000',
+    PORT: process.env.NODE_ENV === 'production' ? undefined : (process.env.PORT || '3000'),
     cacheTtl: {
       products: Number(process.env.CACHE_TTL_PRODUCTS) || 3600,
       categories: Number(process.env.CACHE_TTL_CATEGORIES) || 86400,

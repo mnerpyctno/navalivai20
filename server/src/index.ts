@@ -5,7 +5,7 @@ import productsRouter from './api/products';
 import categoriesRouter from './api/categories';
 
 const app = express();
-const port = env.PORT;
+const port = env.PORT || process.env.PORT || 3000;
 
 // Настройка CORS
 app.use(cors({
@@ -44,7 +44,7 @@ app.use((err: Error, req: express.Request, res: express.Response, next: express.
 
 // Запуск сервера
 if (env.NODE_ENV === 'production') {
-  console.log(`Сервер запущен в production-режиме на http://localhost:${port}`);
+  console.log('Сервер запущен в production-режиме');
 } else {
   console.log(`Сервер запущен на http://localhost:${port}`);
 }
