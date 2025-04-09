@@ -8,7 +8,7 @@ import Header from '@/components/Header';
 import { useCart } from '@/hooks/useCart'; // Исправлен импорт
 import { ITEMS_PER_PAGE } from '../../../../config/constants'; // Исправлен импорт
 import ImagePlaceholder from '@/components/ImagePlaceholder';
-import { env } from '../../../../server/src/config/env'; // Исправлен импорт
+import { env } from '../../../../server/src/config/env'; // Исправлен путь импорта
 
 interface LocalProduct {
   id: string;
