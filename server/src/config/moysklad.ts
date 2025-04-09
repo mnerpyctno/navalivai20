@@ -22,6 +22,15 @@ export const moySkladClient: AxiosInstance = axios.create({
     'X-Lognex-Format': 'true',
     'X-Lognex-Pretty-Print': 'true'
   },
+  paramsSerializer: (params) => {
+    const searchParams = new URLSearchParams();
+    for (const [key, value] of Object.entries(params)) {
+      if (value !== undefined && value !== null) {
+        searchParams.append(key, String(value));
+      }
+    }
+    return searchParams.toString();
+  },
   timeout: 30000,
   maxRedirects: 5,
   validateStatus: (status) => status >= 200 && status < 500
