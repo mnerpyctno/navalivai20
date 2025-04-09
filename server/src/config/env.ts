@@ -3,7 +3,7 @@ import { z } from 'zod';
 import path from 'path';
 
 // Загружаем переменные окружения
-const envPath = path.resolve(__dirname, '../../../.env'); // Исправлен путь
+const envPath = path.resolve(process.cwd(), '.env');
 config({ path: envPath });
 
 // Проверяем наличие обязательных переменных
@@ -13,7 +13,7 @@ const requiredEnvVars = [
   'TELEGRAM_BOT_USERNAME',
   'TELEGRAM_SECRET_KEY',
   'NEXT_PUBLIC_WEBAPP_URL',
-  'PORT' // Добавлено
+  'PORT'
 ] as const;
 
 for (const envVar of requiredEnvVars) {
@@ -25,11 +25,6 @@ for (const envVar of requiredEnvVars) {
 
 if (!process.env.MOYSKLAD_TOKEN) {
   console.error('Ошибка: MOYSKLAD_TOKEN должна быть задана.');
-  process.exit(1);
-}
-
-if (!process.env.PORT) {
-  console.error('Ошибка: PORT должна быть задана.');
   process.exit(1);
 }
 
