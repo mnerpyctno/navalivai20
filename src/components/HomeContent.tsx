@@ -1,15 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import styles from './HomeContent.module.css';
-import Image from 'next/image';
-import Link from 'next/link';
 import ProductCard from './ProductCard';
 import { useHomeContent } from '@/hooks/useHomeContent';
 import { CategoryCard } from './CategoryCard';
 import { Spinner } from './Spinner';
 import { ErrorMessage } from './ErrorMessage';
-import { Product } from '@/types/product';
 
 interface Category {
   id: string;

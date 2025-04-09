@@ -4,7 +4,7 @@ import Link from 'next/link';
 interface CategoryCardProps {
   id: string;
   name: string;
-  image: string;
+  image: string | null;
 }
 
 export const CategoryCard = ({ id, name, image }: CategoryCardProps) => {
