@@ -25,8 +25,7 @@ const requiredEnvVars = [
   'TELEGRAM_BOT_TOKEN',
   'TELEGRAM_BOT_USERNAME',
   'TELEGRAM_SECRET_KEY',
-  'NEXT_PUBLIC_WEBAPP_URL',
-  'DATABASE_URL'
+  'NEXT_PUBLIC_WEBAPP_URL'
 ] as const;
 
 for (const envVar of requiredEnvVars) {
@@ -45,7 +44,7 @@ const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   
   // Database
-  databaseUrl: z.string().nonempty('DATABASE_URL is required'),
+  databaseUrl: z.string().optional(),
   
   // Supabase
   supabaseUrl: z.string().url().optional(),
