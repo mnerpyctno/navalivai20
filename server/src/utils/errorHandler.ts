@@ -9,9 +9,16 @@ export const handleMoySkladError = (error: any, res: Response) => {
   });
 
   if (error.response) {
-    res.status(error.response.status).json({
-      error: error.response.data?.errors?.[0]?.error || 'Ошибка при обращении к API МойСклад',
-    });
+    if (error.response.status === 412) {
+      res.status(412).json({
+        error: 'Ошибка предварительного условия. Пожалуйста, проверьте заголовки запроса и повторите попытку.',
+        details: error.response.data?.errors?.[0]?.error
+      });
+    } else {
+      res.status(error.response.status).json({
+        error: error.response.data?.errors?.[0]?.error || 'Ошибка при обращении к API МойСклад',
+      });
+    }
   } else {
     res.status(500).json({ error: 'Internal Server Error' });
   }

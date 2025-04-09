@@ -16,6 +16,9 @@ export const moySkladClient: AxiosInstance = axios.create({
     'Authorization': `Bearer ${env.MOYSKLAD_TOKEN}`,
     'Content-Type': 'application/json;charset=utf-8',
     'Accept': 'application/json;charset=utf-8',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Cache-Control': 'no-cache',
+    'Pragma': 'no-cache'
   },
   timeout: 30000 // Увеличиваем таймаут для стабильности
 });
