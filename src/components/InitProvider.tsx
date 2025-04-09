@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { initClientApp } from '../lib/client-init';
-import { LoadingManager } from './LoadingManager';
+import LoadingScreen from './LoadingScreen';
 
 const MIN_LOADING_TIME = 6000; // 6 секунд (10 сообщений по 0.6 секунды)
 
-export default function InitProvider({ children }: { children: React.ReactNode }) {
+const useInit = () => {
   const [isInitialized, setIsInitialized] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [canShowContent, setCanShowContent] = useState(false);
@@ -61,6 +61,12 @@ export default function InitProvider({ children }: { children: React.ReactNode }
     init();
   }, []);
 
+  return { isInitialized, error, canShowContent, isMounted };
+};
+
+export default function InitProvider({ children }: { children: React.ReactNode }) {
+  const { isInitialized, error, canShowContent, isMounted } = useInit();
+
   if (!isMounted) {
     return null;
   }
@@ -78,7 +84,7 @@ export default function InitProvider({ children }: { children: React.ReactNode }
 
   return (
     <>
-      {!canShowContent && <LoadingManager />}
+      {!canShowContent && <LoadingScreen />}
       {isInitialized && children}
     </>
   );

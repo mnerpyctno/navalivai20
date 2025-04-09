@@ -1,14 +1,6 @@
-'use client';
-
-import styles from '@/styles/Home.module.css';
-import { useEffect, useState, useRef, useCallback } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { ProductCard } from './ProductCard';
-import { useHomeContent } from '@/hooks/useHomeContent';
-import { CategoryCard } from './CategoryCard';
-import { Spinner } from './Spinner';
-import { ErrorMessage } from './ErrorMessage';
+import { useState, useRef, useCallback, useEffect } from 'react';
+import { Product } from '@/types/product';
+import { getProducts, getCategories } from '../../server/src/lib/api';
 
 interface Category {
   id: string;
@@ -25,10 +17,7 @@ const categoryImages: Record<string, string> = {
   'Еда и напитки': '/Еда и напитки.png'
 };
 
-// Глобальный флаг для отслеживания первого залогированного продукта
-let hasLoggedFirstProduct = false;
-
-const useHomeContent = () => {
+export const useHomeContent = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -127,49 +116,4 @@ const useHomeContent = () => {
     totalProducts,
     loadingRef
   };
-};
-
-export const HomeContent = () => {
-  const { products, categories, isLoading, error } = useHomeContent();
-
-  if (error) {
-    return <ErrorMessage message={error} />;
-  }
-
-  if (isLoading) {
-    return <Spinner />;
-  }
-
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <section className="mb-12">
-        <h2 className="text-2xl font-bold mb-6">Категории</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {categories.map((category) => (
-            <CategoryCard
-              key={category.id}
-              id={category.id}
-              name={category.name}
-              image={category.image}
-            />
-          ))}
-        </div>
-      </section>
-
-      <section>
-        <h2 className="text-2xl font-bold mb-6">Популярные товары</h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {products.map((product) => (
-            <ProductCard
-              key={product.id}
-              id={product.id}
-              name={product.name}
-              price={product.price}
-              image={product.image}
-            />
-          ))}
-        </div>
-      </section>
-    </div>
-  );
-};
+}; 

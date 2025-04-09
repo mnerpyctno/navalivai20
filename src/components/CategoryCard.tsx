@@ -1,26 +1,36 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import styles from '@/styles/CategoryCard.module.css';
 
 interface CategoryCardProps {
-  id: number;
+  id: string;
   name: string;
   image: string;
 }
 
-export default function CategoryCard({ id, name, image }: CategoryCardProps) {
+export const CategoryCard = ({ id, name, image }: CategoryCardProps) => {
   return (
-    <Link href={`/category/${id}`} className={styles.card}>
-      <div className={styles.imageWrapper}>
+    <Link
+      href={`/category/${id}`}
+      className="group relative aspect-square overflow-hidden rounded-lg bg-gray-100"
+    >
+      <div className="relative h-full w-full">
         <Image
-          src={image}
+          src={image || '/placeholder.png'}
           alt={name}
-          width={300}
-          height={300}
-          className={styles.image}
+          fill
+          className="object-cover transition-transform duration-300 group-hover:scale-105"
+          sizes="(max-width: 480px) 50vw, 33vw"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = '/placeholder.png';
+          }}
         />
       </div>
-      <h3 className={styles.name}>{name}</h3>
+      <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+        <span className="text-white text-lg font-semibold text-center px-4">
+          {name}
+        </span>
+      </div>
     </Link>
   );
-} 
+}; 
