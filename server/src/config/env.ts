@@ -13,7 +13,7 @@ const requiredEnvVars = [
   'TELEGRAM_BOT_USERNAME',
   'TELEGRAM_SECRET_KEY',
   'NEXT_PUBLIC_WEBAPP_URL'
-] as const;
+];
 
 for (const envVar of requiredEnvVars) {
   if (!process.env[envVar]) {
