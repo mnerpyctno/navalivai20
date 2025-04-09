@@ -24,7 +24,7 @@ const nextConfig = {
     minimumCacheTTL: 0,
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    domains: ['miniature-prod.moysklad.ru', 'api.moysklad.ru', 'storage.files.mow1.cloud.servers.ru'],
+    domains: ['miniature-prod.moysklad.ru', 'api.moysklad.ru'],
   },
   async rewrites() {
     return [
@@ -34,35 +34,35 @@ const nextConfig = {
       },
       {
         source: '/api/moysklad/image/:path*',
-        destination: 'http://localhost:3002/api/moysklad/image/:path*',
+        destination: 'https://navalivai20.vercel.app/api/moysklad/image/:path*',
       },
       {
         source: '/api/images/:path*',
-        destination: 'http://localhost:3002/api/images/:path*',
+        destination: 'https://navalivai20.vercel.app/api/images/:path*',
       },
       {
         source: '/api/categories',
-        destination: 'http://localhost:3002/api/categories',
+        destination: 'https://navalivai20.vercel.app/api/categories',
       },
       {
         source: '/api/categories/:path*',
-        destination: 'http://localhost:3002/api/categories/:path*',
+        destination: 'https://navalivai20.vercel.app/api/categories/:path*',
       },
       {
         source: '/api/products',
-        destination: 'http://localhost:3002/api/products',
+        destination: 'https://navalivai20.vercel.app/api/products',
       },
       {
         source: '/api/products/:path*',
-        destination: 'http://localhost:3002/api/products/:path*',
+        destination: 'https://navalivai20.vercel.app/api/products/:path*',
       },
       {
         source: '/api/search',
-        destination: 'http://localhost:3002/api/search',
+        destination: 'https://navalivai20.vercel.app/api/search',
       },
       {
         source: '/api/search/:path*',
-        destination: 'http://localhost:3002/api/search/:path*',
+        destination: 'https://navalivai20.vercel.app/api/search/:path*',
       }
     ];
   },
@@ -95,7 +95,7 @@ const nextConfig = {
     removeConsole: process.env.NODE_ENV === 'production',
   },
   experimental: {
-    optimizeCss: false,
+    optimizeCss: true,
     optimizePackageImports: ['@fortawesome/free-solid-svg-icons', 'react-icons']
   },
   // Отключаем генерацию статических страниц для 404 и 500
