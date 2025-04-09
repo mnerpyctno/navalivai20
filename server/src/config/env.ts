@@ -2,11 +2,13 @@ import { config } from 'dotenv';
 import { z } from 'zod';
 import path from 'path';
 
-// Загружаем переменные окружения
-const envPath = path.resolve(process.cwd(), '.env');
-console.log('Загрузка .env файла из:', envPath);
-console.log('Текущая рабочая директория:', process.cwd());
-config({ path: envPath });
+// Загружаем переменные окружения только в development
+if (process.env.NODE_ENV !== 'production') {
+  const envPath = path.resolve(process.cwd(), '.env');
+  console.log('Загрузка .env файла из:', envPath);
+  console.log('Текущая рабочая директория:', process.cwd());
+  config({ path: envPath });
+}
 
 // Отладочный вывод загруженных переменных
 console.log('Загруженные переменные окружения:');
@@ -23,19 +25,15 @@ const requiredEnvVars = [
   'TELEGRAM_BOT_TOKEN',
   'TELEGRAM_BOT_USERNAME',
   'TELEGRAM_SECRET_KEY',
-  'NEXT_PUBLIC_WEBAPP_URL'
+  'NEXT_PUBLIC_WEBAPP_URL',
+  'DATABASE_URL'
 ] as const;
 
 for (const envVar of requiredEnvVars) {
   if (!process.env[envVar]) {
-    console.error(`Ошибка: ${envVar} не установлен в .env файле`);
+    console.error(`Ошибка: ${envVar} не установлен в переменных окружения`);
     process.exit(1);
   }
-}
-
-if (!process.env.MOYSKLAD_TOKEN) {
-  console.error('Ошибка: MOYSKLAD_TOKEN должна быть задана.');
-  process.exit(1);
 }
 
 const envSchema = z.object({
@@ -47,7 +45,7 @@ const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   
   // Database
-  databaseUrl: z.string(),
+  databaseUrl: z.string().nonempty('DATABASE_URL is required'),
   
   // Supabase
   supabaseUrl: z.string().url().optional(),
