@@ -3,7 +3,7 @@ import { z } from 'zod';
 import path from 'path';
 
 // Загружаем переменные окружения
-const envPath = path.resolve(__dirname, '../../.env');
+const envPath = path.resolve(__dirname, '../../../.env'); // Исправлен путь
 config({ path: envPath });
 
 // Проверяем наличие обязательных переменных
