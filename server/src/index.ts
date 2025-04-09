@@ -7,6 +7,10 @@ import categoriesRouter from './api/categories';
 const app = express();
 const port = process.env.PORT || 3002;
 
+if (!process.env.PORT) {
+  console.error('Ошибка: PORT не задана. Используется порт по умолчанию: 3002');
+}
+
 // Настройка CORS
 app.use(cors({
   origin: '*',
