@@ -8,7 +8,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 if (!process.env.PORT) {
-  console.error('Ошибка: PORT не задана. Используется порт по умолчанию: 3002');
+  console.error('Ошибка: PORT не задана. Используется порт по умолчанию: 3000');
 }
 
 // Настройка CORS

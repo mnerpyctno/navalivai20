@@ -12,7 +12,8 @@
     "start:server": "node server/dist/index.js",
     "build:all": "npm run build && npm run build:server",
     "copy:types": "mkdir -p server/src/types && cp -r shared/types/* server/src/types/ && cp -r server/src/types/* shared/types/ && cp -r shared/types/* src/types/",
-    "vercel-build": "npm run build:all"
+    "vercel-build": "npm run build:all",
+    "dev:all": "concurrently \"npm run dev\" \"npm run server\""
   },
   "dependencies": {
     "@fortawesome/free-solid-svg-icons": "^6.5.2",
