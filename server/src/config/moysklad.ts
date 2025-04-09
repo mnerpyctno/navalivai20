@@ -22,15 +22,6 @@ export const moySkladClient: AxiosInstance = axios.create({
     'X-Lognex-Format': 'true',
     'X-Lognex-Pretty-Print': 'true'
   },
-  paramsSerializer: (params) => {
-    const searchParams = new URLSearchParams();
-    for (const [key, value] of Object.entries(params)) {
-      if (value !== undefined && value !== null) {
-        searchParams.append(key, String(value));
-      }
-    }
-    return searchParams.toString();
-  },
   timeout: 30000,
   maxRedirects: 5,
   validateStatus: (status) => status >= 200 && status < 500
@@ -38,6 +29,13 @@ export const moySkladClient: AxiosInstance = axios.create({
 
 // Перехватчик для логирования запросов
 moySkladClient.interceptors.request.use((config) => {
+  // Убеждаемся, что URL правильно сформирован
+  if (config.url?.includes('?')) {
+    const [baseUrl, queryString] = config.url.split('?');
+    const params = new URLSearchParams(queryString);
+    config.url = `${baseUrl}?${params.toString()}`;
+  }
+
   console.log('MoySklad запрос:', {
     url: config.url,
     method: config.method,
@@ -59,6 +57,7 @@ moySkladClient.interceptors.response.use(
       url: response.config.url,
       status: response.status,
       data: response.data,
+      headers: response.headers,
       timestamp: new Date().toISOString()
     });
     return response;
@@ -69,6 +68,7 @@ moySkladClient.interceptors.response.use(
       method: error.config?.method,
       status: error.response?.status,
       data: error.response?.data,
+      headers: error.response?.headers,
       stack: error.stack,
       timestamp: new Date().toISOString()
     });

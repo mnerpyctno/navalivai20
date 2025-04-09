@@ -7,21 +7,24 @@ const router = Router();
 // Получение списка категорий
 router.get('/', async (req, res) => {
   try {
-    const requestParams = {
-      limit: 100,
-      offset: 0,
-      expand: 'productFolder',
-      filter: 'archived=false'
-    };
+    // Формируем параметры запроса
+    const requestParams = new URLSearchParams();
+    requestParams.append('limit', '100');
+    requestParams.append('offset', '0');
+    requestParams.append('expand', 'productFolder');
+    requestParams.append('filter', 'archived=false');
 
     console.log('Запрос категорий:', {
-      params: requestParams,
+      params: Object.fromEntries(requestParams),
       timestamp: new Date().toISOString()
     });
 
-    const response = await moySkladClient.get('/entity/productfolder', {
-      params: requestParams
-    });
+    // Формируем URL с параметрами
+    const url = `/entity/productfolder?${requestParams.toString()}`;
+    console.log('Полный URL запроса:', url);
+
+    // Отправляем запрос
+    const response = await moySkladClient.get(url);
 
     console.log('Ответ от МойСклад:', {
       status: response.status,
@@ -32,7 +35,8 @@ router.get('/', async (req, res) => {
     if (!response.data || !response.data.rows) {
       console.error('Ошибка: Пустой ответ от API МойСклад для категорий:', {
         response: response.data,
-        status: response.status
+        status: response.status,
+        headers: response.headers
       });
       return res.status(500).json({ error: 'Ошибка сервера при получении категорий' });
     }
@@ -57,6 +61,7 @@ router.get('/', async (req, res) => {
       stack: error instanceof Error ? error.stack : undefined,
       response: (error as any).response?.data,
       status: (error as any).response?.status,
+      headers: (error as any).response?.headers,
       config: {
         url: (error as any).config?.url,
         method: (error as any).config?.method,
@@ -72,24 +77,28 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const requestParams = {
-      expand: 'productFolder'
-    };
+    
+    // Формируем параметры запроса
+    const requestParams = new URLSearchParams();
+    requestParams.append('expand', 'productFolder');
 
     console.log('Запрос категории по ID:', {
       id,
-      params: requestParams,
+      params: Object.fromEntries(requestParams),
       timestamp: new Date().toISOString()
     });
 
-    const response = await moySkladClient.get(`/entity/productfolder/${id}`, {
-      params: requestParams
-    });
+    // Формируем URL с параметрами
+    const url = `/entity/productfolder/${id}?${requestParams.toString()}`;
+    console.log('Полный URL запроса:', url);
+
+    const response = await moySkladClient.get(url);
     
     console.log('Ответ от МойСклад для категории:', {
       id,
       status: response.status,
       data: response.data,
+      headers: response.headers,
       timestamp: new Date().toISOString()
     });
 
