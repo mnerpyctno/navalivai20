@@ -49,4 +49,10 @@ if (process.env.NODE_ENV !== 'production') {
   });
 }
 
+if (process.env.NODE_ENV === 'production') {
+  app.listen(port, () => {
+    console.log(`Сервер запущен в production-режиме на http://localhost:${port}`);
+  });
+}
+
 export default app;

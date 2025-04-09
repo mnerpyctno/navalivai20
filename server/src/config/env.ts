@@ -22,6 +22,16 @@ for (const envVar of requiredEnvVars) {
   }
 }
 
+if (!process.env.MOYSKLAD_TOKEN) {
+  console.error('Ошибка: Переменная окружения MOYSKLAD_TOKEN не задана.');
+  process.exit(1);
+}
+
+if (!process.env.PORT) {
+  console.error('Ошибка: Переменная окружения PORT не задана.');
+  process.exit(1);
+}
+
 const envSchema = z.object({
   // API Tokens
   MOYSKLAD_TOKEN: z.string().nonempty('MOYSKLAD_TOKEN is required'),
