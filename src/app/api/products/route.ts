@@ -17,7 +17,10 @@ export async function GET(request: Request) {
     };
 
     console.log('Параметры запроса:', params);
-    const response = await moySkladClient.get('/entity/product', { params });
+    const response = await moySkladClient.get('/entity/product', {
+      params: params
+    });
+    
     console.log('Получен ответ от МойСклад:', {
       status: response.status,
       data: response.data

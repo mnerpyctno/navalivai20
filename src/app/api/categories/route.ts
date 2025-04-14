@@ -12,7 +12,10 @@ export async function GET() {
     };
 
     console.log('Параметры запроса:', params);
-    const response = await moySkladClient.get('/entity/productfolder', { params });
+    const response = await moySkladClient.get('/entity/productfolder', {
+      params: params
+    });
+    
     console.log('Получен ответ от МойСклад:', {
       status: response.status,
       data: response.data
