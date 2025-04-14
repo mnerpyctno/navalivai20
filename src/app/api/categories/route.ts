@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { moySkladClient } from '../../../../server/src/config/moysklad';
+import { moySkladClient } from '@/lib/moysklad';
 
 export async function GET() {
   try {
