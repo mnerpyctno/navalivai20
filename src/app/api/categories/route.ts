@@ -1,12 +1,27 @@
 import { NextResponse } from 'next/server';
-import { moySkladClient } from '../../../../server/src/config/moysklad'; // Обновлен импорт
+import { moySkladClient } from '../../../../server/src/config/moysklad';
 
 export async function GET() {
   try {
     console.log('Начало получения категорий');
-    const response = await moySkladClient.get('/entity/productfolder');
-    console.log('Получен ответ от МойСклад:', response.status);
     
+    const params = {
+      limit: 100,
+      offset: 0,
+      expand: 'pathName'
+    };
+
+    console.log('Параметры запроса:', params);
+    const response = await moySkladClient.get('/entity/productfolder', { params });
+    console.log('Получен ответ от МойСклад:', {
+      status: response.status,
+      data: response.data
+    });
+    
+    if (!response.data || !response.data.rows) {
+      throw new Error('Некорректный формат ответа от API МойСклад');
+    }
+
     const categories = response.data.rows.map((category: any) => ({
       id: category.id,
       name: category.name,
@@ -22,12 +37,18 @@ export async function GET() {
       status: error.response?.status,
       config: {
         url: error.config?.url,
-        headers: error.config?.headers
+        headers: error.config?.headers,
+        params: error.config?.params
       }
     });
+
+    const errorMessage = error.response?.data?.errors?.[0]?.error || 
+                        error.message || 
+                        'Ошибка сервера при получении категорий';
+
     return NextResponse.json(
-      { error: 'Ошибка сервера при получении категорий' },
-      { status: 500 }
+      { error: errorMessage },
+      { status: error.response?.status || 500 }
     );
   }
 }

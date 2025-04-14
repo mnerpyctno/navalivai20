@@ -18,7 +18,14 @@ export async function GET(request: Request) {
 
     console.log('Параметры запроса:', params);
     const response = await moySkladClient.get('/entity/product', { params });
-    console.log('Получен ответ от МойСклад:', response.status);
+    console.log('Получен ответ от МойСклад:', {
+      status: response.status,
+      data: response.data
+    });
+
+    if (!response.data || !response.data.rows) {
+      throw new Error('Некорректный формат ответа от API МойСклад');
+    }
 
     const products = response.data.rows.map((product: any) => ({
       id: product.id,
@@ -41,12 +48,18 @@ export async function GET(request: Request) {
       status: error.response?.status,
       config: {
         url: error.config?.url,
-        headers: error.config?.headers
+        headers: error.config?.headers,
+        params: error.config?.params
       }
     });
+
+    const errorMessage = error.response?.data?.errors?.[0]?.error || 
+                        error.message || 
+                        'Ошибка сервера при получении продуктов';
+
     return NextResponse.json(
-      { error: 'Ошибка сервера при получении продуктов' },
-      { status: 500 }
+      { error: errorMessage },
+      { status: error.response?.status || 500 }
     );
   }
 }
