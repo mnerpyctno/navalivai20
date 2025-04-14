@@ -8,7 +8,8 @@ export async function GET() {
     const params = {
       limit: 100,
       offset: 0,
-      expand: 'pathName'
+      expand: 'pathName',
+      order: 'name,asc'
     };
 
     console.log('Параметры запроса:', params);

@@ -5,6 +5,13 @@ if (!process.env.MOYSKLAD_TOKEN) {
   throw new Error('MOYSKLAD_TOKEN отсутствует в переменных окружения.');
 }
 
+const paramsSerializer = (params: Record<string, any>): string => {
+  if (!params) return '';
+  return Object.entries(params)
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+    .join('&');
+};
+
 export const moySkladClient: AxiosInstance = axios.create({
   baseURL: process.env.MOYSKLAD_API_URL || 'https://api.moysklad.ru/api/remap/1.2',
   headers: {
@@ -18,11 +25,7 @@ export const moySkladClient: AxiosInstance = axios.create({
     'X-Lognex-Pretty-Print': 'true',
     'X-Lognex-API-Version': '1.2'
   },
-  paramsSerializer: (params) => {
-    return Object.entries(params)
-      .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
-      .join('&');
-  },
+  paramsSerializer,
   timeout: 30000,
   maxRedirects: 5,
   validateStatus: (status) => status >= 200 && status < 500
@@ -30,10 +33,19 @@ export const moySkladClient: AxiosInstance = axios.create({
 
 // Перехватчик для логирования запросов
 moySkladClient.interceptors.request.use((config) => {
+  // Убеждаемся, что параметры правильно сериализуются
+  if (config.params) {
+    const serializedParams = paramsSerializer(config.params);
+    if (serializedParams) {
+      config.url = `${config.url}?${serializedParams}`;
+    }
+  }
+
   console.log('MoySklad запрос:', {
     url: config.url,
     method: config.method,
     params: config.params,
+    serializedParams: config.url?.includes('?') ? config.url.split('?')[1] : '',
     headers: config.headers,
     baseURL: config.baseURL,
     timestamp: new Date().toISOString()
@@ -66,6 +78,12 @@ moySkladClient.interceptors.response.use(
       stack: error.stack,
       timestamp: new Date().toISOString()
     });
+
+    // Если есть ошибка от API, выводим её подробно
+    if (error.response?.data?.errors) {
+      console.error('Ошибки API МойСклад:', error.response.data.errors);
+    }
+
     return Promise.reject(error);
   }
 ); 
