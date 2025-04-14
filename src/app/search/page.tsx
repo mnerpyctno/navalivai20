@@ -133,11 +133,11 @@ export default function SearchPage() {
     if (query) {
       loadProducts(1);
     }
-  }, [query, loadProducts]); // Added loadProducts to dependency array
+  }, [loadProducts, query]);
 
   useEffect(() => {
     loadProducts(1);
-  }, [loadProducts]); // This is correctly defined now
+  }, [loadProducts]);
 
   if (loading) {
     return <LoadingScreen />;
