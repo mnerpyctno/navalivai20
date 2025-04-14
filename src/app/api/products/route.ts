@@ -3,6 +3,7 @@ import { moySkladClient } from '../../../../server/src/config/moysklad'; // Об
 
 export async function GET(request: Request) {
   try {
+    console.log('Начало получения продуктов');
     const { searchParams } = new URL(request.url);
     const query = searchParams.get('q') || '';
     const limit = Number(searchParams.get('limit')) || 24;
@@ -15,7 +16,9 @@ export async function GET(request: Request) {
       expand: 'images,salePrices,productFolder'
     };
 
+    console.log('Параметры запроса:', params);
     const response = await moySkladClient.get('/entity/product', { params });
+    console.log('Получен ответ от МойСклад:', response.status);
 
     const products = response.data.rows.map((product: any) => ({
       id: product.id,
@@ -31,10 +34,18 @@ export async function GET(request: Request) {
       rows: products,
       meta: response.data.meta
     });
-  } catch (error) {
-    console.error('Error fetching products:', error);
+  } catch (error: any) {
+    console.error('Подробная ошибка при получении продуктов:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      config: {
+        url: error.config?.url,
+        headers: error.config?.headers
+      }
+    });
     return NextResponse.json(
-      { error: 'Failed to fetch products' },
+      { error: 'Ошибка сервера при получении продуктов' },
       { status: 500 }
     );
   }
