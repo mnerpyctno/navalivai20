@@ -8,21 +8,32 @@ export async function GET() {
     const params = {
       limit: 100,
       offset: 0,
-      expand: 'pathName',
-      order: 'name,asc'
+      expand: 'pathName,productFolder',
+      order: 'name,asc',
+      filter: 'archived=false'
     };
 
     console.log('Параметры запроса:', params);
+    
+    // Проверяем токен перед запросом
+    const token = process.env.MOYSKLAD_TOKEN;
+    if (!token) {
+      throw new Error('MOYSKLAD_TOKEN не установлен');
+    }
+    console.log('Длина токена:', token.length);
+    
     const response = await moySkladClient.get('/entity/productfolder', {
       params: params
     });
     
     console.log('Получен ответ от МойСклад:', {
       status: response.status,
-      data: response.data
+      data: response.data,
+      headers: response.headers
     });
     
     if (!response.data || !response.data.rows) {
+      console.error('Некорректный формат ответа:', response.data);
       throw new Error('Некорректный формат ответа от API МойСклад');
     }
 
@@ -30,7 +41,8 @@ export async function GET() {
       id: category.id,
       name: category.name,
       description: category.description || '',
-      parentId: category.pathName || null
+      parentId: category.pathName || null,
+      archived: category.archived || false
     }));
 
     return NextResponse.json(categories);
@@ -43,7 +55,8 @@ export async function GET() {
         url: error.config?.url,
         headers: error.config?.headers,
         params: error.config?.params
-      }
+      },
+      stack: error.stack
     });
 
     const errorMessage = error.response?.data?.errors?.[0]?.error || 
