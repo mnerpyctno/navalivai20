@@ -15,25 +15,35 @@ export async function GET() {
     
     const response = await moySkladClient.get('/entity/productfolder', {
       params: params
+    }).catch(error => {
+      // Если есть ошибка от API, выводим её подробно
+      if (error.response?.data?.errors) {
+        console.error('Ошибки API МойСклад:', JSON.stringify(error.response.data.errors, null, 2));
+        throw new Error(error.response.data.errors[0].error);
+      }
+      throw error;
     });
     
-    console.log('Получен ответ от МойСклад:', {
-      status: response.status,
-      data: JSON.stringify(response.data, null, 2),
-      headers: response.headers
-    });
-    
+    // Если статус 400, считаем это ошибкой
     if (response.status === 400) {
+      const errorMessage = response.data?.errors?.[0]?.error || 'Неизвестная ошибка API МойСклад';
       console.error('Ошибка API МойСклад:', {
+        status: response.status,
         errors: response.data?.errors,
         fullResponse: JSON.stringify(response.data, null, 2)
       });
-      throw new Error('Ошибка API МойСклад: ' + JSON.stringify(response.data?.errors));
+      return NextResponse.json(
+        { error: errorMessage },
+        { status: 400 }
+      );
     }
 
     if (!response.data || !response.data.rows) {
       console.error('Некорректный формат ответа:', JSON.stringify(response.data, null, 2));
-      throw new Error('Некорректный формат ответа от API МойСклад');
+      return NextResponse.json(
+        { error: 'Некорректный формат ответа от API МойСклад' },
+        { status: 500 }
+      );
     }
 
     const categories = response.data.rows.map((category: any) => ({
@@ -57,9 +67,7 @@ export async function GET() {
       stack: error.stack
     });
 
-    const errorMessage = error.response?.data?.errors?.[0]?.error || 
-                        error.message || 
-                        'Ошибка сервера при получении категорий';
+    const errorMessage = error.message || 'Ошибка сервера при получении категорий';
 
     return NextResponse.json(
       { error: errorMessage },
