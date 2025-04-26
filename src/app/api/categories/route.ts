@@ -7,8 +7,7 @@ export async function GET() {
     
     const params = {
       limit: 100,
-      offset: 0,
-      expand: 'pathName'
+      offset: 0
     };
 
     console.log('Параметры запроса:', JSON.stringify(params, null, 2));
