@@ -3,7 +3,14 @@ import { moySkladClient } from '@/lib/moysklad';
 
 export async function GET() {
   try {
+    console.log('Проверка переменных окружения:', {
+      hasToken: !!process.env.MOYSKLAD_TOKEN,
+      apiUrl: process.env.MOYSKLAD_API_URL,
+      nodeEnv: process.env.NODE_ENV
+    });
+
     if (!process.env.MOYSKLAD_TOKEN) {
+      console.error('Ошибка: MOYSKLAD_TOKEN не установлен');
       return NextResponse.json(
         { error: 'Не настроен токен МойСклад' },
         { status: 500 }
@@ -22,16 +29,34 @@ export async function GET() {
     const response = await moySkladClient.get('/entity/productfolder', {
       params: params
     }).catch(error => {
-      // Если есть ошибка от API, выводим её подробно
+      console.error('Ошибка при запросе к МойСклад:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+        config: {
+          url: error.config?.url,
+          headers: {
+            ...error.config?.headers,
+            Authorization: '[REDACTED]'
+          }
+        }
+      });
+      
       if (error.response?.data?.errors) {
         const errorText = JSON.stringify(error.response.data.errors, null, 2);
         console.error('Ошибки API МойСклад:', errorText);
-        // Возвращаем полный ответ ошибки и текст ошибки
         return { status: 400, data: error.response.data, errorText };
       }
       throw error;
     });
     
+    console.log('Ответ от МойСклад:', {
+      status: response.status,
+      hasData: !!response.data,
+      hasRows: !!response.data?.rows,
+      rowsCount: response.data?.rows?.length
+    });
+
     // Если статус 400, возвращаем полный ответ ошибки и текст ошибки
     if (response.status === 400) {
       return NextResponse.json({

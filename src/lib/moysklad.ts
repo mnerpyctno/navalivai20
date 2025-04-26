@@ -64,12 +64,13 @@ moySkladClient.interceptors.request.use((config) => {
     url: config.url,
     method: config.method,
     params: JSON.stringify(config.params, null, 2),
-    serializedParams: config.url?.includes('?') ? config.url.split('?')[1] : '',
     headers: {
       ...config.headers,
-      Authorization: '[REDACTED]' // Скрываем токен в логах
+      Authorization: '[REDACTED]'
     },
     baseURL: config.baseURL,
+    hasToken: !!process.env.MOYSKLAD_TOKEN,
+    nodeEnv: process.env.NODE_ENV,
     timestamp: new Date().toISOString()
   });
   return config;
