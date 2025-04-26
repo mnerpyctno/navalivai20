@@ -3,6 +3,13 @@ import { moySkladClient } from '@/lib/moysklad';
 
 export async function GET() {
   try {
+    if (!process.env.MOYSKLAD_TOKEN) {
+      return NextResponse.json(
+        { error: 'Не настроен токен МойСклад' },
+        { status: 500 }
+      );
+    }
+
     console.log('Начало получения категорий');
     
     const params = {

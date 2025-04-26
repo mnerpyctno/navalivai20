@@ -3,6 +3,13 @@ import { moySkladClient } from '@/lib/moysklad';
 
 export async function GET(request: Request) {
   try {
+    if (!process.env.MOYSKLAD_TOKEN) {
+      return NextResponse.json(
+        { error: 'Не настроен токен МойСклад' },
+        { status: 500 }
+      );
+    }
+
     console.log('Начало получения продуктов');
     const { searchParams } = new URL(request.url);
     const query = searchParams.get('q') || '';
@@ -34,7 +41,7 @@ export async function GET(request: Request) {
       id: product.id,
       name: product.name,
       description: product.description || '',
-      price: product.salePrices?.[0]?.value / 100 || 0,
+      price: product.salePrices?.rows?.[0]?.value ? product.salePrices.rows[0].value / 100 : 0,
       imageUrl: product.images?.rows?.[0]?.miniature?.href || null,
       categoryId: product.productFolder?.id || '',
       categoryName: product.productFolder?.name || ''
